@@ -1,0 +1,217 @@
+/*
+ * Copyright (c) 2008 - 2017 Haulmont Technology Ltd. All Rights Reserved.
+ * Haulmont Technology proprietary and confidential.
+ * Use is subject to license terms.
+ */
+
+allprojects {
+    ext.artifactGroup = 'com.haulmont.shamrock'
+    ext.artifactVersion = '1.0'
+    ext.isSnapshot = true
+
+    ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"
+    ext.googleProviderPort = "${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}"
+    ext.googleProviderDebugPort = "${project.hasProperty('googleProviderDebugPort') ? googleProviderDebugPort : 19999}"
+    ext.googleProviderJmxPort = "${project.hasProperty('googleProviderJmxPort') ? googleProviderJmxPort : 59999}"
+
+    ext.app = "shamrock-as-google-${project.googleProviderName}-gate"
+
+    //Docker environment setup
+    ext.dockerDestFile = project.file('Dockerfile')
+    ext.parentImage = 'shamrock/openjdk8'
+    ext.parentImageTag = 'u121b2'
+    ext.dockerServerDir = '/opt/jetty'
+    ext.publishPorts = [
+            'tcp': [
+                    ext.googleProviderPort,
+                    ext.googleProviderDebugPort,
+                    ext.googleProviderJmxPort,
+            ]
+    ]
+    ext.imageTagSuffix = Boolean.valueOf(System.getenv('IS_TEST')) ?
+            '-test' :
+            ''
+    ext.dockerUrl = System.getenv('SHAMROCK_DOCKER_URL')
+
+    //Jetty setup
+    ext.serverDir = new File("$rootDir.absolutePath/jetty_base").canonicalPath
+    ext.serverHome = new File("$rootDir.absolutePath/jetty_home").canonicalPath
+    ext.jettyConfigDir = './config/jetty-conf'
+    ext.jettyVersion = '9.2.11.v20150529'
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven {
+            credentials {
+                username System.getenv('HAULMONT_REPOSITORY_USER')
+                password System.getenv('HAULMONT_REPOSITORY_PASSWORD')
+            }
+            url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
+        }
+        dependencies {
+            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:1.3-SNAPSHOT'
+        }
+    }
+}
+
+apply(plugin: 'idea')
+apply(plugin: 'shamrock-services')
+
+idea {
+    project {
+        jdkName = '1.8'
+        languageLevel = '1.8'
+
+        vcs = 'Git'
+    }
+}
+
+def coreModule = project(':shamrock-as-google-gate-core')
+def rsModule = project(':shamrock-as-google-gate-rs')
+
+configure([coreModule, rsModule]) {
+    apply(plugin: 'java')
+    apply(plugin: 'idea')
+    apply(plugin: 'maven')
+    apply(plugin: 'shamrock-services')
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    dependencies {
+        testCompile 'junit:junit:4.12'
+    }
+
+    task sourceJar(type: Jar) {
+        from file('src')
+        classifier = 'sources'
+    }
+
+    artifacts {
+        archives sourceJar
+    }
+}
+
+configure(coreModule) {
+    dependencies {
+        compile 'com.haulmont.monaco:monaco-core:2.0-SNAPSHOT'
+        compile 'com.haulmont.monaco:monaco-config:2.0-SNAPSHOT'
+
+        compile 'com.haulmont.shamrock:shamrock-as-common-data:1.0-SNAPSHOT'
+        compile 'com.haulmont.shamrock:shamrock-as-common-utils:1.0-SNAPSHOT'
+        compile 'com.haulmont.shamrock:shamrock-as-common-gate:1.0-SNAPSHOT'
+        compile 'com.haulmont.shamrock:shamrock-as-common-gis:1.0-SNAPSHOT'
+
+        compile 'com.haulmont.shamrock:shamrock-geo-common:1.2'
+
+        compile 'org.picocontainer:picocontainer:2.10.2'
+
+        compile 'org.codehaus.groovy:groovy-all:2.4.6'
+
+        compile 'commons-lang:commons-lang:2.4'
+        compile 'commons-collections:commons-collections:3.2.1'
+        compile 'commons-io:commons-io:1.4'
+        compile 'commons-codec:commons-codec:1.3'
+        compile 'commons-cli:commons-cli:1.2'
+        compile 'commons-pool:commons-pool:1.6'
+        compile 'commons-discovery:commons-discovery:0.5'
+
+        compile 'de.micromata.jak:JavaAPIforKml:3.0-SNAPSHOT'
+        compile 'com.vividsolutions:jts:1.13'
+    }
+
+    task deploy(dependsOn: assemble, type: DeployJettyTask) {
+        appName = "shamrock-as-google-${project.googleProviderName}-gate"
+        appJars('shamrock-as-google-gate-core')
+    }
+}
+
+configure(rsModule) {
+    configurations {
+        extraLibs
+    }
+
+    dependencies {
+        compile(coreModule)
+
+        runtime 'javax.servlet:javax.servlet-api:3.1.0'
+        runtime 'org.glassfish.jersey.containers:jersey-container-servlet:2.25'
+
+        compile 'com.haulmont.monaco:monaco-metrics-influxdb:2.0-SNAPSHOT'
+        compile 'com.haulmont.monaco:monaco-rs:2.0-SNAPSHOT'
+        extraLibs('com.haulmont.monaco:monaco-rs:2.0-SNAPSHOT') {
+            transitive = false
+        }
+    }
+
+    jar {
+        manifest {
+        }
+    }
+
+
+    task deploy(dependsOn: assemble, type: DeployJettyTask) {
+        appName = "shamrock-as-google-${project.googleProviderName}-gate"
+        appJars('shamrock-as-google-gate-core', 'shamrock-as-google-gate-rs')
+    }
+    deploy << {
+        copy {
+            from "$rootDir.absolutePath/config"
+            into "$serverDir/conf/$appName"
+            exclude "jetty-conf"
+        }
+    }
+
+    deploy << {
+        copy {
+            from configurations.extraLibs
+            into "$serverDir/webapps/$appName/WEB-INF/lib"
+        }
+    }
+
+    deploy {
+        doLast {
+            def appName = "shamrock-as-google-${project.googleProviderName}-gate"
+
+            project.logger.info "Google provider name: ${project.googleProviderName}"
+            project.logger.info "Google provider port: ${project.googleProviderPort}"
+            project.logger.info "Google provider debug port: ${project.googleProviderDebugPort}"
+            project.logger.info "Google provider JMX port: ${project.googleProviderJmxPort}"
+
+            def tokens = [
+                    GOOGLE_PROVIDER_NAME             : "${project.googleProviderName}",
+                    GOOGLE_PROVIDER_PORT             : "${project.googleProviderPort}",
+                    GOOGLE_PROVIDER_DEBUG_PORT       : "${project.googleProviderDebugPort}",
+                    GOOGLE_PROVIDER_JMX_PORT         : "${project.googleProviderJmxPort}"
+            ]
+
+            new File("$serverDir/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate.xml")
+                    .renameTo("$serverDir/shamrock-as-google-${project.googleProviderName}-gate.xml")
+
+            replaceTokens(new File("$serverDir/start.ini"), tokens)
+            replaceTokens(new File("$serverDir/start.sh"), tokens)
+            replaceTokens(new File("$serverDir/webapps/$appName/WEB-INF/web.xml"), tokens)
+            new File("$serverDir/conf/$appName").eachFile { file ->
+                replaceTokens(file, tokens)
+            }
+        }
+    }
+
+    start.dependsOn deploy
+    task restart(dependsOn: [':start'])
+}
+
+static void replaceTokens(File f, Map<String, String> tokens) {
+    if (f.isDirectory())
+        return
+
+    def text = f.text
+    for (Map.Entry<String, String> e : tokens.entrySet()) {
+        text = text.replace(e.key, e.value)
+    }
+    f.withWriter { w ->
+        w << text
+    }
+}

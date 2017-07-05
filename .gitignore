@@ -1,0 +1,15 @@
+#Idea files
+
+/**/.gradle
+/**/.idea
+
+/**/*.iml
+/**/*.ipr
+/**/*.iws
+
+/targets
+/jetty_*
+
+#Build
+/**/build
+/**/out

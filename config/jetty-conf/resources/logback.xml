@@ -1,0 +1,15 @@
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
+
+    <property name="appCoreLog.maxSize" value="100MB"/>
+    <property name="appCoreLog.maxHistory" value="1"/>
+
+    <property name="appLog.maxSize" value="100MB"/>
+    <property name="appLog.maxHistory" value="1"/>
+
+    <property name="monaco-rs.level.LoggingFilter" value="DEBUG"/>
+
+    <logger name="com.haulmont.shamrock.as.google.gate" level="DEBUG">
+        <appender-ref ref="FILE"/>
+    </logger>
+
+</configuration>

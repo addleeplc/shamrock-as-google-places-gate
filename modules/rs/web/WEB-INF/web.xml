@@ -1,0 +1,29 @@
+<!--
+  ~ Copyright (c) 2008 - 2017 Haulmont Technology Ltd. All Rights Reserved.
+  ~ Haulmont Technology proprietary and confidential.
+  ~ Use is subject to license terms.
+  -->
+
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    <context-param>
+        <param-name>appPropertiesConfig</param-name>
+        <param-value>
+            ${jetty.base}/conf/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate/app_${SHAMROCK_ENV}.properties
+        </param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>com.haulmont.shamrock.as.google.gate.rs.WebAppContextLoader</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>com.haulmont.shamrock.as.google.gate.rs.GoogleGateApplication</servlet-name>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>com.haulmont.shamrock.as.google.gate.rs.GoogleGateApplication</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>
