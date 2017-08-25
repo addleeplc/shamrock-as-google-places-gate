@@ -10,7 +10,7 @@
     <context-param>
         <param-name>appPropertiesConfig</param-name>
         <param-value>
-            ${jetty.base}/conf/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate/app_${SHAMROCK_ENV}.properties
+            ${jetty.base}/conf/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate/app.properties
         </param-value>
     </context-param>
 

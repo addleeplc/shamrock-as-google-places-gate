@@ -10,24 +10,19 @@ allprojects {
     ext.isSnapshot = true
 
     ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"
-    ext.googleProviderPort = "${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}"
-    ext.googleProviderDebugPort = "${project.hasProperty('googleProviderDebugPort') ? googleProviderDebugPort : 19999}"
-    ext.googleProviderJmxPort = "${project.hasProperty('googleProviderJmxPort') ? googleProviderJmxPort : 59999}"
-
     ext.app = "shamrock-as-google-${project.googleProviderName}-gate"
 
     //Docker environment setup
     ext.dockerDestFile = project.file('Dockerfile')
     ext.parentImage = 'shamrock/openjdk8'
-    ext.parentImageTag = 'u121b2'
+    ext.parentImageTag = 'u144b1'
     ext.dockerServerDir = '/opt/jetty'
-    ext.publishPorts = [
-            'tcp': [
-                    ext.googleProviderPort,
-                    ext.googleProviderDebugPort,
-                    ext.googleProviderJmxPort,
-            ]
-    ]
+
+    ext.appPort = Integer.parseInt("${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}")
+    ext.debugPort = Integer.parseInt("${project.hasProperty('googleProviderDebugPort') ? googleProviderDebugPort : 19999}")
+    ext.jmxPort = Integer.parseInt("${project.hasProperty('googleProviderJmxPort') ? googleProviderJmxPort : 59999}")
+    ext.publishPorts = ['tcp': [appPort, debugPort, jmxPort]]
+
     ext.imageTagSuffix = Boolean.valueOf(System.getenv('IS_TEST')) ?
             '-test' :
             ''
@@ -51,7 +46,7 @@ buildscript {
             url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
         }
         dependencies {
-            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:1.3-SNAPSHOT'
+            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:1.4-SNAPSHOT'
         }
     }
 }
@@ -175,23 +170,11 @@ configure(rsModule) {
         doLast {
             def appName = "shamrock-as-google-${project.googleProviderName}-gate"
 
-            project.logger.info "Google provider name: ${project.googleProviderName}"
-            project.logger.info "Google provider port: ${project.googleProviderPort}"
-            project.logger.info "Google provider debug port: ${project.googleProviderDebugPort}"
-            project.logger.info "Google provider JMX port: ${project.googleProviderJmxPort}"
-
-            def tokens = [
-                    GOOGLE_PROVIDER_NAME             : "${project.googleProviderName}",
-                    GOOGLE_PROVIDER_PORT             : "${project.googleProviderPort}",
-                    GOOGLE_PROVIDER_DEBUG_PORT       : "${project.googleProviderDebugPort}",
-                    GOOGLE_PROVIDER_JMX_PORT         : "${project.googleProviderJmxPort}"
-            ]
+            def tokens = [GOOGLE_PROVIDER_NAME: "${project.googleProviderName}"]
 
             new File("$serverDir/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate.xml")
                     .renameTo("$serverDir/shamrock-as-google-${project.googleProviderName}-gate.xml")
 
-            replaceTokens(new File("$serverDir/start.ini"), tokens)
-            replaceTokens(new File("$serverDir/start.sh"), tokens)
             replaceTokens(new File("$serverDir/webapps/$appName/WEB-INF/web.xml"), tokens)
             new File("$serverDir/conf/$appName").eachFile { file ->
                 replaceTokens(file, tokens)
