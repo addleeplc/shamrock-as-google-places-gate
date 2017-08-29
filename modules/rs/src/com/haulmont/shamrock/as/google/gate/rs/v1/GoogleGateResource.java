@@ -39,6 +39,7 @@ public class GoogleGateResource {
     public Response search(
             @QueryParam("search_string") String searchString,
             @QueryParam("preferred_city") String preferredCity,
+            @QueryParam("preferred_country") String preferredCountry,
             @QueryParam("city") String city,
             @QueryParam("country") String country,
             @QueryParam("postcode") String postcode,
@@ -54,6 +55,9 @@ public class GoogleGateResource {
 
             if (StringUtils.isNotBlank(preferredCity))
                 ctx.setPreferredCity(preferredCity);
+
+            if (StringUtils.isNotBlank(preferredCountry))
+                ctx.setPreferredCountry(preferredCountry);
 
             if (StringUtils.isNotBlank(city))
                 ctx.setCity(city);

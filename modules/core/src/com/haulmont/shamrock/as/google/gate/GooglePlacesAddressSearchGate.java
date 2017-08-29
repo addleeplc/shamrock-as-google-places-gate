@@ -16,6 +16,7 @@ import com.haulmont.shamrock.address.utils.GeoHelper;
 import com.haulmont.shamrock.address.utils.StringHelper;
 import com.haulmont.shamrock.as.google.gate.dto.*;
 import com.haulmont.shamrock.as.google.gate.utils.CityGeometry;
+import com.haulmont.shamrock.as.google.gate.utils.Constants;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
 import com.haulmont.shamrock.geo.PostcodeHelper;
 import groovy.util.ScriptException;
@@ -170,7 +171,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         boolean partialPostcode = PostcodeHelper.parsePostcode(postcode, false) == null;
         if (StringUtils.isNotBlank(postcode) && !partialPostcode &&
                 context.getSearchString().equalsIgnoreCase(postcode)) {
-            addresses = doSearch(context);
+            addresses = doSearch(context, 2);
         } else {
 
             if (StringUtils.isNotBlank(context.getCity()) && !StringUtils.containsIgnoreCase(searchString, context.getCity())) {
@@ -178,9 +179,9 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 temp.setCity(context.getCity());
                 temp.setSearchString(searchString + ", " + context.getCity());
 
-                addresses = doSearch(temp);
+                addresses = doSearch(temp, 2);
             } else {
-                addresses = doSearch(context);
+                addresses = doSearch(context, 2);
 
                 if (StringUtils.isNotBlank(context.getPreferredCity()) && !StringUtils.containsIgnoreCase(searchString, context.getPreferredCity())) {
                     boolean haveGoodMatches = false;
@@ -191,12 +192,27 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                         }
                     }
 
+                    //First step: add preferred country to search string
+                    if (!haveGoodMatches) {
+                        SearchContext temp = clone(context);
+                        temp.setCountry(context.getPreferredCountry());
+                        //Google Address Search API works well with full country name instead of ISO country code
+                        temp.setSearchString(searchString + ", " + Constants.Country.isoToCountry.get(context.getPreferredCountry()));
+
+                        List<Address> pcAddresses = doSearch(temp, 2);
+                        addresses.addAll(pcAddresses);
+                    }
+
+                    //Second step: add preferred country and city
                     if (!haveGoodMatches) {
                         SearchContext temp = clone(context);
                         temp.setCity(context.getPreferredCity());
-                        temp.setSearchString(searchString + ", " + context.getPreferredCity());
+                        temp.setCountry(context.getPreferredCountry());
 
-                        List<Address> pcAddresses = doSearch(temp);
+                        //Google Address Search API works well with full country name instead of ISO country code
+                        temp.setSearchString(searchString + ", " + context.getPreferredCity() + ", " + Constants.Country.isoToCountry.get(context.getPreferredCountry()));
+
+                        List<Address> pcAddresses = doSearch(temp, 2);
                         addresses.addAll(pcAddresses);
                     }
                 }
@@ -254,8 +270,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                             AddressComponents ac = new AddressComponents();
                             Geometry geometry = o.getGeometry();
                             if (geometry != null && geometry.getLocation() != null &&
-                                    geometry.getLocation().getLat() != null && geometry.getLocation().getLng() != null)
-                            {
+                                    geometry.getLocation().getLat() != null && geometry.getLocation().getLng() != null) {
                                 for (CityGeometry city : GeometryConstants.CITIES) {
                                     if (GISUtils.isInsideGeometry(city, geometry.getLocation().getLat(), geometry.getLocation().getLng())) {
                                         ac.setCountry(city.getCountry());
@@ -427,61 +442,53 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 address.getAddressData().getLocation().getLon() != null;
     }
 
-    private List<Address> doSearch(final SearchContext context) {
-        try {
-            String reqCountry = context.getCountry();
-            GeoRegion region = GoogleAddressUtils.getSearchRegion(reqCountry);
+    private List<Address> doSearch(final SearchContext context, int maxLookupPages) {
+        List<PlacesResponse> responses = new ArrayList<>();
 
-            String url = String.format("%s/textsearch/json?query=%s&language=en&key=%s&location=%s,%s&radius=%s",
-                    getGateConfiguration().getApiUrl(),
-                    URLEncoder.encode(context.getSearchString(), "UTF8"),
-                    URLEncoder.encode(getSearchGoogleApiKey(context), "UTF8"),
-                    region.getLatitude(), region.getLongitude(), region.getRadius()
-            );
-
-            return doSearch(url, PlacesResponse.class, new Converter<PlacesResponse>() {
-                public List<Address> convert(PlacesResponse response) {
-                    List<Address> res1 = new ArrayList<>();
-
-                    List<PlacesResult> results = response.getResults();
-                    for (PlacesResult o : results) {
-                        try {
-                            Address a = new Address();
-
-                            AddressData ad = new AddressData();
-                            AddressComponents ac = new AddressComponents();
-
-                            a.setId(String.format("%s|%s", getId(), o.getPlace_id()));
-                            ad.setFormattedAddress(o.getName() + ", " + o.getVicinity());
-
-                            if (context.getCountry() != null) {
-                                ac.setCountry(context.getCountry());
-                            }
-
-                            ad.setAddressComponents(ac);
-                            a.setAddressData(ad);
-
-                            RefineContext refineContext = new RefineContext();
-                            refineContext.setAddress(a);
-                            refineContext.setRefineType(RefineType.DEFAULT);
-                            a = refine(refineContext);
-                            if (a != null) {
-                                res1.add(a);
-                            }
-                        } catch (Throwable e) {
-                            LOG.warn("Failed to parse address", e);
-                        }
-                    }
-
-                    return res1;
+        PlacesResponse previous = null;
+        for (int i = 0; i < maxLookupPages; ++i) {
+            try {
+                String url;
+                if (i == 0) {
+                    url = String.format("%s/textsearch/json?query=%s&language=en&key=%s",
+                            getGateConfiguration().getApiUrl(),
+                            URLEncoder.encode(context.getSearchString(), "UTF8"),
+                            URLEncoder.encode(getSearchGoogleApiKey(context), "UTF8")
+                    );
+                } else if (previous != null && StringUtils.isNotBlank(previous.getNextPageToken())) {
+                    url = String.format("%s/textsearch/json?pagetoken=%s&language=en&key=%s",
+                            getGateConfiguration().getApiUrl(),
+                            URLEncoder.encode(previous.getNextPageToken(), "UTF8"),
+                            URLEncoder.encode(getSearchGoogleApiKey(context), "UTF8")
+                    );
+                } else {
+                    break;
                 }
-            });
 
-        } catch (Throwable e) {
-            LOG.warn("Failed to search address", e);
+                PlacesResponse response = doRequest(url, PlacesResponse.class);
+
+                GoogleApiStatus status = GoogleApiStatus.fromString(response.getStatus());
+                if (status != GoogleApiStatus.OK)
+                    break;
+
+                responses.add(response);
+                if (responses.size() == maxLookupPages && StringUtils.isNotBlank(response.getNextPageToken())) {
+                    return Collections.emptyList();
+                }
+
+                previous = response;
+            } catch (Throwable e) {
+                LOG.warn("Failed to search address", e);
+            }
         }
 
-        return Collections.emptyList();
+        if (CollectionUtils.isEmpty(responses))
+            return Collections.emptyList();
+
+        return responses.parallelStream()
+                .map(p -> new SearchPlacesConverter(context).convert(p))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     private List<Address> doSearch(String url, Class responseClass, Converter converter) throws Throwable {
@@ -571,5 +578,50 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
     protected interface Converter<T> {
         List<Address> convert(T response);
+    }
+
+    private class SearchPlacesConverter implements Converter<PlacesResponse> {
+
+        private SearchContext context;
+
+        public SearchPlacesConverter(SearchContext context) {
+            this.context = context;
+        }
+
+        public List<Address> convert(PlacesResponse response) {
+            List<Address> res1 = new ArrayList<>();
+
+            List<PlacesResult> results = response.getResults();
+            for (PlacesResult o : results) {
+                try {
+                    Address a = new Address();
+
+                    AddressData ad = new AddressData();
+                    AddressComponents ac = new AddressComponents();
+
+                    a.setId(String.format("%s|%s", getId(), o.getPlace_id()));
+                    ad.setFormattedAddress(o.getName() + ", " + o.getVicinity());
+
+                    if (context.getCountry() != null) {
+                        ac.setCountry(context.getCountry());
+                    }
+
+                    ad.setAddressComponents(ac);
+                    a.setAddressData(ad);
+
+                    RefineContext refineContext = new RefineContext();
+                    refineContext.setAddress(a);
+                    refineContext.setRefineType(RefineType.DEFAULT);
+                    a = refine(refineContext);
+                    if (a != null) {
+                        res1.add(a);
+                    }
+                } catch (Throwable e) {
+                    LOG.warn("Failed to parse address", e);
+                }
+            }
+
+            return res1;
+        }
     }
 }

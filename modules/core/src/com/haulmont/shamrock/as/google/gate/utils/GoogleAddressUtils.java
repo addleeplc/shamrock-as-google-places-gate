@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.context.GeoRegion;
 import com.haulmont.shamrock.address.utils.AddressHelper;
-import com.haulmont.shamrock.address.utils.EqualsHelper;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.Coordinates;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
@@ -39,7 +38,7 @@ public class GoogleAddressUtils {
                                        Map<String, AddressComponent> components,
                                        List<String> types) throws AddressParseException {
 
-        if (reqCountry != null && !EqualsHelper.equalsAny(reqCountry, "GB", "US", "FR", "ES", "DE", "CH", "NL", "IT", "IE", "SE", "DK", "BE", "CA")) {
+        if (!Constants.Country.isoToCountry.containsKey(reqCountry)) {
             throw new UnsupportedOperationException("Unknown country code: " + reqCountry);
         } else {
             // prepare address components
