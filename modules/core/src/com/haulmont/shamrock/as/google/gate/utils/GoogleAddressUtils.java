@@ -38,7 +38,7 @@ public class GoogleAddressUtils {
                                        Map<String, AddressComponent> components,
                                        List<String> types) throws AddressParseException {
 
-        if (!Constants.Country.isoToCountry.containsKey(reqCountry)) {
+        if (reqCountry != null && !Constants.Country.isoToCountry.containsKey(reqCountry)) {
             throw new UnsupportedOperationException("Unknown country code: " + reqCountry);
         } else {
             // prepare address components
