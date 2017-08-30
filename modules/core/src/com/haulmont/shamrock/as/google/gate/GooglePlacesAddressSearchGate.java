@@ -371,7 +371,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
     }
 
     private Address __refine(RefineContext context) {
-        if (AddressHelper.isAddressEx(context.getAddress())) {
+        if (context.getAddress().isRefined()) {
             return AddressHelper.convert(context.getAddress(), context.getRefineType());
         } else {
             Address a = context.getAddress();
@@ -399,6 +399,8 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                             } else {
                                 return null;
                             }
+
+                            res.setRefined(true);
 
                             GoogleAddressUtils.assignPlaceDetails(res, details);
 
