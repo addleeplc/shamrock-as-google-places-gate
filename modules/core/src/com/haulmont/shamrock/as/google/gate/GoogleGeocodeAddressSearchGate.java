@@ -180,6 +180,8 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
                             if (a != null) {
                                 a.setId(String.format("%s|%s", getId(), null));
+                                a.setRefined(true);
+
                                 return a;
                             }
                         } catch (Throwable e) {
@@ -377,6 +379,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
                             if (a != null) {
                                 a.setId(String.format("%s|%s", getId(), null));
+                                a.setRefined(true);
 
                                 return a;
                             }
