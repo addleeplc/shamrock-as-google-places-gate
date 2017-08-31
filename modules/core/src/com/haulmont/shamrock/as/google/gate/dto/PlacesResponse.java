@@ -14,7 +14,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PlacesResponse {
     @JsonProperty("status")
-    private String status;
+    private GoogleApiStatus status;
 
     @JsonProperty("results")
     private List<PlacesResult> results;
@@ -22,13 +22,11 @@ public class PlacesResponse {
     @JsonProperty("next_page_token")
     private String nextPageToken;
 
-    public PlacesResponse() {}
-
-    public String getStatus() {
+    public GoogleApiStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(GoogleApiStatus status) {
         this.status = status;
     }
 

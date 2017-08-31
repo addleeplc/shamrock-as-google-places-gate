@@ -6,21 +6,30 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PlacesResult {
+    @JsonProperty("name")
     private String name;
-    private String vicinity;
-    private List<String> types;
-    private Geometry geometry;
-    private String icon;
-    @Deprecated
-    private String reference;
-    @Deprecated
-    private String id;
-    private String place_id;
 
-    public PlacesResult() { }
+    @JsonProperty("vicinity")
+    private String vicinity;
+
+    @JsonProperty("types")
+    private List<String> types;
+
+    @JsonProperty("geometry")
+    private Geometry geometry;
+
+    @JsonProperty("icon")
+    private String icon;
+
+    @JsonProperty("place_id")
+    private String placeId;
 
     public String getName() {
         return name;
@@ -62,32 +71,12 @@ public class PlacesResult {
         this.icon = icon;
     }
 
-    @Deprecated
-    public String getReference() {
-        return reference;
+    public String getPlaceId() {
+        return placeId;
     }
 
-    @Deprecated
-    public void setReference(String reference) {
-        this.reference = reference;
-    }
-
-    @Deprecated
-    public String getId() {
-        return id;
-    }
-
-    @Deprecated
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getPlace_id() {
-        return place_id;
-    }
-
-    public void setPlace_id(String place_id) {
-        this.place_id = place_id;
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 }
 

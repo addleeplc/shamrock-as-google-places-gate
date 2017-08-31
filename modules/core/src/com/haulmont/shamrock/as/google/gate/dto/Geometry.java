@@ -6,18 +6,22 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Geometry {
-    private Coordinates location;
+    @JsonProperty("location")
+    private Location location;
+
+    @JsonProperty("viewport")
     private Viewport viewport;
 
-    Geometry() {
-    }
-
-    public Coordinates getLocation() {
+    public Location getLocation() {
         return location;
     }
 
-    public void setLocation(Coordinates location) {
+    public void setLocation(Location location) {
         this.location = location;
     }
 

@@ -8,12 +8,14 @@ package com.haulmont.shamrock.as.google.gate.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.haulmont.shamrock.address.*;
-import com.haulmont.shamrock.address.context.GeoRegion;
+import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.address.AddressComponents;
+import com.haulmont.shamrock.address.AddressData;
+import com.haulmont.shamrock.address.AddressType;
 import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
-import com.haulmont.shamrock.as.google.gate.dto.Coordinates;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
+import com.haulmont.shamrock.as.google.gate.dto.Location;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetailsResult;
 import org.apache.commons.lang.StringUtils;
 
@@ -25,235 +27,230 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GoogleAddressUtils {
+public final class GoogleAddressUtils {
+
+    private GoogleAddressUtils() {}
 
     public static class AddressParseException extends Exception {
         public AddressParseException(String message) {
             super(message);
         }
-    };
+    }
 
     public static Address parseAddress(String formattedAddress,
                                        String reqCountry, Geometry geometry,
                                        Map<String, AddressComponent> components,
                                        List<String> types) throws AddressParseException {
+        // prepare address components
+        sanitizeAddress(components);
 
-        if (reqCountry != null && !Constants.Country.isoToCountry.containsKey(reqCountry)) {
-            throw new UnsupportedOperationException("Unknown country code: " + reqCountry);
-        } else {
-            // prepare address components
-            sanitizeAddress(components);
+        // country
+        String countryValue = getFirstShort(components, GElement.country, GElement.political);
+        if (StringUtils.isBlank(countryValue)) {
+            throw new AddressParseException("country is null");
+        } else if (StringUtils.isNotBlank(reqCountry) && !StringUtils.equals(countryValue, reqCountry)) {
+            throw new AddressParseException("wrong country " + countryValue);
+        }
 
-            // country
+        // city
+        String cityValue;
+        if ("GB".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_2);
 
-            String countryValue = getFirstShort(components, GElement.country, GElement.political);
-            if (StringUtils.isBlank(countryValue)) {
-                throw new AddressParseException("country is null");
-            } else if (StringUtils.isNotBlank(reqCountry) && !StringUtils.equals(countryValue, reqCountry)) {
-                throw new AddressParseException("wrong country " + countryValue);
-            }
-
-            // city
-
-            String cityValue;
-            if ("GB".equals(countryValue)) {
-                cityValue = getFirstLong(components, GElement.administrative_area_level_2);
-
-                if (StringUtils.isNotBlank(cityValue) && StringUtils.equalsIgnoreCase(cityValue, "Greater London")) {
-                    cityValue = "London";
-                } else {
-                    cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
-                    if (StringUtils.isBlank(cityValue))
-                        cityValue = getFirstLong(components, GElement.locality, GElement.political);
-
-                    if (cityValue != null) {
-                        if (cityValue.equalsIgnoreCase("Greater London")) {
-                            cityValue = "London";
-                        }
-                    } else {
-                        cityValue = getFirstLong(components, GElement.administrative_area_level_1);
-                    }
-                }
-            } else if ("FR".equals(countryValue)) {
-                // detect town by department
-                String postcode = getFirstLong(components, GElement.postal_code);
-
-                if (startsWithAny(postcode,
-                        "75", // Paris
-                        "92", // Hauts-de-Seine
-                        "93", // Seine-Saint-Denis
-                        "94" // Val-de-Marne
-                        // "95"  // Val-d'Oise
-                )) {
-                    cityValue = "Paris";
-                } else {
-                    cityValue = getFirstLong(components, GElement.postal_town, GElement.locality);
-                }
-            } else if ("US".equals(countryValue)) {
-                cityValue = getFirstLong(components, GElement.locality, GElement.postal_town, GElement.sublocality, GElement.neighborhood);
-                if (cityValue != null &&
-                        (cityValue.equals("NY") ||
-                                "Manhattan".equalsIgnoreCase(cityValue) ||
-                                "Brooklyn".equalsIgnoreCase(cityValue) ||
-                                "Queens".equalsIgnoreCase(cityValue) ||
-                                "Staten Island".equalsIgnoreCase(cityValue) ||
-                                "The Bronx".equalsIgnoreCase(cityValue) ||
-                                "Bronx".equalsIgnoreCase(cityValue))
-                        ) {
-                    cityValue = "New York";
-                }
-
-            } else if ("BE".equals(countryValue)) {
-                cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.locality);
-                // ar1 = town, locality - town or towns region
-            } else if ("IE".equals(countryValue)) {
-                cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.administrative_area_level_2, GElement.locality);
-            } else if ("SE".equals(countryValue)) {
-                cityValue = getFirstLong(components, GElement.postal_town, GElement.locality);
+            if (StringUtils.isNotBlank(cityValue) && StringUtils.equalsIgnoreCase(cityValue, "Greater London")) {
+                cityValue = "London";
             } else {
                 cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
-            }
+                if (StringUtils.isBlank(cityValue))
+                    cityValue = getFirstLong(components, GElement.locality, GElement.political);
 
-            if (StringUtils.isBlank(cityValue)) {
-                throw new AddressParseException("town is null");
-            }
-
-
-            // postcode
-            String postcode = null;
-            if ("IE".equals(countryValue)) {
-                // In general, postcodes are not required in Ireland (they doesn't have actual postcode system).
-                // But in Dublin and Cork there a 1 or 2 digit zone number appears after the name of the city (eg 'Dublin 2'),
-                // that value stored in postal_town field. Outside the city, it is simply County Dublin.
-                String postalTown = getFirstLong(components, GElement.postal_town);
-                if (StringUtils.isNotBlank(postalTown) && !StringUtils.equals(postalTown, cityValue)) {
-                    String[] values = postalTown.split(" ");
-                    postcode = values[values.length - 1];
-                } else {
-                    if ("Dublin".equals(cityValue)) {
-                        postcode = "County";
+                if (cityValue != null) {
+                    if (cityValue.equalsIgnoreCase("Greater London")) {
+                        cityValue = "London";
                     }
-                }
-            } else if ("US".equals(countryValue) || "CA".equals(countryValue)) {
-                postcode = getFirstLong(components, GElement.postal_code);
-                String stateValue = getFirstShort(components, GElement.administrative_area_level_1);
-
-                if (StringUtils.isNotBlank(postcode) && StringUtils.isNotBlank(stateValue)) {
-                    postcode = stateValue + " " + postcode;
-                }
-            } else {
-                postcode = getFirstLong(components, GElement.postal_code);
-            }
-
-            if (StringUtils.isBlank(postcode)) {
-                throw new AddressParseException("postcode is null");
-            }
-
-
-            // city region
-            String cityRegion = null;
-            if ("US".equals(countryValue)) {
-                cityRegion = getFirstLong(components, GElement.sublocality, GElement.sublocality_level_1);
-
-                if ("New York".equals(cityValue) && StringUtils.isNotBlank(cityRegion)) {
-                    if ("Manhattan".equalsIgnoreCase(cityRegion)) {
-                        cityRegion = "Manhattan";
-                    } else if ("Brooklyn".equalsIgnoreCase(cityRegion)) {
-                        cityRegion = "Brooklyn";
-                    } else if ("Queens".equalsIgnoreCase(cityRegion)) {
-                        cityRegion = "Queens";
-                    } else if ("Staten Island".equalsIgnoreCase(cityRegion)) {
-                        cityRegion = "Staten Island";
-                    } else if ("The Bronx".equalsIgnoreCase(cityValue) || "Bronx".equalsIgnoreCase(cityValue)) {
-                        cityRegion = "Bronx";
-                    }
-                }
-            }
-
-
-            // address
-            AddressComponents ac = new AddressComponents();
-            ac.setCity(cityValue);
-            ac.setCountry(countryValue);
-            ac.setPostcode(postcode);
-
-            String buildingNumber = getFirstLong(components, GElement.street_number);
-            ac.setBuildingNumber(buildingNumber);
-
-            String streetName = getFirstLong(components, GElement.route);
-            ac.setStreet(streetName);
-
-            String publicTransportStop = getFirstLong(components, GElement.train_station, GElement.transit_station, GElement.bus_station, GElement.subway_station);
-
-            if (StringUtils.isNotBlank(publicTransportStop)) {
-                ac.setAddress(publicTransportStop);
-            } else {
-                String poi = getFirstLong(components, GElement.airport, GElement.park, GElement.point_of_interest);
-
-                if (poi != null) {
-                    ac.setAddress(poi);
-
-                } else if (isType(types, GType.intersection)) {
-                    String interValue;
-                    interValue = StringUtils.substringBefore(formattedAddress, ",");
-                    if (StringUtils.isBlank(interValue))
-                        interValue = formattedAddress;
-                    ac.setAddress(interValue);
-
                 } else {
-                    if (ac.getStreet() == null) {
-                        ac.setAddress(AddressHelper.parseBuildingAddress(formattedAddress));
-                        ac.setStreet(AddressHelper.parseStreetName(formattedAddress, AddressHelper.ParseAccuracy.HIGH));
+                    cityValue = getFirstLong(components, GElement.administrative_area_level_1);
+                }
+            }
+        } else if ("FR".equals(countryValue)) {
+            // detect town by department
+            String postcode = getFirstLong(components, GElement.postal_code);
 
+            if (startsWithAny(postcode,
+                    "75", // Paris
+                    "92", // Hauts-de-Seine
+                    "93", // Seine-Saint-Denis
+                    "94" // Val-de-Marne
+                    // "95"  // Val-d'Oise
+            )) {
+                cityValue = "Paris";
+            } else {
+                cityValue = getFirstLong(components, GElement.postal_town, GElement.locality);
+            }
+        } else if ("US".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.locality, GElement.postal_town, GElement.sublocality, GElement.neighborhood);
+            if (cityValue != null &&
+                    (cityValue.equals("NY") ||
+                            "Manhattan".equalsIgnoreCase(cityValue) ||
+                            "Brooklyn".equalsIgnoreCase(cityValue) ||
+                            "Queens".equalsIgnoreCase(cityValue) ||
+                            "Staten Island".equalsIgnoreCase(cityValue) ||
+                            "The Bronx".equalsIgnoreCase(cityValue) ||
+                            "Bronx".equalsIgnoreCase(cityValue))
+                    ) {
+                cityValue = "New York";
+            }
+
+        } else if ("BE".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.locality);
+            // ar1 = town, locality - town or towns region
+        } else if ("IE".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.administrative_area_level_2, GElement.locality);
+        } else if ("SE".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.postal_town, GElement.locality);
+        } else {
+            cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
+        }
+
+        if (StringUtils.isBlank(cityValue)) {
+            throw new AddressParseException("town is null");
+        }
+
+
+        // postcode
+        String postcode = null;
+        if ("IE".equals(countryValue)) {
+            // In general, postcodes are not required in Ireland (they doesn't have actual postcode system).
+            // But in Dublin and Cork there a 1 or 2 digit zone number appears after the name of the city (eg 'Dublin 2'),
+            // that value stored in postal_town field. Outside the city, it is simply County Dublin.
+            String postalTown = getFirstLong(components, GElement.postal_town);
+            if (StringUtils.isNotBlank(postalTown) && !StringUtils.equals(postalTown, cityValue)) {
+                String[] values = postalTown.split(" ");
+                postcode = values[values.length - 1];
+            } else {
+                if ("Dublin".equals(cityValue)) {
+                    postcode = "County";
+                }
+            }
+        } else if ("US".equals(countryValue) || "CA".equals(countryValue)) {
+            postcode = getFirstLong(components, GElement.postal_code);
+            String stateValue = getFirstShort(components, GElement.administrative_area_level_1);
+
+            if (StringUtils.isNotBlank(postcode) && StringUtils.isNotBlank(stateValue)) {
+                postcode = stateValue + " " + postcode;
+            }
+        } else {
+            postcode = getFirstLong(components, GElement.postal_code);
+        }
+
+        if (StringUtils.isBlank(postcode)) {
+            throw new AddressParseException("postcode is null");
+        }
+
+
+        // city region
+        String cityRegion = null;
+        if ("US".equals(countryValue)) {
+            cityRegion = getFirstLong(components, GElement.sublocality, GElement.sublocality_level_1);
+
+            if ("New York".equals(cityValue) && StringUtils.isNotBlank(cityRegion)) {
+                if ("Manhattan".equalsIgnoreCase(cityRegion)) {
+                    cityRegion = "Manhattan";
+                } else if ("Brooklyn".equalsIgnoreCase(cityRegion)) {
+                    cityRegion = "Brooklyn";
+                } else if ("Queens".equalsIgnoreCase(cityRegion)) {
+                    cityRegion = "Queens";
+                } else if ("Staten Island".equalsIgnoreCase(cityRegion)) {
+                    cityRegion = "Staten Island";
+                } else if ("The Bronx".equalsIgnoreCase(cityValue) || "Bronx".equalsIgnoreCase(cityValue)) {
+                    cityRegion = "Bronx";
+                }
+            }
+        }
+
+
+        // address
+        AddressComponents ac = new AddressComponents();
+        ac.setCity(cityValue);
+        ac.setCountry(countryValue);
+        ac.setPostcode(postcode);
+
+        String buildingNumber = getFirstLong(components, GElement.street_number);
+        ac.setBuildingNumber(buildingNumber);
+
+        String streetName = getFirstLong(components, GElement.route);
+        ac.setStreet(streetName);
+
+        String publicTransportStop = getFirstLong(components, GElement.train_station, GElement.transit_station, GElement.bus_station, GElement.subway_station);
+
+        if (StringUtils.isNotBlank(publicTransportStop)) {
+            ac.setAddress(publicTransportStop);
+        } else {
+            String poi = getFirstLong(components, GElement.airport, GElement.park, GElement.point_of_interest);
+
+            if (poi != null) {
+                ac.setAddress(poi);
+
+            } else if (isType(types, GType.intersection)) {
+                String interValue;
+                interValue = StringUtils.substringBefore(formattedAddress, ",");
+                if (StringUtils.isBlank(interValue))
+                    interValue = formattedAddress;
+                ac.setAddress(interValue);
+
+            } else {
+                if (ac.getStreet() == null) {
+                    ac.setAddress(AddressHelper.parseBuildingAddress(formattedAddress));
+                    ac.setStreet(AddressHelper.parseStreetName(formattedAddress, AddressHelper.ParseAccuracy.HIGH));
+
+                    if (ac.getAddress() == null) {
+                        // last chance
+                        ac.setAddress(getFirstLong(components, GElement.establishment));
                         if (ac.getAddress() == null) {
-                            // last chance
-                            ac.setAddress(getFirstLong(components, GElement.establishment));
-                            if (ac.getAddress() == null) {
-                                ac.setAddress(ac.getStreet());
-                            }
-                        }
-
-                    } else {
-                        if (ac.getBuildingNumber() != null) {
-                            ac.setAddress(ac.getBuildingNumber() + " " + ac.getStreet());
-                        } else {
                             ac.setAddress(ac.getStreet());
                         }
                     }
 
-                    if ("US".equals(ac.getCountry()) && cityRegion != null) {
-                        ac.setAddress(ac.getAddress() + ", " + cityRegion);
+                } else {
+                    if (ac.getBuildingNumber() != null) {
+                        ac.setAddress(ac.getBuildingNumber() + " " + ac.getStreet());
+                    } else {
+                        ac.setAddress(ac.getStreet());
                     }
                 }
-            }
 
-            if (ac.getAddress() == null) {
-                throw new AddressParseException("address is null");
-            }
-
-            AddressData ad = new AddressData();
-            ad.setFormattedAddress(ac.getAddress() + ", " + ac.getCity() + ", " + ac.getPostcode());
-
-            // geometry
-            if (geometry != null) {
-                Coordinates location = geometry.getLocation();
-                if (location != null) {
-                    Location l = new Location();
-                    l.setLat(location.getLat());
-                    l.setLon(location.getLng());
-
-                    ad.setLocation(l);
+                if ("US".equals(ac.getCountry()) && cityRegion != null) {
+                    ac.setAddress(ac.getAddress() + ", " + cityRegion);
                 }
             }
-
-            ad.setAddressComponents(ac);
-
-            Address res = new Address();
-            res.setType(AddressType.ADDRESS);
-            res.setAddressData(ad);
-
-            return res;
         }
+
+        if (ac.getAddress() == null) {
+            throw new AddressParseException("address is null");
+        }
+
+        AddressData ad = new AddressData();
+        ad.setFormattedAddress(ac.getAddress() + ", " + ac.getCity() + ", " + ac.getPostcode());
+
+        // geometry
+        if (geometry != null) {
+            Location location = geometry.getLocation();
+            if (location != null) {
+                com.haulmont.shamrock.address.Location l = new com.haulmont.shamrock.address.Location();
+                l.setLat(location.getLat());
+                l.setLon(location.getLng());
+
+                ad.setLocation(l);
+            }
+        }
+
+        ad.setAddressComponents(ac);
+
+        Address res = new Address();
+        res.setType(AddressType.ADDRESS);
+        res.setAddressData(ad);
+
+        return res;
     }
 
 
@@ -261,11 +258,11 @@ public class GoogleAddressUtils {
 
         for (Map.Entry<String, AddressComponent> entry : components.entrySet()) {
             if (entry.getValue() != null) {
-                String longName = sanitizeChars(entry.getValue().getLong_name());
-                String shortName = sanitizeChars(entry.getValue().getShort_name());
+                String longName = sanitizeChars(entry.getValue().getLongName());
+                String shortName = sanitizeChars(entry.getValue().getShortName());
 
-                entry.getValue().setLong_name(longName);
-                entry.getValue().setShort_name(shortName);
+                entry.getValue().setLongName(longName);
+                entry.getValue().setShortName(shortName);
             }
         }
     }
@@ -303,12 +300,12 @@ public class GoogleAddressUtils {
                 if (component != null) {
 
                     if (isGetLongName) {
-                        if (StringUtils.isNotBlank(component.getLong_name())) {
-                            return component.getLong_name().trim();
+                        if (StringUtils.isNotBlank(component.getLongName())) {
+                            return component.getLongName().trim();
                         }
                     } else {
-                        if (StringUtils.isNotBlank(component.getShort_name())) {
-                            return component.getShort_name().trim();
+                        if (StringUtils.isNotBlank(component.getShortName())) {
+                            return component.getShortName().trim();
                         }
                     }
                 }
@@ -386,59 +383,6 @@ public class GoogleAddressUtils {
     }
 
     //
-
-    public static GeoRegion getSearchRegion(String countryCode) {
-        GeoRegion region = null;
-        try {
-            if (StringUtils.isBlank(countryCode) || "GB".equals(countryCode)) {
-                region = new GeoRegion(51.513977, -0.131149); // London
-                region.setRadius(12000.0);
-            } else if ("FR".equals(countryCode)) {
-                region = new GeoRegion(48.856074, 2.352003); // Paris
-                region.setRadius(15000.0);
-            } else if ("ES".equals(countryCode)) {
-                region = new GeoRegion(40.428577, -3.714455); // Madrid
-                region.setRadius(13000.0);
-            } else if ("US".equals(countryCode)) {
-                region = new GeoRegion(40.7142700, -74.0059700); // New York
-                region.setRadius(15000.0);
-            } else if ("DE".equals(countryCode)) {
-                region = new GeoRegion(52.5243700, 13.4105300); // Berlin
-                region.setRadius(15000.0);
-            } else if ("CH".equals(countryCode)) {
-                region = new GeoRegion(47.382253, 8.535275); // Zurich
-                region.setRadius(15000.0);
-            } else if ("NL".equals(countryCode)) {
-                region = new GeoRegion(52.370216, 4.895168); // Amsterdam
-                region.setRadius(15000.0);
-            } else if ("IT".equals(countryCode)) {
-                region = new GeoRegion(41.872389, 12.480180); // Rome
-                region.setRadius(15000.0);
-            } else if ("IE".equals(countryCode)) {
-                region = new GeoRegion(53.349805, -6.260310); // Dublin
-                region.setRadius(15000.0);
-            } else if ("SE".equals(countryCode)) {
-                region = new GeoRegion(59.329323, 18.068581); // Stockholm
-                region.setRadius(15000.0);
-            } else if ("DK".equals(countryCode)) {
-                region = new GeoRegion(55.676097, 12.568337); // Copenhagen
-                region.setRadius(15000.0);
-            } else if ("BE".equals(countryCode)) {
-                region = new GeoRegion(50.850000, 4.350000); // Brussels
-                region.setRadius(15000.0);
-            } else if ("CA".equals(countryCode)) {
-                region = new GeoRegion(43.715103, -79.382984); // Toronto
-                region.setRadius(15000.0);
-            } else {
-                throw new UnsupportedOperationException("Unknown country code: " + countryCode);
-            }
-        } catch (Throwable e) {
-            region = new GeoRegion(51.513977, -0.131149);
-            region.setRadius(12000.0);
-        }
-
-        return region;
-    }
 
     public static void assignPlaceDetails(Address address, PlaceDetailsResult details) {
         String name = details.getName();

@@ -15,7 +15,7 @@ public enum GoogleApiStatus {
     UNKNOWN_ERROR,
     UNKNOWN;
 
-    public static GoogleApiStatus fromString(String res) {
+    public static GoogleApiStatus fromString(GoogleApiStatus res) {
         for (GoogleApiStatus status : values()) {
             if (status.name().equals(res)) {
                 return status;

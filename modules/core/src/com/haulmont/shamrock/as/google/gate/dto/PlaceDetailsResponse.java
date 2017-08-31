@@ -6,21 +6,27 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PlaceDetailsResponse {
-    private String status;
+    @JsonProperty("status")
+    private GoogleApiStatus status;
+
+    @JsonProperty("result")
     private PlaceDetailsResult result;
-    private List html_attributions;
 
-    public PlaceDetailsResponse() {
-    }
+    @JsonProperty("html_attributions")
+    private List htmlAttributions;
 
-    public String getStatus() {
+    public GoogleApiStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(GoogleApiStatus status) {
         this.status = status;
     }
 
@@ -28,16 +34,16 @@ public class PlaceDetailsResponse {
         return result;
     }
 
-    public void setResult(PlaceDetailsResult result) {
-        this.result = result;
+    public void setResult(PlaceDetailsResult results) {
+        this.result = results;
     }
 
-    public List getHtml_attributions() {
-        return html_attributions;
+    public List getHtmlAttributions() {
+        return htmlAttributions;
     }
 
-    public void setHtml_attributions(List html_attributions) {
-        this.html_attributions = html_attributions;
+    public void setHtmlAttributions(List htmlAttributions) {
+        this.htmlAttributions = htmlAttributions;
     }
 
 }

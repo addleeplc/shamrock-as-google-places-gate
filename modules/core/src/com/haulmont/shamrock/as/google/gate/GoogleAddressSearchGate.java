@@ -6,7 +6,9 @@
 
 package com.haulmont.shamrock.as.google.gate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.haulmont.monaco.AppContext;
+import com.haulmont.monaco.jackson.ObjectReaderWriterFactory;
 import com.haulmont.shamrock.address.Address;
 import com.haulmont.shamrock.address.AddressSearchGate;
 import com.haulmont.shamrock.address.GeocodeContext;
@@ -14,7 +16,12 @@ import com.haulmont.shamrock.address.context.RefineContext;
 import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
 import com.haulmont.shamrock.address.context.SearchBeneathContext;
 import com.haulmont.shamrock.address.context.SearchContext;
+import com.mashape.unirest.http.ObjectMapper;
+import com.mashape.unirest.http.Unirest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -22,6 +29,12 @@ import java.util.List;
  * Project Shamrock
  */
 public class GoogleAddressSearchGate implements AddressSearchGate {
+
+    private static final Logger logger = LoggerFactory.getLogger(GoogleAddressSearchGate.class);
+
+    static {
+        Unirest.setObjectMapper(new JacksonObjectMapper());
+    }
 
     private final AddressSearchGate delegator;
 
@@ -63,5 +76,30 @@ public class GoogleAddressSearchGate implements AddressSearchGate {
     @Override
     public List<Address> reverseGeocode(ReverseGeocodingContext context) {
         return delegator.reverseGeocode(context);
+    }
+
+    private static class JacksonObjectMapper implements ObjectMapper {
+        private final ObjectReaderWriterFactory rw = AppContext.getBean(ObjectReaderWriterFactory.class);
+
+        @Override
+        public <T> T readValue(String value, Class<T> valueType) {
+            try {
+                if (logger.isDebugEnabled())
+                    logger.debug("Response: \n{}", value);
+
+                return rw.reader(valueType).readValue(value);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public String writeValue(Object value) {
+            try {
+                return rw.writer(value).writeValueAsString(value);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

@@ -31,4 +31,7 @@ public interface GateConfiguration {
 
     @Property("distanceThreshold")
     Double getDistanceThreshold();
+
+    @Property("maxSearchPages")
+    int getMaxSearchPages();
 }

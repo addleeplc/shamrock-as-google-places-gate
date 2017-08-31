@@ -6,19 +6,24 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GeocodingResponse {
-    private String status;
+    @JsonProperty("status")
+    private GoogleApiStatus status;
+
+    @JsonProperty("results")
     private List<GeocodingResult> results;
 
-    public GeocodingResponse() { }
-
-    public String getStatus() {
+    public GoogleApiStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(GoogleApiStatus status) {
         this.status = status;
     }
 

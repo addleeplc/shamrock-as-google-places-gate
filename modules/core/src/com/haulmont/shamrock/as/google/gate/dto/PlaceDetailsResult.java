@@ -6,24 +6,48 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PlaceDetailsResult {
+    @JsonProperty("name")
     private String name;
-    private String vicinity;
-    private List<String> types;
-    private String formatted_phone_number;
-    private String formatted_address;
-    private List<AddressComponent> address_components;
-    private Geometry geometry;
-    private Double rating;
-    private String url;
-    private String icon;
-    private String reference;
-    private String id;
 
-    public PlaceDetailsResult() {
-    }
+    @JsonProperty("vicinity")
+    private String vicinity;
+
+    @JsonProperty("types")
+    private List<String> types;
+
+    @JsonProperty("formatted_phone_number")
+    private String formattedPhoneNumber;
+
+    @JsonProperty("formatted_address")
+    private String formattedAddress;
+
+    @JsonProperty("address_components")
+    private List<AddressComponent> addressComponents;
+
+    @JsonProperty("geometry")
+    private Geometry geometry;
+
+    @JsonProperty("rating")
+    private Double rating;
+
+    @JsonProperty("url")
+    private String url;
+
+    @JsonProperty("icon")
+    private String icon;
+
+    @JsonProperty("reference")
+    private String reference;
+
+    @JsonProperty("id")
+    private String id;
 
     public String getName() {
         return name;
@@ -49,28 +73,28 @@ public class PlaceDetailsResult {
         this.types = types;
     }
 
-    public String getFormatted_phone_number() {
-        return formatted_phone_number;
+    public String getFormattedPhoneNumber() {
+        return formattedPhoneNumber;
     }
 
-    public void setFormatted_phone_number(String formatted_phone_number) {
-        this.formatted_phone_number = formatted_phone_number;
+    public void setFormattedPhoneNumber(String formattedPhoneNumber) {
+        this.formattedPhoneNumber = formattedPhoneNumber;
     }
 
-    public String getFormatted_address() {
-        return formatted_address;
+    public String getFormattedAddress() {
+        return formattedAddress;
     }
 
-    public void setFormatted_address(String formatted_address) {
-        this.formatted_address = formatted_address;
+    public void setFormattedAddress(String formattedAddress) {
+        this.formattedAddress = formattedAddress;
     }
 
-    public List<AddressComponent> getAddress_components() {
-        return address_components;
+    public List<AddressComponent> getAddressComponents() {
+        return addressComponents;
     }
 
-    public void setAddress_components(List<AddressComponent> address_components) {
-        this.address_components = address_components;
+    public void setAddressComponents(List<AddressComponent> addressComponents) {
+        this.addressComponents = addressComponents;
     }
 
     public Geometry getGeometry() {

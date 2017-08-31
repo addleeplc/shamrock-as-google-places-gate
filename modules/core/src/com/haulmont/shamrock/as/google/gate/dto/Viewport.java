@@ -6,26 +6,26 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 class Viewport {
-    private Coordinates southwest;
-    private Coordinates northeast;
+    private Location southwest;
+    private Location northeast;
 
-    Viewport() {
-    }
-
-    public Coordinates getSouthwest() {
+    public Location getSouthwest() {
         return southwest;
     }
 
-    public void setSouthwest(Coordinates southwest) {
+    public void setSouthwest(Location southwest) {
         this.southwest = southwest;
     }
 
-    public Coordinates getNortheast() {
+    public Location getNortheast() {
         return northeast;
     }
 
-    public void setNortheast(Coordinates northeast) {
+    public void setNortheast(Location northeast) {
         this.northeast = northeast;
     }
 }

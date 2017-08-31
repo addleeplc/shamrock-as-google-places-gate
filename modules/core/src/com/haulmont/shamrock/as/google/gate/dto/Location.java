@@ -6,12 +6,16 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
-public class Coordinates {
-    private Double lat;
-    private Double lng;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    Coordinates() {
-    }
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Location {
+    @JsonProperty("lat")
+    private Double lat;
+
+    @JsonProperty("lng")
+    private Double lng;
 
     public Double getLat() {
         return lat;

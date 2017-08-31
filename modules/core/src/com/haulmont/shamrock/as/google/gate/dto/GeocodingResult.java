@@ -6,16 +6,24 @@
 
 package com.haulmont.shamrock.as.google.gate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GeocodingResult {
+    @JsonProperty("types")
     private List<String> types;
-    private String formatted_address;
-    private List<AddressComponent> address_components;
-    private Geometry geometry;
 
-    GeocodingResult() {
-    }
+    @JsonProperty("formatted_address")
+    private String formattedAddress;
+
+    @JsonProperty("address_components")
+    private List<AddressComponent> addressComponents;
+
+    @JsonProperty("geometry")
+    private Geometry geometry;
 
     public List<String> getTypes() {
         return types;
@@ -25,20 +33,20 @@ public class GeocodingResult {
         this.types = types;
     }
 
-    public String getFormatted_address() {
-        return formatted_address;
+    public String getFormattedAddress() {
+        return formattedAddress;
     }
 
-    public void setFormatted_address(String formatted_address) {
-        this.formatted_address = formatted_address;
+    public void setFormattedAddress(String formattedAddress) {
+        this.formattedAddress = formattedAddress;
     }
 
-    public List<AddressComponent> getAddress_components() {
-        return address_components;
+    public List<AddressComponent> getAddressComponents() {
+        return addressComponents;
     }
 
-    public void setAddress_components(List<AddressComponent> address_components) {
-        this.address_components = address_components;
+    public void setAddressComponents(List<AddressComponent> addressComponents) {
+        this.addressComponents = addressComponents;
     }
 
     public Geometry getGeometry() {
