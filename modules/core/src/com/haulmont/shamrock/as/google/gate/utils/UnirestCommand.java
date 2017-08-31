@@ -101,7 +101,7 @@ public abstract class UnirestCommand<T> extends AbstractCommand<T> {
         String msg = "Call " + service + path.getPath() + " service (status: " + status + ", X-Forwarded-Host: " + response.getHeaders().getFirst("X-Forwarded-Host") + ") (" + duration + " ms)";
         if (logger.isDebugEnabled()) {
             try {
-                logger.debug(msg + "\n{}\n", IOUtils.toString(response.getRawBody()));
+                logger.debug(msg + "\nUrl: {}\n{}\n", request.getHttpRequest().getUrl(), IOUtils.toString(response.getRawBody()));
             } catch (Throwable t) {}
         } else {
             logger.debug(msg);
