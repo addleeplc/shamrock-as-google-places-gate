@@ -9,10 +9,9 @@ package com.haulmont.shamrock.as.google.gate.rs.v1;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.response.Response;
-import com.haulmont.shamrock.address.Accuracy;
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressSearchGate;
+import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.context.*;
+import com.haulmont.shamrock.as.google.gate.rs.v1.dto.GeocodeResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.RefineResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.ReverseGeocodingResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.SearchResponse;
@@ -95,7 +94,24 @@ public class GoogleGateResource {
             @QueryParam("preferred_city") String preferredCity,
             @QueryParam("address_id") String addressId
     ) {
-        throw new UnsupportedOperationException();
+        if (StringUtils.isBlank(addressId))
+            return new SearchResponse(ErrorCode.BAD_REQUEST.getCode(), "Parameter 'address_id' should be not null", null);
+
+        SearchBeneathContext ctx = new SearchBeneathContext();
+
+        Address a = new Address();
+        a.setId(addressId);
+        ctx.setAddress(a);
+
+        ctx.setCity(city);
+        ctx.setSearchFlats(searchFlats);
+        ctx.setSearchBusinessNames(searchBusinessNames);
+
+        ctx.setStartIndex(startIndex);
+        ctx.setMaxResults(maxResults);
+        ctx.setFlatten(flatten);
+
+        return new SearchResponse(ErrorCode.OK, getGate().searchBeneath(ctx));
     }
 
     @POST
@@ -126,16 +142,30 @@ public class GoogleGateResource {
     @GET
     @Path("geocode")
     public Response geocode(
-          @QueryParam("address") String address,
-          @QueryParam("postcode") String postcode,
-          @QueryParam("city") String city,
-          @QueryParam("country") String country,
-          @QueryParam("latitude") Double latitude,
-          @QueryParam("longitude") Double longitude,
-          @QueryParam("radius") Double radius,
-          @QueryParam("accuracy") Accuracy accuracy
+            @QueryParam("address") String address,
+            @QueryParam("postcode") String postcode,
+            @QueryParam("city") String city,
+            @QueryParam("country") String country,
+            @QueryParam("latitude") Double latitude,
+            @QueryParam("longitude") Double longitude,
+            @QueryParam("radius") Double radius,
+            @QueryParam("accuracy") Accuracy accuracy
     ) {
-        throw new UnsupportedOperationException("Unsupported for " + getGate().getId() + " gate");
+        GeocodeContext context = new GeocodeContext();
+        context.setAddress(address);
+        context.setPostcode(postcode);
+        context.setCity(city);
+        context.setCountry(country);
+
+        Location location = new Location();
+        location.setLat(latitude);
+        location.setLon(longitude);
+        location.setAccuracy(accuracy);
+        context.setLocation(location);
+
+        context.setRadius(radius);
+
+        return new GeocodeResponse(ErrorCode.OK, getGate().geocode(context));
     }
 
     @GET
