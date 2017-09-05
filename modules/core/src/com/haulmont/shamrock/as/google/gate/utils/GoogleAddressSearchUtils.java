@@ -34,7 +34,6 @@ public final class GoogleAddressSearchUtils {
                 .filter(address -> address.getAddressData().getAddressComponents() != null)
                 .filter(address -> StringUtils.isNotBlank(address.getAddressData().getAddressComponents().getAddress()))
                 .filter(address -> !containsJunkWords(address))
-                .filter(address -> address.getAddressData().getAddressComponents().getPostcode() != null)
                 .filter(address -> !"GB".equals(address.getAddressData().getAddressComponents().getCountry()) || GB_POSTCODE_PATTERN.matcher(address.getAddressData().getAddressComponents().getPostcode()).find())
                 .collect(Collectors.toList());
     }

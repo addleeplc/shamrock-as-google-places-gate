@@ -266,7 +266,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         protected BaseRequest createRequest(String url, Path path) {
             HttpRequest request = get(url, path)
                     .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getSearchApiKey())
+                    .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey())
                     .queryString("address", context.getSearchString());
 
             if (StringUtils.isNotBlank(context.getCountry()) || StringUtils.isNotBlank(context.getCity())) {
@@ -313,7 +313,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         protected BaseRequest createRequest(String url, Path path) {
             HttpRequest request = get(url, path)
                     .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getSearchApiKey());
+                    .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey());
 
             Location location = context.getLocation();
             if (location != null && location.getLat() != null && location.getLon() != null) {

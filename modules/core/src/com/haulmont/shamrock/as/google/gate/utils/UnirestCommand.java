@@ -9,11 +9,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.haulmont.monaco.AbstractCommand;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
-import com.haulmont.monaco.config.Properties;
 import com.haulmont.monaco.failsafe.CircuitBreakerRegistry;
 import com.haulmont.monaco.jackson.ObjectReaderWriterFactory;
 import com.haulmont.monaco.metrics.MetricRegistry;
 import com.haulmont.monaco.response.ErrorCode;
+import com.haulmont.shamrock.as.google.gate.GateConfiguration;
 import com.mashape.unirest.http.HttpMethod;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.ObjectMapper;
@@ -27,7 +27,6 @@ import com.nike.fastbreak.exception.CircuitBreakerOpenException;
 import com.nike.fastbreak.exception.CircuitBreakerTimeoutException;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,15 +118,11 @@ public abstract class UnirestCommand<T> extends AbstractCommand<T> {
         }
     }
 
-    protected long getTimeout() {
-        final Properties properties = AppContext.getConfig().getProperties("/services");
-
-        String property;
-
-        property = properties.getProperty(service + ".timeout");
-        if (StringUtils.isNotBlank(property)) {
-            return Long.valueOf(property);
-        } else {
+    private long getTimeout() {
+        GateConfiguration conf = AppContext.getConfig().get(GateConfiguration.class);
+        try {
+            return conf.getTimeout() > 0 ? conf.getTimeout() : DEFAULT_TIMEOUT;
+        } catch (Throwable t) {
             return DEFAULT_TIMEOUT;
         }
     }

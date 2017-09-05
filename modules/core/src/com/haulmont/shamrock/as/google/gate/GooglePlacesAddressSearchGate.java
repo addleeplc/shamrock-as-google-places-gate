@@ -432,7 +432,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         protected BaseRequest createRequest(String url, Path path) {
             return get(url, path)
                     .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getSearchApiKey())
+                    .queryString("key", getGateConfiguration().getGooglePlacesApiKey())
                     .queryString("query", ctx.getSearchString());
         }
 
@@ -459,7 +459,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         protected BaseRequest createRequest(String url, Path path) {
             return get(url, path)
                     .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getSearchApiKey())
+                    .queryString("key", getGateConfiguration().getGooglePlacesApiKey())
                     .queryString("pagetoken", nextPageToken);
         }
 
@@ -487,7 +487,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
             return get(url, path)
                     .queryString("placeid", placeId)
                     .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getRefineApiKey());
+                    .queryString("key", getGateConfiguration().getGooglePlacesApiKey());
         }
 
         @Override
@@ -519,7 +519,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                     .queryString("location", String.format("%s,%s", sLat, sLon))
                     .queryString("radius", sRad)
                     .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getReverseGeocodeApiKey());
+                    .queryString("key", getGateConfiguration().getGooglePlacesApiKey());
         }
 
         @Override

@@ -8,8 +8,10 @@ package com.haulmont.shamrock.as.google.gate.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.haulmont.monaco.AppContext;
 import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.google.gate.GateConfiguration;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
 import com.haulmont.shamrock.as.google.gate.dto.Location;
@@ -144,6 +146,11 @@ public final class GoogleAddressUtils {
             cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.administrative_area_level_2, GElement.locality);
         } else if ("SE".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.postal_town, GElement.locality);
+        } else if ("HK".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+
+            if (StringUtils.isBlank(cityValue))
+                cityValue = "Hong Kong";
         } else {
             cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
         }
@@ -179,7 +186,7 @@ public final class GoogleAddressUtils {
             postcode = getFirstLong(components, GElement.postal_code);
         }
 
-        if (StringUtils.isBlank(postcode)) {
+        if (StringUtils.isBlank(postcode) && getCountriesRequiresPostcode().contains(countryValue)) {
             throw new AddressParseException("postcode is null");
         }
 
@@ -266,7 +273,10 @@ public final class GoogleAddressUtils {
         }
 
         AddressData ad = new AddressData();
-        ad.setFormattedAddress(ac.getAddress() + ", " + ac.getCity() + ", " + ac.getPostcode());
+        if (StringUtils.isNotBlank(ac.getPostcode()))
+            ad.setFormattedAddress(ac.getAddress() + ", " + ac.getCity() + ", " + ac.getPostcode());
+        else
+            ad.setFormattedAddress(ac.getAddress() + ", " + ac.getCity());
 
         // geometry
         if (geometry != null) {
@@ -304,6 +314,18 @@ public final class GoogleAddressUtils {
                 .findFirst();
 
         return o.orElse(null);
+    }
+
+    private static Set<String> getCountriesRequiresPostcode() {
+        GateConfiguration conf = AppContext.getConfig().get(GateConfiguration.class);
+
+        String s = conf.getCountriesRequiresPostcode();
+        if (StringUtils.isBlank(s))
+            return Collections.emptySet();
+
+        s = StringUtils.deleteWhitespace(s);
+
+        return new HashSet<>(Arrays.asList(s.split("[;,]")));
     }
 
     private static void sanitizeAddress(Map<String, AddressComponent> components) {

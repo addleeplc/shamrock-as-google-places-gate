@@ -14,17 +14,11 @@ public interface GateConfiguration {
     @Property("api.url")
     String getApiUrl();
 
-    @Property("api.key.search")
-    String getSearchApiKey();
+    @Property("api.key.places")
+    String getGooglePlacesApiKey();
 
     @Property("api.key.geocode")
-    String getGeocodeApiKey();
-
-    @Property("api.key.refine")
-    String getRefineApiKey();
-
-    @Property("api.key.reverseGeocode")
-    String getReverseGeocodeApiKey();
+    String getGoogleGeocodeApiKey();
 
     @Property("timeout")
     Integer getTimeout();
@@ -34,4 +28,7 @@ public interface GateConfiguration {
 
     @Property("maxSearchPages")
     int getMaxSearchPages();
+
+    @Property("countries.postcode.requires")
+    String getCountriesRequiresPostcode();
 }
