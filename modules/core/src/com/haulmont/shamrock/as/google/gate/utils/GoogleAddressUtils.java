@@ -246,6 +246,9 @@ public final class GoogleAddressUtils {
                     ac.setAddress(AddressHelper.parseBuildingAddress(formattedAddress));
                     ac.setStreet(AddressHelper.parseStreetName(formattedAddress, AddressHelper.ParseAccuracy.HIGH));
 
+                    if (StringUtils.isBlank(ac.getStreet()))
+                        ac.setStreet(AddressHelper.parseStreetName(formattedAddress, AddressHelper.ParseAccuracy.LOW));
+
                     if (ac.getAddress() == null) {
                         // last chance
                         ac.setAddress(getFirstLong(components, GElement.establishment));
