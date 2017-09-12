@@ -66,6 +66,8 @@ idea {
 def coreModule = project(':shamrock-as-google-gate-core')
 def rsModule = project(':shamrock-as-google-gate-rs')
 
+def monaco_version = '2.1-SNAPSHOT'
+
 configure([coreModule, rsModule]) {
     apply(plugin: 'java')
     apply(plugin: 'idea')
@@ -91,8 +93,9 @@ configure([coreModule, rsModule]) {
 
 configure(coreModule) {
     dependencies {
-        compile 'com.haulmont.monaco:monaco-core:2.0-SNAPSHOT'
-        compile 'com.haulmont.monaco:monaco-config:2.0-SNAPSHOT'
+        compile "com.haulmont.monaco:monaco-core:${monaco_version}"
+        compile "com.haulmont.monaco:monaco-config:${monaco_version}"
+        compile "com.haulmont.monaco:monaco-unirest:${monaco_version}"
 
         compile 'com.haulmont.shamrock:shamrock-as-common-data:1.0-SNAPSHOT'
         compile 'com.haulmont.shamrock:shamrock-as-common-utils:1.0-SNAPSHOT'
@@ -125,9 +128,9 @@ configure(rsModule) {
     dependencies {
         compile(coreModule)
 
-        compile 'com.haulmont.monaco:monaco-metrics-influxdb:2.0-SNAPSHOT'
-        compile 'com.haulmont.monaco:monaco-rs:2.0-SNAPSHOT'
-        extraLibs('com.haulmont.monaco:monaco-rs:2.0-SNAPSHOT') {
+        compile "com.haulmont.monaco:monaco-metrics-influxdb:${monaco_version}"
+        compile "com.haulmont.monaco:monaco-rs:${monaco_version}"
+        extraLibs("com.haulmont.monaco:monaco-rs:${monaco_version}") {
             transitive = false
         }
     }

@@ -9,6 +9,7 @@ package com.haulmont.shamrock.as.google.gate;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
+import com.haulmont.monaco.unirest.UnirestCommand;
 import com.haulmont.shamrock.address.Address;
 import com.haulmont.shamrock.address.AddressSearchGate;
 import com.haulmont.shamrock.address.GeocodeContext;
@@ -21,7 +22,6 @@ import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.address.utils.GeoHelper;
 import com.haulmont.shamrock.as.google.gate.dto.*;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
-import com.haulmont.shamrock.as.google.gate.utils.UnirestCommand;
 import com.mashape.unirest.request.BaseRequest;
 import com.mashape.unirest.request.HttpRequest;
 import org.apache.commons.collections.CollectionUtils;
@@ -264,7 +264,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected BaseRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, path)
+            HttpRequest request = get(url, new Path("/"))
                     .queryString("language", "en")
                     .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey())
                     .queryString("address", context.getSearchString());
@@ -297,7 +297,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("");
+            return new Path("/geocode");
         }
     }
 
@@ -311,7 +311,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected BaseRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, path)
+            HttpRequest request = get(url, new Path(""))
                     .queryString("language", "en")
                     .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey());
 
@@ -351,7 +351,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("");
+            return new Path("/geocode");
         }
     }
 }
