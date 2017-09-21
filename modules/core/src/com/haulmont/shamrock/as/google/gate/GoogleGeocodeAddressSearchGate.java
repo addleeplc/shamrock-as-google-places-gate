@@ -78,20 +78,20 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
             return Collections.emptyList();
         } else {
             if (CollectionUtils.isNotEmpty(response.getResults())) {
-                return convertSearchResponse(context, response);
+                return convertSearchResponse(response);
             }
         }
 
         return Collections.emptyList();
     }
 
-    private List<Address> convertSearchResponse(SearchContext context, GeocodingResponse response) {
+    private List<Address> convertSearchResponse(GeocodingResponse response) {
         List<GeocodingResult> results = response.getResults();
         for (GeocodingResult o : results) {
             Map<String, AddressComponent> components = GoogleAddressUtils.convert(o.getAddressComponents());
 
             try {
-                Address a = parseAddress(o.getFormattedAddress(), context.getCountry(), o.getGeometry(), components, o.getTypes());
+                Address a = parseAddress(o.getFormattedAddress(), o.getGeometry(), components, o.getTypes());
 
                 if (a != null) {
                     a.setId(String.format("%s|%s", getId(), null));
@@ -173,20 +173,20 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
             return null;
         } else {
             if (CollectionUtils.isNotEmpty(response.getResults())) {
-                return convertGeocodeResponse(context, response);
+                return convertGeocodeResponse(response);
             }
         }
 
         return null;
     }
 
-    private Address convertGeocodeResponse(GeocodeContext context, GeocodingResponse response) {
+    private Address convertGeocodeResponse(GeocodingResponse response) {
         List<GeocodingResult> results = response.getResults();
         for (GeocodingResult o : results) {
             Map<String, AddressComponent> components = GoogleAddressUtils.convert(o.getAddressComponents());
 
             try {
-                Address a = parseAddress(o.getFormattedAddress(), context.getCountry(), o.getGeometry(), components, o.getTypes());
+                Address a = parseAddress(o.getFormattedAddress(), o.getGeometry(), components, o.getTypes());
 
                 if (a != null) {
                     a.setId(String.format("%s|%s", getId(), null));
@@ -229,20 +229,16 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
             return null;
         } else {
             if (CollectionUtils.isNotEmpty(response.getResults())) {
-                return convertGeocodeResponse(context, response);
+                return convertGeocodeResponse(response);
             }
         }
 
         return null;
     }
 
-    private static Address parseAddress(String formattedAddress, String reqCountry,
-                                        Geometry geometry,
-                                        Map<String, AddressComponent> components,
-                                        List<String> types) {
-
+    private static Address parseAddress(String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
         try {
-            return GoogleAddressUtils.parseAddress(formattedAddress, reqCountry, geometry, components, types);
+            return GoogleAddressUtils.parseAddress(formattedAddress, geometry, components, types);
         } catch (GoogleAddressUtils.AddressParseException e) {
             logger.debug(String.format("Failed to parse address '%s': %s", formattedAddress, e.getMessage()));
         }

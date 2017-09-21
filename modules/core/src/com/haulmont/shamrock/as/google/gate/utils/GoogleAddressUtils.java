@@ -75,10 +75,7 @@ public final class GoogleAddressUtils {
         }
     }
 
-    public static Address parseAddress(String formattedAddress,
-                                       String reqCountry, Geometry geometry,
-                                       Map<String, AddressComponent> components,
-                                       List<String> types) throws AddressParseException {
+    public static Address parseAddress(String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) throws AddressParseException {
         // prepare address components
         sanitizeAddress(components);
 
@@ -86,8 +83,6 @@ public final class GoogleAddressUtils {
         String countryValue = getFirstShort(components, GElement.country, GElement.political);
         if (StringUtils.isBlank(countryValue)) {
             throw new AddressParseException("country is null");
-        } else if (StringUtils.isNotBlank(reqCountry) && !StringUtils.equals(countryValue, reqCountry)) {
-            throw new AddressParseException("wrong country " + countryValue);
         }
 
         // city

@@ -233,7 +233,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                     if (placeDetailsResponse.getResult() == null) {
                         return null;
                     } else {
-                        Address address = convertRefineResult(context, placeDetailsResponse);
+                        Address address = convertRefineResult(placeDetailsResponse);
                         if (address != null) {
                             logger.info(
                                     String.format(
@@ -256,12 +256,12 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         }
     }
 
-    private Address convertRefineResult(RefineContext context, PlaceDetailsResponse response) {
+    private Address convertRefineResult(PlaceDetailsResponse response) {
         PlaceDetailsResult details = response.getResult();
         Map<String, AddressComponent> components = GoogleAddressUtils.convert(details.getAddressComponents());
 
         try {
-            Address res = parseAddress(details.getFormattedAddress(), getRequestedCountry(context), details.getGeometry(), components, details.getTypes());
+            Address res = parseAddress(details.getFormattedAddress(), details.getGeometry(), components, details.getTypes());
 
             if (res != null) {
                 res.setId(String.format("%s|%s", getId(), details.getId()));
@@ -401,13 +401,9 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 address.getAddressData().getLocation().getLon() != null;
     }
 
-    private static Address parseAddress(String formattedAddress, String reqCountry,
-                                        Geometry geometry,
-                                        Map<String, AddressComponent> components,
-                                        List<String> types) {
-
+    private static Address parseAddress(String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
         try {
-            return GoogleAddressUtils.parseAddress(formattedAddress, reqCountry, geometry, components, types);
+            return GoogleAddressUtils.parseAddress(formattedAddress, geometry, components, types);
         } catch (GoogleAddressUtils.AddressParseException e) {
             logger.debug(String.format("Failed to parse address '%s': %s", formattedAddress, e.getMessage()));
         }
