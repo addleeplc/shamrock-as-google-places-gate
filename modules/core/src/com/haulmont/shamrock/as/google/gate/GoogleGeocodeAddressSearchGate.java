@@ -185,7 +185,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
                             if (StringUtils.isNotBlank(postcode) && StringUtils.isNotBlank(addressComponents.getPostcode())) {
                                 String postcodeArea = postcode.substring(0, postcode.length() - 2);
 
-                                if (!StringUtils.startsWithIgnoreCase(addressComponents.getPostcode().replace(" ", ""), postcodeArea))
+                                if (!StringUtils.startsWithIgnoreCase(addressComponents.getPostcode().replace(" ", ""), postcodeArea.replace(" ", "")))
                                     return null;
                             }
                         }
