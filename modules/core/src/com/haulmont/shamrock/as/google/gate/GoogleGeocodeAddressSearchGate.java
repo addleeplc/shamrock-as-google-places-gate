@@ -10,9 +10,7 @@ import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.unirest.UnirestCommand;
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressSearchGate;
-import com.haulmont.shamrock.address.GeocodeContext;
+import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.Location;
 import com.haulmont.shamrock.address.context.RefineContext;
 import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
@@ -22,6 +20,7 @@ import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.address.utils.GeoHelper;
 import com.haulmont.shamrock.as.google.gate.dto.*;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
+import com.haulmont.shamrock.geo.PostcodeHelper;
 import com.mashape.unirest.request.BaseRequest;
 import com.mashape.unirest.request.HttpRequest;
 import org.apache.commons.collections.CollectionUtils;
@@ -173,7 +172,27 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
             return null;
         } else {
             if (CollectionUtils.isNotEmpty(response.getResults())) {
-                return convertGeocodeResponse(response);
+                Address address = convertGeocodeResponse(response);
+
+                if (address != null) {
+                    AddressComponents addressComponents = address.getAddressData().getAddressComponents();
+                    if (StringUtils.isNotBlank(addressComponents.getPostcode())) {
+                        if (StringUtils.equalsIgnoreCase(context.getCountry(), "GB") || StringUtils.equalsIgnoreCase(addressComponents.getCountry(), "GB")) {
+                            String postcode = context.getPostcode();
+                            if (StringUtils.isBlank(postcode))
+                                postcode = PostcodeHelper.parsePostcode(context.getAddress());
+
+                            if (StringUtils.isNotBlank(postcode) && StringUtils.isNotBlank(addressComponents.getPostcode())) {
+                                String postcodeArea = postcode.substring(0, postcode.length() - 2);
+
+                                if (!StringUtils.startsWithIgnoreCase(addressComponents.getPostcode().replace(" ", ""), postcodeArea))
+                                    return null;
+                            }
+                        }
+                    }
+                }
+
+                return address;
             }
         }
 
