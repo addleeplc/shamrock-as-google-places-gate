@@ -556,7 +556,7 @@ public final class GoogleAddressUtils {
 
     public static void assignPlaceDetails(Address address, PlaceDetailsResult details) {
         String name = details.getName();
-        if (StringUtils.isNotBlank(name) && isCompanyName(address, name)) {
+        if (!details.getTypes().contains("street_address") && StringUtils.isNotBlank(name) && isCompanyName(address, name)) {
             address.getAddressData().getAddressComponents().setCompany(name);
             address.getAddressData().setFormattedAddress(name + ", " + address.getAddressData().getFormattedAddress());
             address.getAddressData().getAddressComponents().setAddress(name + ", " + address.getAddressData().getAddressComponents().getAddress());
