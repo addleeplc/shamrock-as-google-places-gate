@@ -17,6 +17,7 @@ import com.haulmont.shamrock.as.google.gate.dto.Geometry;
 import com.haulmont.shamrock.as.google.gate.dto.Location;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetailsResult;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -139,6 +140,9 @@ public final class GoogleAddressUtils {
             // ar1 = town, locality - town or towns region
         } else if ("IE".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.administrative_area_level_2, GElement.locality);
+            if (StringUtils.containsIgnoreCase(cityValue, "county dublin")) {
+                cityValue = "Dublin";
+            }
         } else if ("SE".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.postal_town, GElement.locality);
         } else if ("HK".equals(countryValue)) {
@@ -154,21 +158,17 @@ public final class GoogleAddressUtils {
             throw new AddressParseException("town is null");
         }
 
+        String temp = GoogleParseConstants.citiesTranslateMapping.get(StringUtils.lowerCase(cityValue));
+        if (StringUtils.isNotBlank(temp)) {
+            cityValue = WordUtils.capitalize(temp);
+        }
 
         // postcode
         String postcode = null;
         if ("IE".equals(countryValue)) {
-            // In general, postcodes are not required in Ireland (they doesn't have actual postcode system).
-            // But in Dublin and Cork there a 1 or 2 digit zone number appears after the name of the city (eg 'Dublin 2'),
-            // that value stored in postal_town field. Outside the city, it is simply County Dublin.
-            String postalTown = getFirstLong(components, GElement.postal_town);
-            if (StringUtils.isNotBlank(postalTown) && !StringUtils.equals(postalTown, cityValue)) {
-                String[] values = postalTown.split(" ");
-                postcode = values[values.length - 1];
-            } else {
-                if ("Dublin".equals(cityValue)) {
-                    postcode = "County";
-                }
+            postcode = getFirstLong(components, GElement.postal_code);
+            if (StringUtils.isBlank(postcode)) {
+                postcode = null;
             }
         } else if ("US".equals(countryValue) || "CA".equals(countryValue)) {
             postcode = getFirstLong(components, GElement.postal_code);
