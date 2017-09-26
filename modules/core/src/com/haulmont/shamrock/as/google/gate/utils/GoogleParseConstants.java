@@ -23,6 +23,11 @@ public final class GoogleParseConstants {
         citiesTranslateMapping.put("rohm", "rome");
         citiesTranslateMapping.put("roma", "rome");
         citiesTranslateMapping.put("rōma", "rome");
+        citiesTranslateMapping.put("genève", "geneva");
+        citiesTranslateMapping.put("genèva", "geneva");
+        citiesTranslateMapping.put("genf", "geneva");
+        citiesTranslateMapping.put("ginevra", "geneva");
+        citiesTranslateMapping.put("genevra", "geneva");
     }
 
     public static final class Dublin {
