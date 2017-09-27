@@ -74,25 +74,14 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 //First step
                 addresses = doSearch(context);
 
-                if (StringUtils.isNotBlank(context.getPreferredCity()) && !StringUtils.containsIgnoreCase(searchString, context.getPreferredCity())) {
-                    boolean haveGoodMatches = false;
-                    for (Address o : addresses) {
-                        if (StringUtils.equalsIgnoreCase(o.getAddressData().getAddressComponents().getCity(), context.getPreferredCity())) {
-                            haveGoodMatches = true;
-                            break;
-                        }
-                    }
+                if (CollectionUtils.isEmpty(addresses)) {
+                    SearchContext temp = GoogleAddressSearchUtils.clone(context);
+                    temp.setCity(context.getPreferredCity());
+                    temp.setCountry(context.getPreferredCountry());
+                    temp.setSearchString(searchString + ", " + context.getPreferredCity());
 
-                    //Second step: add preferred city to search string
-                    if (!haveGoodMatches) {
-                        SearchContext temp = GoogleAddressSearchUtils.clone(context);
-                        temp.setCity(context.getPreferredCity());
-                        temp.setCountry(context.getPreferredCountry());
-                        temp.setSearchString(searchString + ", " + context.getPreferredCity());
-
-                        List<Address> pcAddresses = doSearch(temp);
-                        addresses.addAll(pcAddresses);
-                    }
+                    List<Address> pcAddresses = doSearch(temp);
+                    addresses.addAll(pcAddresses);
                 }
             }
         }
