@@ -77,6 +77,9 @@ public final class GoogleAddressUtils {
     }
 
     public static Address parseAddress(String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) throws AddressParseException {
+        if (isAirport(types))
+            return null;
+
         // prepare address components
         sanitizeAddress(components);
 
@@ -303,6 +306,14 @@ public final class GoogleAddressUtils {
         }
 
         return res;
+    }
+
+    private static boolean isAirport(Collection<String> types) {
+        Optional<String> o = types.stream()
+                .filter(t -> t.equals(GElement.airport.name()))
+                .findFirst();
+
+        return o.isPresent();
     }
 
     private static String getAddressSpecifics(Collection<String> types) {
