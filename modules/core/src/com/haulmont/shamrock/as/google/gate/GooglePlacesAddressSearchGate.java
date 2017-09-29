@@ -24,6 +24,7 @@ import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressSearchUtils;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
 import com.haulmont.shamrock.geo.PostcodeHelper;
 import com.mashape.unirest.request.BaseRequest;
+import com.mashape.unirest.request.HttpRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -415,10 +416,15 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected BaseRequest createRequest(String url, Path path) {
-            return get(url, path)
+            HttpRequest request = get(url, path)
                     .queryString("language", "en")
                     .queryString("key", getGateConfiguration().getGooglePlacesApiKey())
                     .queryString("query", ctx.getSearchString());
+
+            if (StringUtils.isNotBlank(ctx.getCountry()))
+                request = request.queryString("region", ctx.getCountry());
+
+            return request;
         }
 
         @Override
