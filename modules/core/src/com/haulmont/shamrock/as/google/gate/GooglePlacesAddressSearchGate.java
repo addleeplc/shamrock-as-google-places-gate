@@ -33,9 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Created by nikita on 05.07.17.
- */
 public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
     private static final Logger logger = LoggerFactory.getLogger(GooglePlacesAddressSearchGate.class);
@@ -53,6 +50,8 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
     public List<Address> search(SearchContext context) {
         String searchString = context.getSearchString();
         if (StringUtils.isEmpty(searchString)) return null;
+
+        long ts = System.currentTimeMillis();
 
         List<Address> addresses;
 
@@ -87,7 +86,11 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
             }
         }
 
-        return GoogleAddressSearchUtils.filter(addresses);
+        final List<Address> res = GoogleAddressSearchUtils.filter(addresses);
+
+        logger.debug("Search address by text (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
+
+        return res;
     }
 
     private List<Address> doSearch(final SearchContext context) {
@@ -276,6 +279,10 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
     @Override
     public List<Address> reverseGeocode(ReverseGeocodingContext context) {
+        List<Address> res;
+
+        long ts = System.currentTimeMillis();
+
         try {
             PlacesResponse placesResponse = new GooglePlacesReverseGeocodeCommand(context).execute();
 
@@ -301,18 +308,24 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                         String.format("GooglePlaces Reverse Geocode API responds with over query limit (status: %s)", status)
                 );
             } else if (status == GoogleApiStatus.ZERO_RESULTS) {
-                return Collections.emptyList();
+                res = Collections.emptyList();
             } else {
                 if (CollectionUtils.isEmpty(placesResponse.getResults())) {
-                    return Collections.emptyList();
+                    res = Collections.emptyList();
                 } else {
-                    return Lists.partition(placesResponse.getResults(), 5)
+                    res = Lists.partition(placesResponse.getResults(), 5)
                             .parallelStream()
                             .map(pr -> convertReverseGeocodeResults(context, pr))
                             .flatMap(Collection::stream)
                             .collect(Collectors.toList());
                 }
             }
+
+            Address o = res.isEmpty() ? null : res.get(0);
+
+            logger.debug("Reverse geocode address by location (loc: {},{}, res: '{}', resSize: {}) ({} ms)", context.getSearchRegion().getLatitude(), context.getSearchRegion().getLongitude(), o != null ? o.getAddressData().getFormattedAddress(): "N/A", res.size(), System.currentTimeMillis() - ts);
+
+            return res;
         } catch (ServiceException e) {
             throw e;
         } catch (Throwable t) {

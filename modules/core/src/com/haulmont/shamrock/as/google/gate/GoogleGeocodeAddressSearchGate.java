@@ -51,6 +51,10 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
     @Override
     public List<Address> search(SearchContext context) {
+        long ts = System.currentTimeMillis();
+
+        final List<Address> res;
+
         GeocodingResponse response = new GoogleGeocodeSearchCommand(context).execute();
         GoogleApiStatus status = response.getStatus();
         if (status == GoogleApiStatus.UNKNOWN_ERROR || status == GoogleApiStatus.UNKNOWN) {
@@ -74,14 +78,18 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
                     String.format("GoogleGeocode Search API responds with over query limit (status: %s)", status)
             );
         } else if (status == GoogleApiStatus.ZERO_RESULTS) {
-            return Collections.emptyList();
+            res = Collections.emptyList();
         } else {
             if (CollectionUtils.isNotEmpty(response.getResults())) {
-                return convertSearchResponse(response);
+                res = convertSearchResponse(response);
+            } else {
+                res = Collections.emptyList();
             }
         }
 
-        return Collections.emptyList();
+        logger.debug("Search address by text (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
+
+        return res;
     }
 
     private List<Address> convertSearchResponse(GeocodingResponse response) {
@@ -113,30 +121,42 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
     @Override
     public Address geocode(GeocodeContext context) {
-        Location location = context.getLocation();
-        if (location != null && location.getLat() != null && location.getLon() != null) {
+        long ts = System.currentTimeMillis();
+
+        Location loc = context.getLocation();
+        if (loc != null && loc.getLat() != null && loc.getLon() != null) {
+            final Address res;
+
             if (StringUtils.isNotBlank(context.getAddress())) {
                 Address a = geocodeByAddress(context);
                 if (a != null && a.getAddressData() != null) {
                     Location aLocation = a.getAddressData().getLocation();
                     if (aLocation != null && aLocation.getLat() != null && aLocation.getLon() != null) {
-                        double distance = GeoHelper.getGeoDistance(location.getLon(), location.getLat(), aLocation.getLon(), aLocation.getLat());
+                        double distance = GeoHelper.getGeoDistance(loc.getLon(), loc.getLat(), aLocation.getLon(), aLocation.getLat());
                         if (distance < getGateConfiguration().getDistanceThreshold()) {
-                            return a;
+                            res = a;
                         } else {
-                            return geocodeByLocation(context);
+                            res = geocodeByLocation(context);
                         }
                     } else {
-                        return geocodeByLocation(context);
+                        res = geocodeByLocation(context);
                     }
                 } else {
-                    return geocodeByLocation(context);
+                    res = geocodeByLocation(context);
                 }
             } else {
-                return geocodeByLocation(context);
+                res = geocodeByLocation(context);
             }
+
+            logger.debug("Geocode address by location (loc: {},{}, res: '{}') ({} ms)", loc.getLat(), loc.getLon(), res != null ? res.getAddressData().getFormattedAddress(): "N/A", System.currentTimeMillis() - ts);
+
+            return res;
         } else {
-            return geocodeByAddress(context);
+            final Address res = geocodeByAddress(context);
+
+            logger.debug("Geocode address by text (text: '{}', res: '{}') ({} ms)", context.getAddress(), res != null ? res.getAddressData().getFormattedAddress(): "N/A", System.currentTimeMillis() - ts);
+
+            return res;
         }
     }
 
