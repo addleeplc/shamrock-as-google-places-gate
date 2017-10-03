@@ -28,6 +28,8 @@ public final class GoogleParseConstants {
         citiesTranslateMapping.put("genf", "geneva");
         citiesTranslateMapping.put("ginevra", "geneva");
         citiesTranslateMapping.put("genevra", "geneva");
+        citiesTranslateMapping.put("frankfurt am main", "frankfurt");
+        citiesTranslateMapping.put("frankfurt on the main", "frankfurt");
     }
 
     public static final class Dublin {
