@@ -68,6 +68,47 @@ public final class GoogleAddressUtils {
         elementsSpecifics.put(GElement.zoo.name(), "Zoo");
     }
 
+    private static final Map<String, AddressType> elementsTypes = new HashMap<>();
+    static {
+        elementsTypes.put(GElement.airport.name(), AddressType.airport);
+
+        elementsTypes.put(GElement.train_station.name(), AddressType.train_station);
+        elementsTypes.put(GElement.subway_station.name(), AddressType.subway_station);
+        elementsTypes.put(GElement.bus_station.name(), AddressType.bus_station);
+
+        elementsTypes.put(GElement.school.name(), AddressType.school);
+        elementsTypes.put(GElement.university.name(), AddressType.university);
+
+        elementsTypes.put(GElement.hospital.name(), AddressType.hospital);
+        elementsTypes.put(GElement.health.name(), AddressType.hospital);
+        elementsTypes.put(GElement.dentist.name(), AddressType.hospital);
+        elementsTypes.put(GElement.physiotherapist.name(), AddressType.hospital);
+        elementsTypes.put(GElement.doctor.name(), AddressType.hospital);
+
+        elementsTypes.put(GElement.clothing_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.shoe_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.book_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.bicycle_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.home_goods_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.convenience_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.department_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.electronics_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.furniture_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.hardware_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.jewelry_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.liquor_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.pet_store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.store.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.shopping_mall.name(), AddressType.shopping_centre);
+        elementsTypes.put(GElement.grocery_or_supermarket.name(), AddressType.shopping_centre);
+
+        elementsTypes.put(GElement.restaurant.name(), AddressType.restaurant);
+        elementsTypes.put(GElement.cafe.name(), AddressType.cafe);
+        elementsTypes.put(GElement.bar.name(), AddressType.bar);
+
+        elementsTypes.put(GElement.zoo.name(), AddressType.zoo);
+    }
+
     private GoogleAddressUtils() {}
 
     public static class AddressParseException extends Exception {
@@ -294,7 +335,7 @@ public final class GoogleAddressUtils {
         ad.setAddressComponents(ac);
 
         Address res = new Address();
-        res.setType(AddressType.ADDRESS);
+        res.setType(ItemType.ADDRESS);
         res.setAddressData(ad);
 
         String specifics = getAddressSpecifics(types);
@@ -303,6 +344,14 @@ public final class GoogleAddressUtils {
             details.setSpecifics(specifics);
 
             res.setDetails(details);
+        }
+
+        AddressType type = getAddressType(types);
+        if (type != null) {
+            if (res.getDetails() == null)
+                res.setDetails(new AddressDetails());
+
+            res.getDetails().setType(type);
         }
 
         return res;
@@ -320,6 +369,15 @@ public final class GoogleAddressUtils {
         Optional<String> o = types.stream()
                 .filter(elementsSpecifics::containsKey)
                 .map(elementsSpecifics::get)
+                .findFirst();
+
+        return o.orElse(null);
+    }
+
+    private static AddressType getAddressType(Collection<String> types) {
+        Optional<AddressType> o = types.stream()
+                .filter(elementsTypes::containsKey)
+                .map(elementsTypes::get)
                 .findFirst();
 
         return o.orElse(null);
