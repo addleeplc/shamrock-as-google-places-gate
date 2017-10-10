@@ -102,11 +102,17 @@ public final class GoogleAddressUtils {
         elementsTypes.put(GElement.shopping_mall.name(), AddressType.shopping_centre);
         elementsTypes.put(GElement.grocery_or_supermarket.name(), AddressType.shopping_centre);
 
-        elementsTypes.put(GElement.restaurant.name(), AddressType.restaurant);
-        elementsTypes.put(GElement.cafe.name(), AddressType.cafe);
-        elementsTypes.put(GElement.bar.name(), AddressType.bar);
+        elementsTypes.put(GElement.police.name(), AddressType.police);
 
-        elementsTypes.put(GElement.zoo.name(), AddressType.zoo);
+        elementsTypes.put(GElement.night_club.name(), AddressType.night_club);
+
+        elementsTypes.put(GElement.stadium.name(), AddressType.stadium);
+
+        elementsTypes.put(GElement.lodging.name(), AddressType.hotel);
+
+        elementsTypes.put(GElement.restaurant.name(), AddressType.restaurant);
+        elementsTypes.put(GElement.cafe.name(), AddressType.restaurant);
+        elementsTypes.put(GElement.bar.name(), AddressType.restaurant);
     }
 
     private GoogleAddressUtils() {}
