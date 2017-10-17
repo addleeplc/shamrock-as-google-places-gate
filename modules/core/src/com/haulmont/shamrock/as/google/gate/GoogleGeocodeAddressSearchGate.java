@@ -225,6 +225,8 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
                 Address a = parseAddress(o.getFormattedAddress(), o.getGeometry(), components, o.getTypes());
 
                 if (a != null) {
+                    a.setId(String.format("%s|%s", getId(), o.getPlaceId()));
+
                     RefineContext ctx = new RefineContext();
                     ctx.setAddress(a);
                     ctx.setRefineType(RefineType.DEFAULT);
@@ -233,7 +235,6 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
                     if (refined != null) {
                         a = refined;
                     } else {
-                        a.setId(String.format("%s|%s", getId(), null));
                         a.setRefined(true);
                     }
 

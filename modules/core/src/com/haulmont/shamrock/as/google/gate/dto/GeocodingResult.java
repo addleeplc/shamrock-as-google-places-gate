@@ -25,6 +25,9 @@ public class GeocodingResult {
     @JsonProperty("geometry")
     private Geometry geometry;
 
+    @JsonProperty("place_id")
+    private String placeId;
+
     public List<String> getTypes() {
         return types;
     }
@@ -57,5 +60,12 @@ public class GeocodingResult {
         this.geometry = geometry;
     }
 
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
+    }
 }
 
