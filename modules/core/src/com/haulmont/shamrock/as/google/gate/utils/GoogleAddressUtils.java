@@ -323,6 +323,9 @@ public final class GoogleAddressUtils {
         else
             ad.setFormattedAddress(ac.getAddress() + ", " + ac.getCity());
 
+        if (StringUtils.isNotBlank(ac.getBuildingName()))
+            ad.setFormattedAddress(ac.getBuildingName() + ", " + ad.getFormattedAddress());
+
         // geometry
         if (geometry != null) {
             Location location = geometry.getLocation();
