@@ -392,7 +392,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected BaseRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, new Path("/"))
+            HttpRequest request = get(url, path)
                     .queryString("language", "en")
                     .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey())
                     .queryString("address", context.getSearchString());
@@ -439,7 +439,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected BaseRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, new Path(""))
+            HttpRequest request = get(url, path)
                     .queryString("language", "en")
                     .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey());
 

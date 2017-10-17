@@ -628,7 +628,8 @@ public final class GoogleAddressUtils {
 
     public static void assignPlaceDetails(Address address, PlaceDetailsResult details) {
         String name = details.getName();
-        if (!details.getTypes().contains("street_address") && StringUtils.isNotBlank(name) && isCompanyName(address, name)) {
+        if (!containsAny(details.getTypes(), GElement.street_address.name(), GElement.premise.name(), GElement.subpremise.name())
+                && StringUtils.isNotBlank(name) && isCompanyName(address, name)) {
             name = name.replace(", ", " ")
                     .replace(",", " ");
 
@@ -636,6 +637,16 @@ public final class GoogleAddressUtils {
             address.getAddressData().setFormattedAddress(name + ", " + address.getAddressData().getFormattedAddress());
             address.getAddressData().getAddressComponents().setAddress(name + ", " + address.getAddressData().getAddressComponents().getAddress());
         }
+    }
+
+    @SafeVarargs
+    private static <T> boolean containsAny(Collection<T> collection, T ... elements) {
+        for (T e : elements) {
+            if (collection.contains(e))
+                return true;
+        }
+
+        return false;
     }
 
     private static boolean isCompanyName(Address address, String name) {
