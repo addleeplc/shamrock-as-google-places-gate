@@ -447,7 +447,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("/textsearch/json");
+            return new Path("/place/textsearch/json");
         }
     }
 
@@ -474,7 +474,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("/textsearch/json");
+            return new Path("/place/textsearch/json");
         }
     }
 
@@ -501,7 +501,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("/details/json");
+            return new Path("/place/details/json");
         }
     }
 
@@ -533,7 +533,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("/nearbysearch/json");
+            return new Path("/place/nearbysearch/json");
         }
     }
 }

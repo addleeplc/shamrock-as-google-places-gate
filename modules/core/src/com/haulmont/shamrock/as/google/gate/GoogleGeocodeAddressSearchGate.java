@@ -425,7 +425,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("/geocode");
+            return new Path("/geocode/json");
         }
     }
 
@@ -479,7 +479,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("/geocode");
+            return new Path("/geocode/json");
         }
     }
 
@@ -506,7 +506,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected Path getPath() {
-            return new Path("/details/json");
+            return new Path("/place/details/json");
         }
     }
 }
