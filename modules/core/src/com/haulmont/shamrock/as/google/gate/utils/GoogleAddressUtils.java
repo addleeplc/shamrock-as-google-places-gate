@@ -323,8 +323,11 @@ public final class GoogleAddressUtils {
         else
             ad.setFormattedAddress(ac.getAddress() + ", " + ac.getCity());
 
-        if (StringUtils.isNotBlank(ac.getBuildingName()))
+        if (StringUtils.isNotBlank(ac.getBuildingName())) {
+            if (!StringUtils.containsIgnoreCase(ac.getAddress(), ac.getBuildingName()))
+                ac.setAddress(ac.getBuildingName() + ", " + ac.getAddress());
             ad.setFormattedAddress(ac.getBuildingName() + ", " + ad.getFormattedAddress());
+        }
 
         // geometry
         if (geometry != null) {
