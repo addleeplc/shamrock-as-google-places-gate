@@ -6,8 +6,6 @@
 
 package com.haulmont.shamrock.as.google.gate.utils;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.utils.AddressHelper;
@@ -19,10 +17,6 @@ import com.haulmont.shamrock.as.google.gate.dto.PlaceDetailsResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
 public final class GoogleAddressUtils {
@@ -262,6 +256,9 @@ public final class GoogleAddressUtils {
         ac.setCity(cityValue);
         ac.setCountry(countryValue);
         ac.setPostcode(postcode);
+
+        String buildingName = getFirstLong(components, GElement.premise, GElement.subpremise);
+        ac.setBuildingName(buildingName);
 
         String buildingNumber = getFirstLong(components, GElement.street_number);
         ac.setBuildingNumber(buildingNumber);
@@ -674,25 +671,5 @@ public final class GoogleAddressUtils {
         }
 
         return res;
-    }
-
-    public static <T> T parseResponse(Class<T> responseClass, InputStream inputStream) throws IOException {
-        StringBuilder jsonResult = new StringBuilder();
-
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                jsonResult.append(line).append("\n");
-            }
-        } finally {
-            inputStream.close();
-        }
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        T response = mapper.readValue(jsonResult.toString(), responseClass);
-        return response;
     }
 }
