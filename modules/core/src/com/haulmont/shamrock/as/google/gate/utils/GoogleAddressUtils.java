@@ -15,7 +15,6 @@ import com.haulmont.shamrock.as.google.gate.dto.Geometry;
 import com.haulmont.shamrock.as.google.gate.dto.Location;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetailsResult;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
 
 import java.util.*;
 
@@ -200,11 +199,6 @@ public final class GoogleAddressUtils {
 
         if (StringUtils.isBlank(cityValue)) {
             throw new AddressParseException("town is null");
-        }
-
-        String temp = GoogleParseConstants.citiesTranslateMapping.get(StringUtils.lowerCase(cityValue));
-        if (StringUtils.isNotBlank(temp)) {
-            cityValue = WordUtils.capitalize(temp);
         }
 
         // postcode
