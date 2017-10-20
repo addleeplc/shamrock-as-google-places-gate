@@ -201,6 +201,15 @@ public final class GoogleAddressUtils {
             cityValue = cityValue.replace("-to", "");
         } else if ("CN".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+        } else if ("IN".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.locality, GElement.political);
+            if (StringUtils.isBlank(cityValue))
+                cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+
+            if ("New Delhi".equals(cityValue))
+                cityValue = "Delhi";
+        } else if ("TR".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
         } else {
             cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
         }
@@ -653,14 +662,22 @@ public final class GoogleAddressUtils {
 
     public static void assignPlaceDetails(Address address, PlaceDetailsResult details) {
         String name = details.getName();
+        AddressData data = address.getAddressData();
         if (!containsAny(details.getTypes(), GElement.street_address.name(), GElement.premise.name(), GElement.subpremise.name())
                 && StringUtils.isNotBlank(name) && isCompanyName(address, name)) {
             name = name.replace(", ", " ")
                     .replace(",", " ");
 
-            address.getAddressData().getAddressComponents().setCompany(name);
-            address.getAddressData().setFormattedAddress(name + ", " + address.getAddressData().getFormattedAddress());
-            address.getAddressData().getAddressComponents().setAddress(name + ", " + address.getAddressData().getAddressComponents().getAddress());
+            data.getAddressComponents().setCompany(name);
+            data.setFormattedAddress(name + ", " + data.getFormattedAddress());
+            data.getAddressComponents().setAddress(name + ", " + data.getAddressComponents().getAddress());
+        } else if (containsAny(details.getTypes(), GElement.premise.name()) && StringUtils.isBlank(data.getAddressComponents().getBuildingName())) {
+            name = name.replace(", ", " ")
+                    .replace(",", " ");
+
+            data.getAddressComponents().setBuildingName(name);
+            data.setFormattedAddress(name + ", " + data.getFormattedAddress());
+            data.getAddressComponents().setAddress(name + ", " + data.getAddressComponents().getAddress());
         }
     }
 
