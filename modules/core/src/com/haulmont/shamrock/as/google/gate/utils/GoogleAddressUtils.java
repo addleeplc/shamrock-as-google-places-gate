@@ -106,6 +106,8 @@ public final class GoogleAddressUtils {
         elementsTypes.put(GElement.restaurant.name(), AddressType.restaurant);
         elementsTypes.put(GElement.cafe.name(), AddressType.restaurant);
         elementsTypes.put(GElement.bar.name(), AddressType.restaurant);
+
+        elementsTypes.put(GElement.museum.name(), AddressType.museum);
     }
 
     private GoogleAddressUtils() {}
@@ -127,6 +129,10 @@ public final class GoogleAddressUtils {
         String countryValue = getFirstShort(components, GElement.country, GElement.political);
         if (StringUtils.isBlank(countryValue)) {
             throw new AddressParseException("country is null");
+        }
+
+        if ("RU".equals(countryValue)) {
+            ru_transliterateComponents(components);
         }
 
         // city
@@ -189,10 +195,12 @@ public final class GoogleAddressUtils {
         } else if ("SE".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.postal_town, GElement.locality);
         } else if ("HK".equals(countryValue)) {
+            cityValue = "Hong Kong";
+        } else if ("JP".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
-
-            if (StringUtils.isBlank(cityValue))
-                cityValue = "Hong Kong";
+            cityValue = cityValue.replace("-to", "");
+        } else if ("CN".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
         } else {
             cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
         }
@@ -258,6 +266,11 @@ public final class GoogleAddressUtils {
         ac.setBuildingNumber(buildingNumber);
 
         String streetName = getFirstLong(components, GElement.route);
+        if ("RU".equals(countryValue)) {
+            streetName = streetName.replace("ulitsa", "")
+                    .replace("ul.", "")
+                    .trim();
+        }
         ac.setStreet(streetName);
 
         String publicTransportStop = getFirstLong(components, GElement.train_station, GElement.transit_station, GElement.bus_station, GElement.subway_station);
@@ -396,6 +409,18 @@ public final class GoogleAddressUtils {
         s = StringUtils.deleteWhitespace(s);
 
         return new HashSet<>(Arrays.asList(s.split("[;,]")));
+    }
+
+    private static void ru_transliterateComponents(Map<String, AddressComponent> components) {
+        for (Map.Entry<String, AddressComponent> entry : components.entrySet()) {
+            if (entry.getValue() != null) {
+                String longName = TransliterationUtils.ru_transliterate(entry.getValue().getLongName());
+                String shortName = TransliterationUtils.ru_transliterate(entry.getValue().getShortName());
+
+                entry.getValue().setLongName(longName);
+                entry.getValue().setShortName(shortName);
+            }
+        }
     }
 
     private static void sanitizeAddress(Map<String, AddressComponent> components) {
@@ -640,7 +665,7 @@ public final class GoogleAddressUtils {
     }
 
     @SafeVarargs
-    private static <T> boolean containsAny(Collection<T> collection, T ... elements) {
+    private static <T> boolean containsAny(Collection<T> collection, T... elements) {
         for (T e : elements) {
             if (collection.contains(e))
                 return true;
