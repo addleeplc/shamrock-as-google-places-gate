@@ -244,6 +244,10 @@ public final class GoogleAddressUtils {
                     "Čunovo", "Jarovce", "Petržalka", "Rusovce")
                 )
                 cityValue = "Bratislava";
+        } else if ("TH".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+            if ("Krung Thep Maha Nakhon".equals(cityValue) || "Krung Thep".equals(cityValue))
+                cityValue = "Bangkok";
         } else {
             cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
         }
