@@ -133,6 +133,8 @@ public final class GoogleAddressUtils {
 
         if ("RU".equals(countryValue)) {
             ru_transliterateComponents(components);
+        } else if ("BG".equals(countryValue)) {
+            bg_transliterateComponents(components);
         }
 
         // city
@@ -210,6 +212,20 @@ public final class GoogleAddressUtils {
                 cityValue = "Delhi";
         } else if ("TR".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+        } else if ("CZ".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+            //TODO
+        } else if ("TW".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+        } else if ("ID".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+        } else if ("VN".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+        } else if ("EG".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+            if ("Cairo Governorate".equals(cityValue)) {
+                cityValue = "Cairo";
+            }
         } else {
             cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
         }
@@ -275,7 +291,7 @@ public final class GoogleAddressUtils {
         ac.setBuildingNumber(buildingNumber);
 
         String streetName = getFirstLong(components, GElement.route);
-        if ("RU".equals(countryValue)) {
+        if ("RU".equals(countryValue) || "BG".equals(countryValue)) {
             streetName = streetName.replace("ulitsa", "")
                     .replace("ul.", "")
                     .trim();
@@ -432,6 +448,18 @@ public final class GoogleAddressUtils {
         }
     }
 
+    private static void bg_transliterateComponents(Map<String, AddressComponent> components) {
+        for (Map.Entry<String, AddressComponent> entry : components.entrySet()) {
+            if (entry.getValue() != null) {
+                String longName = TransliterationUtils.bg_transliterate(entry.getValue().getLongName());
+                String shortName = TransliterationUtils.bg_transliterate(entry.getValue().getShortName());
+
+                entry.getValue().setLongName(longName);
+                entry.getValue().setShortName(shortName);
+            }
+        }
+    }
+
     private static void sanitizeAddress(Map<String, AddressComponent> components) {
 
         for (Map.Entry<String, AddressComponent> entry : components.entrySet()) {
@@ -449,13 +477,13 @@ public final class GoogleAddressUtils {
         if (name == null) {
             return null;
         } else {
-            return name
-                    .replaceAll("–", "-") // EN DASH, &#x2013
+            return name.replaceAll("–", "-") // EN DASH, &#x2013
                     .replaceAll("Œ", "OE")
                     .replaceAll("œ", "oe")
                     .replaceAll("Ÿ", "Y")
                     .replaceAll("Ĳ", "IJ")
-                    .replaceAll("ĳ", "ij");
+                    .replaceAll("ĳ", "ij")
+                    .replaceAll("\"", "");
         }
     }
 

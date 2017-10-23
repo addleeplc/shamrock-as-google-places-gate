@@ -13,6 +13,8 @@ import java.util.Map;
 
 public final class TransliterationUtils {
 
+    //Russian
+
     private static final Map<String, String> ru_transliterationTable = new HashMap<>();
     static {
         ru_transliterationTable.put("А", "A");
@@ -116,11 +118,123 @@ public final class TransliterationUtils {
     }
 
     public static String ru_transliterate(String origin) {
+        return transliterate(origin, ru_transliterationTable);
+    }
+
+    //Bulgarian
+
+    private static final Map<String, String> bg_transliterationTable = new HashMap<>();
+    static {
+        bg_transliterationTable.put("А", "A");
+        bg_transliterationTable.put("а", "a");
+
+        bg_transliterationTable.put("Б", "B");
+        bg_transliterationTable.put("б", "b");
+
+        bg_transliterationTable.put("В", "V");
+        bg_transliterationTable.put("в", "v");
+
+        bg_transliterationTable.put("Г", "G");
+        bg_transliterationTable.put("г", "g");
+
+        bg_transliterationTable.put("Д", "D");
+        bg_transliterationTable.put("д", "d");
+
+        bg_transliterationTable.put("Е", "E");
+        bg_transliterationTable.put("е", "e");
+
+        bg_transliterationTable.put("Ж", "Zh");
+        bg_transliterationTable.put("ж", "zh");
+
+        bg_transliterationTable.put("З", "Z");
+        bg_transliterationTable.put("з", "z");
+
+        bg_transliterationTable.put("И", "I");
+        bg_transliterationTable.put("и", "i");
+
+        bg_transliterationTable.put("К", "K");
+        bg_transliterationTable.put("к", "k");
+
+        bg_transliterationTable.put("Л", "L");
+        bg_transliterationTable.put("л", "l");
+
+        bg_transliterationTable.put("М", "M");
+        bg_transliterationTable.put("м", "m");
+
+        bg_transliterationTable.put("Н", "N");
+        bg_transliterationTable.put("н", "n");
+
+        bg_transliterationTable.put("О", "O");
+        bg_transliterationTable.put("о", "o");
+
+        bg_transliterationTable.put("П", "P");
+        bg_transliterationTable.put("п", "p");
+
+        bg_transliterationTable.put("Р", "R");
+        bg_transliterationTable.put("р", "r");
+
+        bg_transliterationTable.put("С", "S");
+        bg_transliterationTable.put("с", "s");
+
+        bg_transliterationTable.put("Т", "T");
+        bg_transliterationTable.put("т", "t");
+
+        bg_transliterationTable.put("Тс", "T-s");
+        bg_transliterationTable.put("тс", "t-s");
+
+        bg_transliterationTable.put("У", "U");
+        bg_transliterationTable.put("у", "u");
+
+        bg_transliterationTable.put("Ф", "F");
+        bg_transliterationTable.put("ф", "f");
+
+        bg_transliterationTable.put("Х", "Kh");
+        bg_transliterationTable.put("х", "kh");
+
+        bg_transliterationTable.put("Ц", "Ts");
+        bg_transliterationTable.put("ц", "ts");
+
+        bg_transliterationTable.put("Ч", "Ch");
+        bg_transliterationTable.put("ч", "ch");
+
+        bg_transliterationTable.put("Ш", "Sh");
+        bg_transliterationTable.put("ш", "sh");
+
+        bg_transliterationTable.put("Щ", "Sht");
+        bg_transliterationTable.put("щ", "sht");
+
+        bg_transliterationTable.put("Ъ", "Ŭ");
+        bg_transliterationTable.put("ъ", "ŭ");
+
+        bg_transliterationTable.put("Ы", "Y");
+        bg_transliterationTable.put("ы", "y");
+
+        bg_transliterationTable.put("Ь", "’");
+        bg_transliterationTable.put("ь", "’");
+
+        bg_transliterationTable.put("Ю", "Yu");
+        bg_transliterationTable.put("ю", "yu");
+
+        bg_transliterationTable.put("Я", "Ya");
+        bg_transliterationTable.put("я", "ya");
+
+        bg_transliterationTable.put("Ѣ", "Ê");
+        bg_transliterationTable.put("ѣ", "ê");
+
+        bg_transliterationTable.put("Ѫ", "Ū");
+        bg_transliterationTable.put("ѫ", "ū");
+    }
+    
+    public static String bg_transliterate(String origin) {
+        return transliterate(origin, bg_transliterationTable);
+    }
+
+    private static String transliterate(String origin, Map<String, String> transliterationTable) {
         if (StringUtils.isBlank(origin))
             return origin;
 
         boolean b = false;
-        for (String s : ru_transliterationTable.keySet()) {
+        for (String s : transliterationTable.keySet()) {
             if (origin.contains(s)) {
                 b = true;
                 break;
@@ -131,8 +245,8 @@ public final class TransliterationUtils {
             char[] chars = origin.toCharArray();
             StringBuilder sb = new StringBuilder();
             for (char ch : chars) {
-                if (ru_transliterationTable.containsKey(String.valueOf(ch)))
-                    sb.append(ru_transliterationTable.get(String.valueOf(ch)));
+                if (transliterationTable.containsKey(String.valueOf(ch)))
+                    sb.append(transliterationTable.get(String.valueOf(ch)));
                 else
                     sb.append(ch);
             }
