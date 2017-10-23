@@ -14,13 +14,14 @@ import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
 import com.haulmont.shamrock.as.google.gate.dto.Location;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetailsResult;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
 public final class GoogleAddressUtils {
 
     private static final Map<String, String> elementsSpecifics = new HashMap<>();
+
     static {
         elementsSpecifics.put(GElement.airport.name(), "Airports/Airfields");
 
@@ -62,6 +63,7 @@ public final class GoogleAddressUtils {
     }
 
     private static final Map<String, AddressType> elementsTypes = new HashMap<>();
+
     static {
         elementsTypes.put(GElement.airport.name(), AddressType.airport);
 
@@ -110,7 +112,8 @@ public final class GoogleAddressUtils {
         elementsTypes.put(GElement.museum.name(), AddressType.museum);
     }
 
-    private GoogleAddressUtils() {}
+    private GoogleAddressUtils() {
+    }
 
     public static class AddressParseException extends Exception {
         public AddressParseException(String message) {
@@ -226,6 +229,15 @@ public final class GoogleAddressUtils {
             if ("Cairo Governorate".equals(cityValue)) {
                 cityValue = "Cairo";
             }
+        } else if ("SK".equals(countryValue)) {
+            cityValue = getFirstLong(components, GElement.sublocality_level_1, GElement.sublocality, GElement.political);
+            if (StringUtils.isNotBlank(cityValue) && StringUtils.equalsAnyIgnoreCase(
+                    cityValue,
+                    "Ružinov", "Nové Mesto", "Devínska Nová Ves", "Staré Mesto", "Podunajské Biskupice",
+                    "Vrakuňa", "Rača", "Vajnory", "Devín", "Dúbravka", "Karlova Ves", "Lamač", "Záhorská Bystrica",
+                    "Čunovo", "Jarovce", "Petržalka", "Rusovce")
+                )
+                cityValue = "Bratislava";
         } else {
             cityValue = getFirstLong(components, GElement.locality, GElement.postal_town);
         }
