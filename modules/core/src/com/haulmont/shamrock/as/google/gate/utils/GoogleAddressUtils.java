@@ -216,8 +216,14 @@ public final class GoogleAddressUtils {
         } else if ("TR".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
         } else if ("CZ".equals(countryValue)) {
-            cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
-            //TODO
+            cityValue = getFirstLong(components, GElement.sublocality_level_1, GElement.sublocality, GElement.political);
+            if (cityValue.matches("Praha\\s[0-9]+")) {
+                cityValue = "Prague";
+            } else {
+                cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+                if ("Hlavní město Praha".equals(cityValue))
+                    cityValue = "Prague";
+            }
         } else if ("TW".equals(countryValue)) {
             cityValue = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
         } else if ("ID".equals(countryValue)) {
