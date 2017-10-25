@@ -139,7 +139,7 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
 
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
-        String city = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+        String city = getFirstLong(components, GElement.administrative_area_level_2, GElement.administrative_area_level_1, GElement.political);
         if (StringUtils.isBlank(city))
             city = getFirstLong(components, GElement.locality, GElement.political);
 
