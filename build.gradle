@@ -89,6 +89,10 @@ configure([coreModule, rsModule]) {
     artifacts {
         archives sourceJar
     }
+
+    compileJava {
+        options.encoding = "UTF-8"
+    }
 }
 
 configure(coreModule) {
