@@ -18,7 +18,9 @@ import com.haulmont.shamrock.address.gis.GISUtils;
 import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.address.utils.GeoHelper;
 import com.haulmont.shamrock.address.utils.StringHelper;
+import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.*;
+import com.haulmont.shamrock.as.google.gate.parser.AddressParseException;
 import com.haulmont.shamrock.as.google.gate.utils.CityGeometry;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressSearchUtils;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
@@ -254,19 +256,15 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         Map<String, AddressComponent> components = GoogleAddressUtils.convert(details.getAddressComponents());
 
         try {
-            Address res = parseAddress(details.getFormattedAddress(), details.getGeometry(), components, details.getTypes());
+            Address res = parseAddress(details.getName(), details.getFormattedAddress(), details.getGeometry(), components, details.getTypes());
 
             if (res != null) {
                 res.setId(String.format("%s|%s", getId(), details.getId()));
+                res.setRefined(true);
+                return res;
             } else {
                 return null;
             }
-
-            res.setRefined(true);
-
-            GoogleAddressUtils.assignPlaceDetails(res, details);
-
-            return res;
         } catch (Throwable e) {
             throw new ServiceException(ErrorCode.SERVER_ERROR, "", e);
         }
@@ -404,10 +402,10 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 address.getAddressData().getLocation().getLon() != null;
     }
 
-    private static Address parseAddress(String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
+    private static Address parseAddress(String placeName, String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
         try {
-            return GoogleAddressUtils.parseAddress(formattedAddress, geometry, components, types);
-        } catch (GoogleAddressUtils.AddressParseException e) {
+            return GoogleAddressUtils.parseAddress(placeName, formattedAddress, geometry, components, types);
+        } catch (AddressParseException e) {
             logger.debug(String.format("Failed to parse address '%s': %s", formattedAddress, e.getMessage()));
         }
 

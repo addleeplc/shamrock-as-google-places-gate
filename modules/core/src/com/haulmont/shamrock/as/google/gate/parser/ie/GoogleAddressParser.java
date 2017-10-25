@@ -1,0 +1,48 @@
+/*
+ * Copyright 2008 - 2017 Haulmont Technology Ltd. All Rights Reserved.
+ * Haulmont Technology proprietary and confidential.
+ * Use is subject to license terms.
+ */
+
+package com.haulmont.shamrock.as.google.gate.parser.ie;
+
+import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
+import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
+import com.haulmont.shamrock.as.google.gate.parser.DefaultGoogleAddressParser;
+import com.haulmont.shamrock.as.google.gate.parser.Parser;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
+
+@Parser("IE")
+public class GoogleAddressParser extends DefaultGoogleAddressParser {
+
+    public GoogleAddressParser() {
+        super("IE");
+    }
+
+    @Override
+    protected String parseCity(Map<String, AddressComponent> components) {
+        String city = getFirstLong(components, GElement.administrative_area_level_1, GElement.administrative_area_level_2, GElement.locality);
+        if (StringUtils.containsIgnoreCase(city, "county dublin")) {
+            city = "Dublin";
+        }
+
+        return city;
+    }
+
+    @Override
+    protected String parsePostcode(Map<String, AddressComponent> components) {
+        String postcode = getFirstLong(components, GElement.postal_code);
+        if (StringUtils.isBlank(postcode)) {
+            postcode = null;
+        }
+
+        return postcode;
+    }
+
+    @Override
+    protected String getCountry(Map<String, AddressComponent> components) {
+        return "IE";
+    }
+}

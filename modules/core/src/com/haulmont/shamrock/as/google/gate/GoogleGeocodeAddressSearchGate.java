@@ -16,6 +16,7 @@ import com.haulmont.shamrock.address.context.*;
 import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.address.utils.GeoHelper;
 import com.haulmont.shamrock.as.google.gate.dto.*;
+import com.haulmont.shamrock.as.google.gate.parser.AddressParseException;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
 import com.haulmont.shamrock.geo.PostcodeHelper;
 import com.mashape.unirest.request.BaseRequest;
@@ -95,7 +96,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
             Map<String, AddressComponent> components = GoogleAddressUtils.convert(o.getAddressComponents());
 
             try {
-                Address a = parseAddress(o.getFormattedAddress(), o.getGeometry(), components, o.getTypes());
+                Address a = parseAddress(null, o.getFormattedAddress(), o.getGeometry(), components, o.getTypes());
 
                 if (a != null) {
                     a.setId(String.format("%s|%s", getId(), null));
@@ -222,7 +223,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
             Map<String, AddressComponent> components = GoogleAddressUtils.convert(o.getAddressComponents());
 
             try {
-                Address a = parseAddress(o.getFormattedAddress(), o.getGeometry(), components, o.getTypes());
+                Address a = parseAddress(null, o.getFormattedAddress(), o.getGeometry(), components, o.getTypes());
 
                 if (a != null) {
                     a.setId(String.format("%s|%s", getId(), o.getPlaceId()));
@@ -316,19 +317,16 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         Map<String, AddressComponent> components = GoogleAddressUtils.convert(details.getAddressComponents());
 
         try {
-            Address res = parseAddress(details.getFormattedAddress(), details.getGeometry(), components, details.getTypes());
+            Address res = parseAddress(details.getName(), details.getFormattedAddress(), details.getGeometry(), components, details.getTypes());
 
             if (res != null) {
                 res.setId(String.format("%s|%s", getId(), details.getId()));
+                res.setRefined(true);
+
+                return res;
             } else {
                 return null;
             }
-
-            res.setRefined(true);
-
-            GoogleAddressUtils.assignPlaceDetails(res, details);
-
-            return res;
         } catch (Throwable e) {
             throw new ServiceException(ErrorCode.SERVER_ERROR, "", e);
         }
@@ -368,10 +366,10 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         return null;
     }
 
-    private static Address parseAddress(String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
+    private static Address parseAddress(String placeName, String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
         try {
-            return GoogleAddressUtils.parseAddress(formattedAddress, geometry, components, types);
-        } catch (GoogleAddressUtils.AddressParseException e) {
+            return GoogleAddressUtils.parseAddress(placeName, formattedAddress, geometry, components, types);
+        } catch (AddressParseException e) {
             logger.debug(String.format("Failed to parse address '%s': %s", formattedAddress, e.getMessage()));
         }
 

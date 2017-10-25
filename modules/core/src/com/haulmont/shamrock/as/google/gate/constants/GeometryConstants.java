@@ -4,7 +4,7 @@
  * Use is subject to license terms.
  */
 
-package com.haulmont.shamrock.as.google.gate;
+package com.haulmont.shamrock.as.google.gate.constants;
 
 import com.haulmont.shamrock.address.gis.Geometry;
 import com.haulmont.shamrock.as.google.gate.utils.CityGeometry;
