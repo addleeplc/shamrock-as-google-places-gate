@@ -16,7 +16,6 @@ import java.util.Map;
 
 @Parser("BG")
 public class GoogleAddressParser extends DefaultGoogleAddressParser {
-
     private static final Map<String, String> transliterationTable = new HashMap<>();
     static {
         transliterationTable.put("А", "A");
@@ -119,10 +118,6 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         transliterationTable.put("ѫ", "ū");
     }
 
-    public GoogleAddressParser() {
-        super("BG");
-    }
-
     @Override
     protected void prepareComponents(Map<String, AddressComponent> components) {
         super.prepareComponents(components);
@@ -139,10 +134,5 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         }
 
         return street;
-    }
-
-    @Override
-    protected String getCountry(Map<String, AddressComponent> components) {
-        return "BG";
     }
 }

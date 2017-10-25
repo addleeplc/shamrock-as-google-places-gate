@@ -22,8 +22,8 @@ import java.util.*;
 public abstract class AbstractGoogleAddressParser {
     private final String country;
 
-    protected AbstractGoogleAddressParser(String country) {
-        this.country = country;
+    protected AbstractGoogleAddressParser() {
+        this.country = getClass().getAnnotation(Parser.class).value();
     }
 
     // Abstract methods
@@ -98,7 +98,9 @@ public abstract class AbstractGoogleAddressParser {
 
     protected abstract String parseAddress(String formattedAddress, Map<String, AddressComponent> components, List<String> types, ParseAddressContext ctx);
 
-    protected abstract String getCountry(Map<String, AddressComponent> components);
+    protected String getCountry(Map<String, AddressComponent> components) {
+        return getClass().getAnnotation(Parser.class).value();
+    }
 
     protected com.haulmont.shamrock.address.Location parseLocation(Geometry geometry) {
         if (geometry != null) {

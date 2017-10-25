@@ -16,10 +16,6 @@ import java.util.Map;
 
 @Parser("CA")
 public class GoogleAddressParser extends DefaultGoogleAddressParser {
-    public GoogleAddressParser() {
-        super("CA");
-    }
-
     @Override
     protected String parsePostcode(Map<String, AddressComponent> components) {
         String postcode = super.parsePostcode(components);
@@ -30,10 +26,5 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         }
 
         return postcode;
-    }
-
-    @Override
-    protected String getCountry(Map<String, AddressComponent> components) {
-        return "CA";
     }
 }

@@ -19,14 +19,6 @@ import java.util.Map;
 
 @Parser
 public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
-    public DefaultGoogleAddressParser() {
-        super(null);
-    }
-
-    protected DefaultGoogleAddressParser(String country) {
-        super(country);
-    }
-
     @Override
     protected void prepareComponents(Map<String, AddressComponent> components) {
         sanitizeAddress(components);

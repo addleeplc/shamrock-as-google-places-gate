@@ -16,11 +16,6 @@ import java.util.Map;
 
 @Parser("IN")
 public class GoogleAddressParser extends DefaultGoogleAddressParser {
-
-    public GoogleAddressParser() {
-        super("IN");
-    }
-
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
         String city = getFirstLong(components, GElement.locality, GElement.political);
@@ -31,10 +26,5 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
             city = "Delhi";
 
         return city;
-    }
-
-    @Override
-    protected String getCountry(Map<String, AddressComponent> components) {
-        return "IN";
     }
 }

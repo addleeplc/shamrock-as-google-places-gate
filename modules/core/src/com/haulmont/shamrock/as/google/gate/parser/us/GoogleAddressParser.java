@@ -17,10 +17,6 @@ import java.util.Map;
 
 @Parser("US")
 public class GoogleAddressParser extends DefaultGoogleAddressParser {
-    public GoogleAddressParser() {
-        super("US");
-    }
-
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
         String city = getFirstLong(components, GElement.locality, GElement.postal_town, GElement.sublocality, GElement.neighborhood);
@@ -74,10 +70,5 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         }
 
         return StringUtils.isNotBlank(cityRegion) ? address + ", " + cityRegion : address;
-    }
-
-    @Override
-    protected String getCountry(Map<String, AddressComponent> components) {
-        return "US";
     }
 }

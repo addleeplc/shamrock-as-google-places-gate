@@ -22,10 +22,6 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
             "94" // Val-de-Marne
     };
 
-    public GoogleAddressParser() {
-        super("FR");
-    }
-
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
         String postcode = parsePostcode(components);
@@ -34,10 +30,5 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
             return "Paris";
         else
             return super.parseCity(components);
-    }
-
-    @Override
-    protected String getCountry(Map<String, AddressComponent> components) {
-        return "FR";
     }
 }

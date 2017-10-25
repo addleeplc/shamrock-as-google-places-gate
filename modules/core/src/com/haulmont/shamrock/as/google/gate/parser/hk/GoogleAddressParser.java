@@ -14,18 +14,8 @@ import java.util.Map;
 
 @Parser("HK")
 public class GoogleAddressParser extends DefaultGoogleAddressParser {
-
-    public GoogleAddressParser() {
-        super("HK");
-    }
-
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
         return "Hong Kong";
-    }
-
-    @Override
-    protected String getCountry(Map<String, AddressComponent> components) {
-        return "HK";
     }
 }

@@ -16,11 +16,6 @@ import java.util.Map;
 
 @Parser("IE")
 public class GoogleAddressParser extends DefaultGoogleAddressParser {
-
-    public GoogleAddressParser() {
-        super("IE");
-    }
-
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
         String city = getFirstLong(components, GElement.administrative_area_level_1, GElement.administrative_area_level_2, GElement.locality);
@@ -39,10 +34,5 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         }
 
         return postcode;
-    }
-
-    @Override
-    protected String getCountry(Map<String, AddressComponent> components) {
-        return "IE";
     }
 }
