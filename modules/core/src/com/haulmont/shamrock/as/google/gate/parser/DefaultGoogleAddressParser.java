@@ -109,6 +109,14 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
             }
         }
 
+        if (StringUtils.isNotBlank(formattedAddress) && StringUtils.isBlank(address)) {
+            if (StringUtils.isNotBlank(ctx.city)) {
+                int idx = formattedAddress.toUpperCase().indexOf(", " + StringUtils.upperCase(ctx.city) + ",");
+                if (idx > 0)
+                    address = formattedAddress.substring(idx);
+            }
+        }
+
         if (StringUtils.isBlank(address)) return null;
 
         String building = ctx.building;
