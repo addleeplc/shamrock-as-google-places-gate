@@ -17,6 +17,7 @@ import java.util.Map;
 public class GoogleAddressParser extends DefaultGoogleAddressParser {
     private static final String[] PARIS_POSTCODE_AREAS = {
             "75", // Paris
+            "91", // Vigneux-sur-Seine
             "92", // Hauts-de-Seine
             "93", // Seine-Saint-Denis
             "94" // Val-de-Marne
