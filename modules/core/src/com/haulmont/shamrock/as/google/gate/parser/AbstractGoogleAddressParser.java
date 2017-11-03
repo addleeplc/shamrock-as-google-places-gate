@@ -444,11 +444,12 @@ public abstract class AbstractGoogleAddressParser {
         }
 
         private String buildFormattedAddress() {
-            String formattedAddress;
-            if (StringUtils.isNotBlank(postcode))
-                formattedAddress = address + ", " + city + ", " + postcode;
-            else
-                formattedAddress = address + ", " + city;
+            String formattedAddress = address;
+            if (!StringUtils.containsIgnoreCase(address, city))
+                formattedAddress = formattedAddress + ", " + city;
+
+            if (StringUtils.isNotBlank(postcode) && !StringUtils.containsIgnoreCase(address, postcode))
+                formattedAddress = formattedAddress + ", " + postcode;
 
             if (StringUtils.isNotBlank(buildingName) && !StringUtils.containsIgnoreCase(formattedAddress, buildingName))
                 formattedAddress = buildingName + ", " + formattedAddress;
