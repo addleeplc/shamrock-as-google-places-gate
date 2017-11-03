@@ -115,6 +115,27 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
                 if (idx > 0)
                     address = formattedAddress.substring(0, idx);
             }
+
+            if (StringUtils.isBlank(address)) {
+                String city = getFirstLong(components, GElement.locality, GElement.political);
+                if (StringUtils.isNotBlank(city)) {
+                    int idx = formattedAddress.toUpperCase().indexOf(", " + StringUtils.upperCase(city) + ",");
+                    if (idx > 0)
+                        address = formattedAddress.substring(0, idx);
+                } else {
+                    city = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
+                    if (StringUtils.isNotBlank(city)) {
+                        int idx = formattedAddress.toUpperCase().indexOf(", " + StringUtils.upperCase(city) + ",");
+                        if (idx > 0)
+                            address = formattedAddress.substring(0, idx);
+                    } else {
+                        city = getFirstLong(components, GElement.administrative_area_level_2, GElement.political);
+                        int idx = formattedAddress.toUpperCase().indexOf(", " + StringUtils.upperCase(city) + ",");
+                        if (idx > 0)
+                            address = formattedAddress.substring(0, idx);
+                    }
+                }
+            }
         }
 
         if (StringUtils.isBlank(address)) return null;
