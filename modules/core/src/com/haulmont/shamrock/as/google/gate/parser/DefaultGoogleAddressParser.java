@@ -48,7 +48,7 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
 
     @Override
     protected String parseCompanyName(String placeName, Map<String, AddressComponent> components, List<String> types) {
-        if (!CollectionUtils.containsAny(types, Arrays.asList(GElement.street_address.name(), GElement.premise.name(), GElement.subpremise.name()))
+        if (!CollectionUtils.containsAny(types, Arrays.asList(GElement.street_address.name(), GElement.route.name(), GElement.premise.name(), GElement.subpremise.name()))
                 && StringUtils.isNotBlank(placeName)) {
             return placeName.replace(", ", " ")
                     .replace(",", " ");
