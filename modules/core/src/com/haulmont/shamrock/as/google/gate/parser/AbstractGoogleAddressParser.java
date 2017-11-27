@@ -44,7 +44,7 @@ public abstract class AbstractGoogleAddressParser {
             throw new AddressParseException("City is null");
 
         String postcode = parsePostcode(components);
-        if (StringUtils.isBlank(postcode) && isCountryRequiredPostcode())
+        if (StringUtils.isBlank(postcode) && isCountryRequiredPostcode(country))
             throw new AddressParseException("Postcode is null");
 
         String companyName = parseCompanyName(placeName, components, types);
@@ -182,7 +182,7 @@ public abstract class AbstractGoogleAddressParser {
         return true;
     }
 
-    protected boolean isCountryRequiredPostcode() {
+    protected boolean isCountryRequiredPostcode(String country) {
         GateConfiguration conf = AppContext.getConfig().get(GateConfiguration.class);
 
         String s = conf.getCountriesNotRequiredPostcode();
