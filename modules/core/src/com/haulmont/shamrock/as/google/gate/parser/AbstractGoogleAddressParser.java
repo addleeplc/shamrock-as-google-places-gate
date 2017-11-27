@@ -64,10 +64,10 @@ public abstract class AbstractGoogleAddressParser {
         if (StringUtils.isBlank(address)) {
             StringBuilder sb = new StringBuilder();
             if (StringUtils.isNotBlank(companyName))
-                sb.append(companyName).append(',');
+                sb.append(companyName).append(',').append(' ');
 
             if (StringUtils.isNotBlank(buildingName))
-                sb.append(buildingName).append(',');
+                sb.append(buildingName).append(',').append(' ');
 
             if (StringUtils.isNotBlank(buildingNumber) && StringUtils.isNotBlank(street))
                 sb.append(buildingNumber).append(' ');
@@ -76,6 +76,9 @@ public abstract class AbstractGoogleAddressParser {
                 sb.append(street);
 
             address = sb.toString();
+
+            if (StringUtils.endsWith(address, ", ") || StringUtils.endsWith(address, ","))
+                address = address.substring(0, address.lastIndexOf(","));
         }
 
         if (StringUtils.isBlank(address))
