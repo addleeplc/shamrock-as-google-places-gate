@@ -29,6 +29,6 @@ public interface GateConfiguration {
     @Property("maxSearchPages")
     int getMaxSearchPages();
 
-    @Property("countries.postcode.requires")
-    String getCountriesRequiresPostcode();
+    @Property("countries.postcode.notRequired")
+    String getCountriesNotRequiredPostcode();
 }

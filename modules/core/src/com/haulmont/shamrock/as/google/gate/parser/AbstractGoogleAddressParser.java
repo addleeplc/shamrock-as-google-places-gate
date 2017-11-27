@@ -44,7 +44,7 @@ public abstract class AbstractGoogleAddressParser {
             throw new AddressParseException("City is null");
 
         String postcode = parsePostcode(components);
-        if (StringUtils.isBlank(postcode) && isCountryRequiresPostcode())
+        if (StringUtils.isBlank(postcode) && isCountryRequiredPostcode())
             throw new AddressParseException("Postcode is null");
 
         String companyName = parseCompanyName(placeName, components, types);
@@ -61,6 +61,23 @@ public abstract class AbstractGoogleAddressParser {
         ctx.city = city;
 
         String address = parseAddress(formattedAddress, components, types, ctx);
+        if (StringUtils.isBlank(address)) {
+            StringBuilder sb = new StringBuilder();
+            if (StringUtils.isNotBlank(companyName))
+                sb.append(companyName).append(',');
+
+            if (StringUtils.isNotBlank(buildingName))
+                sb.append(buildingName).append(',');
+
+            if (StringUtils.isNotBlank(buildingNumber) && StringUtils.isNotBlank(street))
+                sb.append(buildingNumber).append(' ');
+
+            if (StringUtils.isNotBlank(street))
+                sb.append(street);
+
+            address = sb.toString();
+        }
+
         if (StringUtils.isBlank(address))
             throw new AddressParseException("Address is null");
 
@@ -162,15 +179,15 @@ public abstract class AbstractGoogleAddressParser {
         return true;
     }
 
-    protected boolean isCountryRequiresPostcode() {
+    protected boolean isCountryRequiredPostcode() {
         GateConfiguration conf = AppContext.getConfig().get(GateConfiguration.class);
 
-        String s = conf.getCountriesRequiresPostcode();
+        String s = conf.getCountriesNotRequiredPostcode();
         if (StringUtils.isBlank(s))
-            return false;
+            return true;
 
         s = StringUtils.deleteWhitespace(s);
-        return new HashSet<>(Arrays.asList(s.split("[;,]"))).contains(country);
+        return !(new HashSet<>(Arrays.asList(s.split("[;,]"))).contains(country));
     }
 
     protected String getFirstLong(Map<String, AddressComponent> components, GElement... elements) {
