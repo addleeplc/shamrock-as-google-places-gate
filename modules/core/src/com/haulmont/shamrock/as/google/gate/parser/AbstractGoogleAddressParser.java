@@ -8,6 +8,7 @@ package com.haulmont.shamrock.as.google.gate.parser;
 
 import com.haulmont.monaco.AppContext;
 import com.haulmont.shamrock.address.*;
+import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.GateConfiguration;
 import com.haulmont.shamrock.as.google.gate.constants.GoogleAddressParserConstants;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
@@ -52,6 +53,8 @@ public abstract class AbstractGoogleAddressParser {
 
         String buildingNumber = parseBuildingNumber(components);
         String street = parseStreet(formattedAddress, components);
+        if (StringUtils.isNotBlank(street) && StringUtils.equalsAny(street, AddressHelper.ParseStreetNameConstants.STREET_SUFFIXES.split("\\|")))
+            street = null;
 
         ParseAddressContext ctx = new ParseAddressContext();
         ctx.company = companyName;
