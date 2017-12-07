@@ -39,8 +39,7 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
         String buildingName = getFirstLong(components, GElement.premise, GElement.subpremise);
         if (StringUtils.isBlank(buildingName) && StringUtils.isNotBlank(placeName)) {
             if (CollectionUtils.containsAny(types, Arrays.asList(GElement.premise.name(), GElement.subpremise.name())))
-                buildingName = placeName.replace(", ", " ")
-                        .replace(",", " ");
+                buildingName = placeName.replace(", ", " ").replace(",", " ");
         }
 
         return buildingName;
@@ -50,8 +49,7 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
     protected String parseCompanyName(String placeName, Map<String, AddressComponent> components, List<String> types) {
         if (!CollectionUtils.containsAny(types, Arrays.asList(GElement.street_address.name(), GElement.route.name(), GElement.premise.name(), GElement.subpremise.name()))
                 && StringUtils.isNotBlank(placeName)) {
-            return placeName.replace(", ", " ")
-                    .replace(",", " ");
+            return placeName.replace(", ", " ").replace(",", " ");
         } else {
             return null;
         }
@@ -139,6 +137,10 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
         }
 
         if (StringUtils.isBlank(address)) return null;
+
+        String subBuildingNumber = ctx.subBuildingNumber;
+        if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber))
+            address = subBuildingNumber + "-" + address;
 
         String building = ctx.building;
         if (StringUtils.isNotBlank(building) && !StringUtils.containsIgnoreCase(address, building))

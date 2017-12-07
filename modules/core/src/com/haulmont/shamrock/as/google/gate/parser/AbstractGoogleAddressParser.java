@@ -58,7 +58,12 @@ public abstract class AbstractGoogleAddressParser {
 
         ParseAddressContext ctx = new ParseAddressContext();
         ctx.company = companyName;
-        ctx.building = buildingName;
+
+        if (buildingName.matches("[0-9]+[A-Za-z]"))
+            ctx.subBuildingNumber = buildingName;
+        else
+            ctx.building = buildingName;
+
         ctx.buildingNumber = buildingNumber;
         ctx.street = street;
         ctx.city = city;
@@ -328,6 +333,7 @@ public abstract class AbstractGoogleAddressParser {
         public String company;
         public String building;
         public String buildingNumber;
+        public String subBuildingNumber;
         public String street;
         public String city;
     }
@@ -468,16 +474,16 @@ public abstract class AbstractGoogleAddressParser {
 
         private String buildFormattedAddress() {
             String formattedAddress = address;
-            if (!StringUtils.containsIgnoreCase(address, city))
+            if (!StringUtils.containsIgnoreCase(address, ", " + city))
                 formattedAddress = formattedAddress + ", " + city;
 
-            if (StringUtils.isNotBlank(postcode) && !StringUtils.containsIgnoreCase(address, postcode))
+            if (StringUtils.isNotBlank(postcode) && !StringUtils.containsIgnoreCase(address, ", " + postcode))
                 formattedAddress = formattedAddress + ", " + postcode;
 
-            if (StringUtils.isNotBlank(buildingName) && !StringUtils.containsIgnoreCase(formattedAddress, buildingName))
+            if (StringUtils.isNotBlank(buildingName) && !StringUtils.containsIgnoreCase(formattedAddress, buildingName + ", "))
                 formattedAddress = buildingName + ", " + formattedAddress;
 
-            if (StringUtils.isNotBlank(company) && !StringUtils.containsIgnoreCase(formattedAddress, company))
+            if (StringUtils.isNotBlank(company) && !StringUtils.containsIgnoreCase(formattedAddress, company + ", "))
                 formattedAddress = company + ", " + formattedAddress;
 
             return formattedAddress;
