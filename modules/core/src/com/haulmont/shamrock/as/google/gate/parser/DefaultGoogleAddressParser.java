@@ -140,7 +140,7 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
 
         String buildingNumber = ctx.buildingNumber;
         String subBuildingNumber = ctx.subBuildingNumber;
-        if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber) && address.startsWith(buildingNumber))
+        if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber + "-") && address.startsWith(buildingNumber))
             address = subBuildingNumber + "-" + address;
 
         String building = ctx.building;

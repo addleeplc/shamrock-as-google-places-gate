@@ -59,9 +59,11 @@ public abstract class AbstractGoogleAddressParser {
         ParseAddressContext ctx = new ParseAddressContext();
         ctx.company = companyName;
 
-        if (buildingName.matches("[0-9]+[A-Za-z]?"))
+        if (StringUtils.isNotBlank(buildingName) && buildingName.matches("[0-9]+[A-Za-z]?")) {
             ctx.subBuildingNumber = buildingName;
-        else
+            ctx.building = null;
+            buildingName = null;
+        } else
             ctx.building = buildingName;
 
         ctx.buildingNumber = buildingNumber;
@@ -102,6 +104,7 @@ public abstract class AbstractGoogleAddressParser {
                 .company(companyName)
                 .buildingName(buildingName)
                 .buildingNumber(buildingNumber)
+                .subBuildingNumber(ctx.subBuildingNumber)
                 .street(street)
                 .address(address)
                 .location(location)
