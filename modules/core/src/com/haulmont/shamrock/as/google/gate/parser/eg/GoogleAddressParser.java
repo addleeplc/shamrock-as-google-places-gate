@@ -20,6 +20,8 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         String city = getFirstLong(components, GElement.administrative_area_level_1, GElement.political);
         if ("Cairo Governorate".equals(city)) {
             city = "Cairo";
+        } else if ("Giza Governorate".equals(city)) {
+            city = "Giza";
         }
 
         return city;
