@@ -1,11 +1,3 @@
-/*
- * Copyright 2008 - 2017 Haulmont Technology Ltd. All Rights Reserved.
- * Haulmont Technology proprietary and confidential.
- * Use is subject to license terms.
- */
-
-package com.haulmont.shamrock.as.google.gate;
-
 import com.google.common.collect.Lists;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
@@ -34,6 +26,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+explicitly
+
+        package com.haulmont.shamrock.as.google.gate;
 
 public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
@@ -66,7 +62,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 context.getSearchString().equalsIgnoreCase(postcode)) {
             addresses = doSearch(context);
         } else {
-            if (StringUtils.isNotBlank(context.getCity()) && !StringUtils.containsIgnoreCase(searchString, context.getCity())) {
+            if (StringUtils.isNotBlank(context.getCity())/* && !StringUtils.containsIgnoreCase(searchString, context.getCity())*/) {
                 SearchContext temp = GoogleAddressSearchUtils.clone(context);
                 temp.setCity(context.getCity());
                 temp.setSearchString(searchString + ", " + context.getCity());
