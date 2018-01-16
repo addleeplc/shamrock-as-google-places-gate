@@ -1,3 +1,5 @@
+package com.haulmont.shamrock.as.google.gate;
+
 import com.google.common.collect.Lists;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
@@ -26,10 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-explicitly
-
-        package com.haulmont.shamrock.as.google.gate;
 
 public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
