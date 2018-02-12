@@ -21,6 +21,10 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         String city = getFirstLong(components, GElement.administrative_area_level_1, GElement.administrative_area_level_2, GElement.locality);
         if (StringUtils.containsIgnoreCase(city, "county dublin")) {
             city = "Dublin";
+        } else {
+            String town = getFirstLong(components, GElement.postal_town);
+            if (StringUtils.isNotBlank(town))
+                city = town;
         }
 
         return city;
