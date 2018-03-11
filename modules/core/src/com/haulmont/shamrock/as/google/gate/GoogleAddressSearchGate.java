@@ -18,6 +18,7 @@ import com.haulmont.shamrock.address.context.SearchBeneathContext;
 import com.haulmont.shamrock.address.context.SearchContext;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
+import org.picocontainer.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,8 @@ import java.util.List;
  * Created by Nikita Bozhko on 02.01.17.
  * Project Shamrock
  */
+
+@Component
 public class GoogleAddressSearchGate implements AddressSearchGate {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleAddressSearchGate.class);

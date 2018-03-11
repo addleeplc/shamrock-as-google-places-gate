@@ -7,9 +7,10 @@
     <property name="appLog.maxHistory" value="1"/>
 
     <property name="monaco-rs.level.LoggingFilter" value="DEBUG"/>
+    <property name="monaco-rs.level.MaskingLoggerInterceptor" value="DEBUG"/>
 
     <logger name="com.haulmont.shamrock.as.google.gate" level="DEBUG">
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="MONACO_APP_FILE_ASYNC"/>
     </logger>
 
 </configuration>

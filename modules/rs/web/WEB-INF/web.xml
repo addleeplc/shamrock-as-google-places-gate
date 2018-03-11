@@ -15,7 +15,7 @@
     </context-param>
 
     <listener>
-        <listener-class>com.haulmont.shamrock.as.google.gate.rs.WebAppContextLoader</listener-class>
+        <listener-class>com.haulmont.monaco.WebAppContextLoader</listener-class>
     </listener>
 
     <servlet>

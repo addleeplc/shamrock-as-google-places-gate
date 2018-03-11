@@ -6,7 +6,7 @@
 
 allprojects {
     ext.artifactGroup = 'com.haulmont.shamrock'
-    ext.artifactVersion = '1.0'
+    ext.artifactVersion = '1.1'
     ext.isSnapshot = true
 
     ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"
@@ -46,7 +46,7 @@ buildscript {
             url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
         }
         dependencies {
-            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:1.4-SNAPSHOT'
+            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:1.5-SNAPSHOT'
         }
     }
 }
@@ -66,7 +66,7 @@ idea {
 def coreModule = project(':shamrock-as-google-gate-core')
 def rsModule = project(':shamrock-as-google-gate-rs')
 
-def monaco_version = '2.1-SNAPSHOT'
+def monaco_version = '3.0-SNAPSHOT'
 
 configure([coreModule, rsModule]) {
     apply(plugin: 'java')
