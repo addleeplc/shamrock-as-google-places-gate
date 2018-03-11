@@ -7,7 +7,9 @@
 package com.haulmont.shamrock.as.google.gate.parser;
 
 import com.haulmont.monaco.AppContext;
-import com.haulmont.shamrock.address.*;
+import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.address.AddressType;
+import com.haulmont.shamrock.address.utils.AddressBuilder;
 import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.GateConfiguration;
 import com.haulmont.shamrock.as.google.gate.constants.GoogleAddressParserConstants;
@@ -51,6 +53,9 @@ public abstract class AbstractGoogleAddressParser {
         String companyName = parseCompanyName(placeName, components, types);
         String buildingName = parseBuildingName(placeName, components, types);
 
+        String subBuildingName = parseSubBuildingName(placeName, components, types);
+        String subBuildingNumber = parseSubBuildingNumber(components);
+
         String buildingNumber = parseBuildingNumber(components);
         String street = parseStreet(formattedAddress, components);
         if (StringUtils.isNotBlank(street) && StringUtils.equalsAny(street, AddressHelper.ParseStreetNameConstants.STREET_SUFFIXES.split("\\|")))
@@ -59,58 +64,47 @@ public abstract class AbstractGoogleAddressParser {
         ParseAddressContext ctx = new ParseAddressContext();
         ctx.company = companyName;
 
-        if (StringUtils.isNotBlank(buildingName) && buildingName.matches("[0-9]+[A-Za-z]?")) {
+        if (StringUtils.isBlank(subBuildingNumber) && StringUtils.isNotBlank(buildingName) && buildingName.matches("[0-9]+[A-Za-z]?")) {
             ctx.subBuildingNumber = buildingName;
+            subBuildingNumber = buildingName;
             ctx.building = null;
             buildingName = null;
-        } else
+        } else {
+            ctx.subBuildingNumber = subBuildingNumber;
             ctx.building = buildingName;
+        }
 
         ctx.buildingNumber = buildingNumber;
         ctx.street = street;
         ctx.city = city;
-
-        String address = parseAddress(formattedAddress, components, types, ctx);
-        if (StringUtils.isBlank(address)) {
-            StringBuilder sb = new StringBuilder();
-            if (StringUtils.isNotBlank(companyName))
-                sb.append(companyName).append(',').append(' ');
-
-            if (StringUtils.isNotBlank(buildingName))
-                sb.append(buildingName).append(',').append(' ');
-
-            if (StringUtils.isNotBlank(buildingNumber) && StringUtils.isNotBlank(street))
-                sb.append(buildingNumber).append(' ');
-
-            if (StringUtils.isNotBlank(street))
-                sb.append(street);
-
-            address = sb.toString();
-
-            if (StringUtils.endsWith(address, ", ") || StringUtils.endsWith(address, ","))
-                address = address.substring(0, address.lastIndexOf(","));
-        }
-
-        if (StringUtils.isBlank(address))
-            throw new AddressParseException("Address is null");
 
         com.haulmont.shamrock.address.Location location = parseLocation(geometry);
 
         String specifics = parseAddressSpecifics(types);
         AddressType addressType = parseAddressType(types);
 
-        return new AddressBuilder(city, country)
+        Address a = new AddressBuilder(city, country)
                 .postcode(postcode)
                 .company(companyName)
                 .buildingName(buildingName)
                 .buildingNumber(buildingNumber)
-                .subBuildingNumber(ctx.subBuildingNumber)
+                .subBuildingName(subBuildingName)
+                .subBuildingNumber(subBuildingNumber)
                 .street(street)
-                .address(address)
                 .location(location)
                 .specifics(specifics)
                 .addressType(addressType)
                 .build();
+        String address = parseAddress(formattedAddress, components, types, ctx);
+        if (StringUtils.isBlank(address)) address = AddressHelper.buildAddress(a);
+
+        if (StringUtils.isBlank(address))
+            throw new AddressParseException("Address is null");
+
+        a.getAddressData().getAddressComponents().setAddress(address);
+        a.getAddressData().setFormattedAddress(AddressHelper.buildFormattedAddress(a));
+
+        return a;
     }
 
     protected abstract void prepareComponents(Map<String, AddressComponent> components);
@@ -121,9 +115,13 @@ public abstract class AbstractGoogleAddressParser {
 
     protected abstract String parseBuildingName(String placeName, Map<String, AddressComponent> components, List<String> types);
 
+    protected abstract String parseSubBuildingName(String placeName, Map<String, AddressComponent> components, List<String> types);
+
     protected abstract String parseCompanyName(String placeName, Map<String, AddressComponent> components, List<String> types);
 
     protected abstract String parseBuildingNumber(Map<String, AddressComponent> components);
+
+    protected abstract String parseSubBuildingNumber(Map<String, AddressComponent> components);
 
     protected abstract String parseStreet(String formattedAddress, Map<String, AddressComponent> components);
 
@@ -210,6 +208,24 @@ public abstract class AbstractGoogleAddressParser {
 
     protected String getFirstShort(Map<String, AddressComponent> components, GElement... elements) {
         return getFirst(components, false, elements);
+    }
+
+    protected String getExact(Map<String, AddressComponent> components, boolean shortName, GElement... elements) {
+        if (elements == null || elements.length == 0) {
+            return null;
+        } else {
+            Set<String> sElems = new HashSet<>();
+            for (GElement element : elements) {
+                sElems.add(element.name());
+            }
+
+            for (AddressComponent addressComponent : components.values()) {
+                if (addressComponent.getTypes().containsAll(sElems))
+                    return StringUtils.trim(shortName ? addressComponent.getShortName() : addressComponent.getLongName());
+            }
+
+            return null;
+        }
     }
 
     private String getFirst(Map<String, AddressComponent> components, boolean isGetLongName, GElement... elements) {
@@ -339,157 +355,5 @@ public abstract class AbstractGoogleAddressParser {
         public String subBuildingNumber;
         public String street;
         public String city;
-    }
-
-    protected static class AddressBuilder {
-        private String city;
-        private String country;
-
-        //
-
-        private String address;
-        private String company;
-        private String buildingName;
-        private String subBuildingName;
-        private String buildingNumber;
-        private String subBuildingNumber;
-        private String street;
-        private String postcode;
-
-        //
-
-        private com.haulmont.shamrock.address.Location location;
-
-        private String notes;
-
-        //
-
-        @Deprecated
-        private String specifics;
-        private AddressType addressType;
-
-        public AddressBuilder(String city, String country) {
-            this.city = city;
-            this.country = country;
-        }
-
-        public AddressBuilder address(String address) {
-            this.address = address;
-            return this;
-        }
-
-        public AddressBuilder company(String company) {
-            this.company = company;
-            return this;
-        }
-
-        public AddressBuilder buildingName(String buildingName) {
-            this.buildingName = buildingName;
-            return this;
-        }
-
-        public AddressBuilder subBuildingName(String subBuildingName) {
-            this.subBuildingName = subBuildingName;
-            return this;
-        }
-
-        public AddressBuilder buildingNumber(String buildingNumber) {
-            this.buildingNumber = buildingNumber;
-            return this;
-        }
-
-        public AddressBuilder subBuildingNumber(String subBuildingNumber) {
-            this.subBuildingNumber = subBuildingNumber;
-            return this;
-        }
-
-        public AddressBuilder street(String street) {
-            this.street = street;
-            return this;
-        }
-
-        public AddressBuilder postcode(String postcode) {
-            this.postcode = postcode;
-            return this;
-        }
-
-        public AddressBuilder location(com.haulmont.shamrock.address.Location location) {
-            this.location = location;
-            return this;
-        }
-
-        public AddressBuilder notes(String notes) {
-            this.notes = notes;
-            return this;
-        }
-
-        @Deprecated
-        public AddressBuilder specifics(String specifics) {
-            this.specifics = specifics;
-            return this;
-        }
-
-        public AddressBuilder addressType(AddressType addressType) {
-            this.addressType = addressType;
-            return this;
-        }
-
-        public Address build() {
-            AddressComponents components = buildAddressComponents();
-
-            AddressData data = new AddressData();
-            data.setFormattedAddress(buildFormattedAddress());
-            data.setAddressComponents(components);
-            data.setLocation(location);
-            data.setNotes(notes);
-
-            AddressDetails details = new AddressDetails();
-            details.setSpecifics(specifics);
-            details.setType(addressType);
-
-            Address address = new Address();
-            address.setType(ItemType.ADDRESS);
-            address.setAddressData(data);
-            address.setDetails(details);
-
-            return address;
-        }
-
-        private AddressComponents buildAddressComponents() {
-            AddressComponents components = new AddressComponents();
-            components.setAddress(address);
-
-            components.setBuildingName(buildingName);
-            components.setSubBuildingName(subBuildingName);
-
-            components.setCompany(company);
-
-            components.setBuildingNumber(buildingNumber);
-            components.setSubBuildingNumber(subBuildingNumber);
-
-            components.setStreet(street);
-            components.setPostcode(postcode);
-
-            components.setCity(city);
-            components.setCountry(country);
-            return components;
-        }
-
-        private String buildFormattedAddress() {
-            String formattedAddress = address;
-            if (!StringUtils.containsIgnoreCase(address, ", " + city))
-                formattedAddress = formattedAddress + ", " + city;
-
-            if (StringUtils.isNotBlank(postcode) && !StringUtils.containsIgnoreCase(address, ", " + postcode))
-                formattedAddress = formattedAddress + ", " + postcode;
-
-            if (StringUtils.isNotBlank(buildingName) && !StringUtils.containsIgnoreCase(formattedAddress, buildingName + ", "))
-                formattedAddress = buildingName + ", " + formattedAddress;
-
-            if (StringUtils.isNotBlank(company) && !StringUtils.containsIgnoreCase(formattedAddress, company + ", "))
-                formattedAddress = company + ", " + formattedAddress;
-
-            return formattedAddress;
-        }
     }
 }

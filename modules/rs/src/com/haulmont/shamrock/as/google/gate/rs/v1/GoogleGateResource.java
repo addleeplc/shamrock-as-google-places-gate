@@ -73,8 +73,7 @@ public class GoogleGateResource {
             ctx.setStartIndex(startIndex);
             ctx.setMaxResults(maxResults);
 
-            List<Address> res = new ArrayList<>();
-            res.addAll(getGate().search(ctx));
+            List<Address> res = new ArrayList<>(getGate().search(ctx));
 
             return new SearchResponse(ErrorCode.OK, res);
         } else {

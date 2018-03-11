@@ -46,6 +46,11 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
     }
 
     @Override
+    protected String parseSubBuildingName(String placeName, Map<String, AddressComponent> components, List<String> types) {
+        return null;
+    }
+
+    @Override
     protected String parseCompanyName(String placeName, Map<String, AddressComponent> components, List<String> types) {
         if (!CollectionUtils.containsAny(types, Arrays.asList(GElement.street_address.name(), GElement.route.name(), GElement.premise.name(), GElement.subpremise.name()))
                 && StringUtils.isNotBlank(placeName)) {
@@ -58,6 +63,11 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
     @Override
     protected String parseBuildingNumber(Map<String, AddressComponent> components) {
         return getFirstLong(components, GElement.street_number);
+    }
+
+    @Override
+    protected String parseSubBuildingNumber(Map<String, AddressComponent> components) {
+        return null;
     }
 
     @Override
@@ -140,7 +150,7 @@ public class DefaultGoogleAddressParser extends AbstractGoogleAddressParser {
 
         String buildingNumber = ctx.buildingNumber;
         String subBuildingNumber = ctx.subBuildingNumber;
-        if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber + "-") && address.startsWith(buildingNumber))
+        if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber + "-") && StringUtils.startsWith(address, buildingNumber))
             address = subBuildingNumber + "-" + address;
 
         String building = ctx.building;
