@@ -145,7 +145,7 @@ configure(rsModule) {
     }
 
 
-    task deploy(dependsOn: assemble, type: DeployJettyTask) {
+    task deploy(dependsOn: [assemble, ':initVersion', ':createReleaseNotes'], type: DeployJettyTask) {
         appName = "shamrock-as-google-${project.googleProviderName}-gate"
         appJars('shamrock-as-google-gate-core', 'shamrock-as-google-gate-rs')
     }
