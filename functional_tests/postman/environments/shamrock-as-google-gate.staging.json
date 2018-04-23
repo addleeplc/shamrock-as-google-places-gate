@@ -1,0 +1,21 @@
+{
+  "id": "dbb0f198-effe-3fb2-1a6c-a54b8d531748",
+  "name": "staging",
+  "values": [
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-geocode-gate.url",
+      "value": "http://address-search1.staging.addlee-aws.net:8091/shamrock-as-google-geocode-gate",
+      "type": "text"
+    },
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-places-gate.url",
+      "value": "http://address-search1.staging.addlee-aws.net:8092/shamrock-as-google-places-gate",
+      "type": "text"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2018-04-23T07:41:12.863Z",
+  "_postman_exported_using": "Postman/6.0.10"
+}

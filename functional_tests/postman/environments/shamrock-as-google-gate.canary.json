@@ -1,0 +1,21 @@
+{
+  "id": "bacefd34-4010-4838-d758-ca774cfdb7d6",
+  "name": "canary",
+  "values": [
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-geocode-gate.url",
+      "value": "http://dgas2.sh-addlee.com:8091/shamrock-as-google-geocode-gate",
+      "type": "text"
+    },
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-places-gate.url",
+      "value": "http://dgas2.sh-addlee.com:8092/shamrock-as-google-places-gate",
+      "type": "text"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2018-04-23T07:39:11.260Z",
+  "_postman_exported_using": "Postman/6.0.10"
+}

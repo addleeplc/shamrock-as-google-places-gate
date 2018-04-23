@@ -1,0 +1,156 @@
+{
+	"info": {
+		"_postman_id": "a10192bb-b3d8-0113-3012-1bdad918a5ac",
+		"name": "Address Search",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Gates",
+			"description": "",
+			"item": [
+				{
+					"name": "Google Gate",
+					"description": "",
+					"item": [
+						{
+							"name": "Places",
+							"description": "",
+							"item": [
+								{
+									"name": "Search Example",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"body": {},
+										"url": {
+											"raw": "{{shamrock-as-google-places-gate.url}}/v1/search?search_string=&country=",
+											"host": [
+												"{{shamrock-as-google-places-gate.url}}"
+											],
+											"path": [
+												"v1",
+												"search"
+											],
+											"query": [
+												{
+													"key": "search_string",
+													"value": "Empire state building"
+												},
+												{
+													"key": "country",
+													"value": "US"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Reverse Geocode Example",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"body": {},
+										"url": {
+											"raw": "{{shamrock-as-google-places-gate.url}}/v1/reverse-geocode?latitude=40.748489&longitude=-73.985613&radius=100",
+											"host": [
+												"{{shamrock-as-google-places-gate.url}}"
+											],
+											"path": [
+												"v1",
+												"reverse-geocode"
+											],
+											"query": [
+												{
+													"key": "latitude",
+													"value": "40.748489"
+												},
+												{
+													"key": "longitude",
+													"value": "-73.985613"
+												},
+												{
+													"key": "radius",
+													"value": "100"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Geocode",
+							"description": "",
+							"item": [
+								{
+									"name": "Geocode By Coordinates",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"body": {},
+										"url": {
+											"raw": "{{shamrock-as-google-geocode-gate.url}}/v1/geocode?latitude=40.748489&longitude=-73.985613&radius=100",
+											"host": [
+												"{{shamrock-as-google-geocode-gate.url}}"
+											],
+											"path": [
+												"v1",
+												"geocode"
+											],
+											"query": [
+												{
+													"key": "latitude",
+													"value": "40.748489"
+												},
+												{
+													"key": "longitude",
+													"value": "-73.985613"
+												},
+												{
+													"key": "radius",
+													"value": "100"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Geocode By Address",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"body": {},
+										"url": {
+											"raw": "{{shamrock-as-google-geocode-gate.url}}/v1/geocode?address=14 West 34th Street, New York, NY 10001",
+											"host": [
+												"{{shamrock-as-google-geocode-gate.url}}"
+											],
+											"path": [
+												"v1",
+												"geocode"
+											],
+											"query": [
+												{
+													"key": "address",
+													"value": "14 West 34th Street, New York, NY 10001"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"_postman_isSubFolder": true
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
+		}
+	]
+}

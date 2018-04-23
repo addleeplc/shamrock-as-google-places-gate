@@ -1,0 +1,21 @@
+{
+  "id": "f5d30bce-8933-8c76-5dcc-055ba4d7e666",
+  "name": "prod",
+  "values": [
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-geocode-gate.url",
+      "value": "http://shamrock-address-search-service-lb.sh-addlee.com:8091/shamrock-as-google-geocode-gate",
+      "type": "text"
+    },
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-places-gate.url",
+      "value": "http://shamrock-address-search-service-lb.sh-addlee.com:8092/shamrock-as-google-places-gate",
+      "type": "text"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2018-04-23T07:41:04.921Z",
+  "_postman_exported_using": "Postman/6.0.10"
+}

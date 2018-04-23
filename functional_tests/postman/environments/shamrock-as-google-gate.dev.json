@@ -1,0 +1,21 @@
+{
+  "id": "2c475cb3-8e60-3164-f399-c25745841932",
+  "name": "dev",
+  "values": [
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-geocode-gate.url",
+      "value": "http://shamrock-docker3.haulmont.com:8091/shamrock-as-google-geocode-gate",
+      "type": "text"
+    },
+    {
+      "enabled": true,
+      "key": "shamrock-as-google-places-gate.url",
+      "value": "http://shamrock-docker3.haulmont.com:8092/shamrock-as-google-places-gate",
+      "type": "text"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2018-04-23T07:38:47.064Z",
+  "_postman_exported_using": "Postman/6.0.10"
+}
