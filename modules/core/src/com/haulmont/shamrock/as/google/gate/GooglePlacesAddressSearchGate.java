@@ -79,7 +79,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                     temp.setSearchString(searchString + ", " + context.getPreferredCity());
 
                     List<Address> pcAddresses = doSearch(temp);
-                    addresses.addAll(pcAddresses);
+                    if (CollectionUtils.isNotEmpty(pcAddresses)) addresses.addAll(pcAddresses);
                 }
             }
         }
@@ -130,9 +130,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 } else if (status == GoogleApiStatus.ZERO_RESULTS) {
                     return Collections.emptyList();
                 } else {
-                    if (CollectionUtils.isNotEmpty(previous.getResults())) {
-                        placesResults.addAll(previous.getResults());
-                    }
+                    if (CollectionUtils.isNotEmpty(previous.getResults())) placesResults.addAll(previous.getResults());
                 }
             } catch (Throwable e) {
                 logger.warn("Failed to search address", e);
