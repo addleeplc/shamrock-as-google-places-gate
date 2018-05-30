@@ -26,8 +26,10 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
@@ -140,10 +142,12 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         if (CollectionUtils.isEmpty(placesResults))
             return Collections.emptyList();
 
-        return placesResults.parallelStream()
-                .map(r -> convertSearchResult(context, r))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<Address> res = new ArrayList<>();
+        for (PlacesResult r : placesResults) {
+            Address address = convertSearchResult(context, r);
+            if (address != null) res.add(address);
+        }
+        return res;
     }
 
     private Address convertSearchResult(SearchContext context, PlacesResult result) {
@@ -305,11 +309,11 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 if (CollectionUtils.isEmpty(placesResponse.getResults())) {
                     res = Collections.emptyList();
                 } else {
-                    res = Lists.partition(placesResponse.getResults(), 5)
-                            .parallelStream()
-                            .map(pr -> convertReverseGeocodeResults(context, pr))
-                            .flatMap(Collection::stream)
-                            .collect(Collectors.toList());
+                    res = new ArrayList<>();
+                    for (List<PlacesResult> pr : Lists.partition(placesResponse.getResults(), 5)) {
+                        List<Address> addresses = convertReverseGeocodeResults(context, pr);
+                        if (CollectionUtils.isNotEmpty(addresses)) res.addAll(addresses);
+                    }
                 }
             }
 

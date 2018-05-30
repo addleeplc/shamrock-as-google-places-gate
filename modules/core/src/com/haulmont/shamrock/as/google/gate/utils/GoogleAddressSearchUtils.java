@@ -10,12 +10,11 @@ import com.haulmont.shamrock.address.Address;
 import com.haulmont.shamrock.address.context.SearchContext;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class GoogleAddressSearchUtils {
     public static final Pattern GB_POSTCODE_PATTERN = Pattern.compile(
@@ -28,14 +27,24 @@ public final class GoogleAddressSearchUtils {
     ));
 
     public static List<Address> filter(List<Address> addresses) {
-        return addresses.parallelStream()
-                .filter(Objects::nonNull)
-                .filter(address -> address.getAddressData() != null)
-                .filter(address -> address.getAddressData().getAddressComponents() != null)
-                .filter(address -> StringUtils.isNotBlank(address.getAddressData().getAddressComponents().getAddress()))
-                .filter(address -> !containsJunkWords(address))
-                .filter(address -> !"GB".equals(address.getAddressData().getAddressComponents().getCountry()) || GB_POSTCODE_PATTERN.matcher(address.getAddressData().getAddressComponents().getPostcode()).find())
-                .collect(Collectors.toList());
+        List<Address> res = new ArrayList<>();
+        for (Address address : addresses) {
+            if (address != null) {
+                if (address.getAddressData() != null) {
+                    if (address.getAddressData().getAddressComponents() != null) {
+                        if (StringUtils.isNotBlank(address.getAddressData().getAddressComponents().getAddress())) {
+                            if (!containsJunkWords(address)) {
+                                if (!"GB".equals(address.getAddressData().getAddressComponents().getCountry()) || GB_POSTCODE_PATTERN.matcher(address.getAddressData().getAddressComponents().getPostcode()).find()) {
+                                    res.add(address);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return res;
     }
 
     private static boolean containsJunkWords(Address a) {
