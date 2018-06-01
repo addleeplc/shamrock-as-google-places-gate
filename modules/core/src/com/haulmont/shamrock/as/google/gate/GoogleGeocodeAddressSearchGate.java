@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
     public List<Address> search(SearchContext context) {
         long ts = System.currentTimeMillis();
 
-        final List<Address> res;
+        final List<Address> res = new ArrayList<>();
 
         GeocodingResponse response = new GoogleGeocodeSearchCommand(context).execute();
         GoogleApiStatus status = response.getStatus();
@@ -76,13 +77,9 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
                     String.format("GoogleGeocode Search API responds with over query limit (status: %s)", status)
             );
         } else if (status == GoogleApiStatus.ZERO_RESULTS) {
-            res = Collections.emptyList();
+            logger.debug("Empty result for search string {}", context.getSearchString());
         } else {
-            if (CollectionUtils.isNotEmpty(response.getResults())) {
-                res = convertSearchResponse(response);
-            } else {
-                res = Collections.emptyList();
-            }
+            if (CollectionUtils.isNotEmpty(response.getResults())) res.addAll(convertSearchResponse(response));
         }
 
         logger.debug("Search address by text (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);

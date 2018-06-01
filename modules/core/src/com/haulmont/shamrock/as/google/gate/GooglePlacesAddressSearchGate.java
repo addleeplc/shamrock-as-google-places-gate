@@ -51,26 +51,24 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         long ts = System.currentTimeMillis();
 
-        List<Address> addresses;
+        List<Address> addresses = new ArrayList<>();
 
         String postcode = PostcodeHelper.parsePostcode(context.getSearchString());
-        if (postcode == null)
-            postcode = context.getPostcode();
+        if (postcode == null) postcode = context.getPostcode();
 
         boolean partialPostcode = PostcodeHelper.parsePostcode(postcode, false) == null;
-        if (StringUtils.isNotBlank(postcode) && !partialPostcode &&
-                context.getSearchString().equalsIgnoreCase(postcode)) {
-            addresses = doSearch(context);
+        if (StringUtils.isNotBlank(postcode) && !partialPostcode && context.getSearchString().equalsIgnoreCase(postcode)) {
+            addresses.addAll(doSearch(context));
         } else {
-            if (StringUtils.isNotBlank(context.getCity())/* && !StringUtils.containsIgnoreCase(searchString, context.getCity())*/) {
+            if (StringUtils.isNotBlank(context.getCity())) {
                 SearchContext temp = GoogleAddressSearchUtils.clone(context);
                 temp.setCity(context.getCity());
                 temp.setSearchString(searchString + ", " + context.getCity());
 
-                addresses = doSearch(temp);
+                addresses.addAll(doSearch(temp));
             } else {
                 //First step
-                addresses = doSearch(context);
+                addresses.addAll(doSearch(context));
 
                 if (CollectionUtils.isEmpty(addresses)) {
                     SearchContext temp = GoogleAddressSearchUtils.clone(context);
@@ -78,8 +76,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                     temp.setCountry(context.getPreferredCountry());
                     temp.setSearchString(searchString + ", " + context.getPreferredCity());
 
-                    List<Address> pcAddresses = doSearch(temp);
-                    if (CollectionUtils.isNotEmpty(pcAddresses)) addresses.addAll(pcAddresses);
+                    addresses.addAll(doSearch(temp));
                 }
             }
         }
@@ -137,8 +134,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
             }
         }
 
-        if (CollectionUtils.isEmpty(placesResults))
-            return Collections.emptyList();
+        if (CollectionUtils.isEmpty(placesResults)) return Collections.emptyList();
 
         List<Address> res = new ArrayList<>();
         for (PlacesResult r : placesResults) {
