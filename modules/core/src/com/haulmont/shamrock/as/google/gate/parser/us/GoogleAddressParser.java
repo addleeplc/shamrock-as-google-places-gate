@@ -10,8 +10,10 @@ import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.parser.DefaultGoogleAddressParser;
 import com.haulmont.shamrock.as.google.gate.parser.Parser;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -52,8 +54,7 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
         String address = super.parseAddress(formattedAddress, components, types, ctx);
 
         String cityRegion = getFirstLong(components, GElement.sublocality, GElement.sublocality_level_1);
-        if (StringUtils.isBlank(cityRegion))
-            return address;
+        if (StringUtils.isBlank(cityRegion)) return address;
 
         if ("New York".equals(ctx.city)) {
             if ("Manhattan".equalsIgnoreCase(cityRegion)) {
@@ -64,11 +65,37 @@ public class GoogleAddressParser extends DefaultGoogleAddressParser {
                 cityRegion = "Queens";
             } else if ("Staten Island".equalsIgnoreCase(cityRegion)) {
                 cityRegion = "Staten Island";
-            } else if ("The Bronx".equalsIgnoreCase(ctx.city) || "Bronx".equalsIgnoreCase(ctx.city)) {
+            } else if ("The Bronx".equalsIgnoreCase(cityRegion) || "Bronx".equalsIgnoreCase(cityRegion)) {
                 cityRegion = "Bronx";
             }
         }
 
         return StringUtils.isNotBlank(cityRegion) ? address + ", " + cityRegion : address;
+    }
+
+    @Override
+    protected String parseBuildingName(String placeName, Map<String, AddressComponent> components, List<String> types) {
+        String buildingName = getFirstLong(components, GElement.premise, GElement.subpremise);
+        if (StringUtils.isBlank(buildingName) && StringUtils.isNotBlank(placeName)) {
+            if (CollectionUtils.containsAny(types, Arrays.asList(GElement.premise.name(), GElement.subpremise.name())))
+                buildingName = placeName.replace(", ", " ").replace(",", " ");
+
+            AddressComponent route = components.get(GElement.route.name());
+            if (route != null) {
+                AddressComponent streetNumber = components.get(GElement.street_number);
+
+                String street;
+                if (streetNumber != null) {
+                    street = streetNumber.getLongName() + " " + route.getShortName();
+                } else {
+                    street = route.getShortName();
+                }
+
+                if (StringUtils.equalsIgnoreCase(buildingName, street) || StringUtils.containsIgnoreCase(buildingName, street) || StringUtils.containsIgnoreCase(street, buildingName))
+                    buildingName = null;
+            }
+        }
+
+        return buildingName;
     }
 }

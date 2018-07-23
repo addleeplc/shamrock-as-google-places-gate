@@ -7,6 +7,7 @@
 package com.haulmont.shamrock.as.google.gate.rs.v1;
 
 import com.haulmont.monaco.AppContext;
+import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.response.Response;
 import com.haulmont.shamrock.address.*;
@@ -77,7 +78,7 @@ public class GoogleGateResource {
 
             return new SearchResponse(ErrorCode.OK, res);
         } else {
-            return new Response(ErrorCode.BAD_REQUEST.getCode(), ErrorCode.BAD_REQUEST.getMessage());
+            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'search_string' must be non-null");
         }
     }
 
@@ -94,7 +95,7 @@ public class GoogleGateResource {
             @QueryParam("address_id") String addressId
     ) {
         if (StringUtils.isBlank(addressId))
-            return new SearchResponse(ErrorCode.BAD_REQUEST.getCode(), "Parameter 'address_id' should be not null", null);
+            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'address_id' must be non-null");
 
         SearchBeneathContext ctx = new SearchBeneathContext();
 
@@ -134,7 +135,7 @@ public class GoogleGateResource {
         if (StringUtils.containsIgnoreCase(id, getGate().getId())) {
             return new RefineResponse(ErrorCode.OK, getGate().refine(ctx));
         } else {
-            return new Response(ErrorCode.BAD_REQUEST.getCode(), ErrorCode.BAD_REQUEST.getMessage());
+            throw new ServiceException(ErrorCode.BAD_REQUEST, "Address Id is invalid");
         }
     }
 
@@ -150,6 +151,9 @@ public class GoogleGateResource {
             @QueryParam("radius") Double radius,
             @QueryParam("accuracy") Accuracy accuracy
     ) {
+        if (StringUtils.isBlank(address) && (latitude == null || longitude == null || radius == null))
+            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'address' or parameters (latitude, longitude, radius) must be non-null.");
+
         GeocodeContext context = new GeocodeContext();
         context.setAddress(address);
         context.setPostcode(postcode);
@@ -183,7 +187,7 @@ public class GoogleGateResource {
 
             return new ReverseGeocodingResponse(ErrorCode.OK, getGate().reverseGeocode(ctx));
         } else {
-            return new Response(ErrorCode.BAD_REQUEST.getCode(), ErrorCode.BAD_REQUEST.getMessage());
+            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameters 'latitude' & 'longitude' must be not null");
         }
     }
 

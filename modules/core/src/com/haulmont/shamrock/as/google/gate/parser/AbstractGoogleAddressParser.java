@@ -102,7 +102,7 @@ public abstract class AbstractGoogleAddressParser {
             throw new AddressParseException("Address is null");
 
         a.getAddressData().getAddressComponents().setAddress(address);
-        a.getAddressData().setFormattedAddress(AddressHelper.buildFormattedAddress(a));
+        a.getAddressData().setFormattedAddress(AddressHelper.getName(a));
 
         return a;
     }

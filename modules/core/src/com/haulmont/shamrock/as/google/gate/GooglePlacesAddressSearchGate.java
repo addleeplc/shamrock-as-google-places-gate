@@ -505,13 +505,11 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         @Override
         protected BaseRequest createRequest(String url, Path path) {
-            String sLat = String.valueOf(context.getSearchRegion().getLatitude());
-            String sLon = String.valueOf(context.getSearchRegion().getLongitude());
-            String sRad = String.valueOf(context.getSearchRegion().getRadius());
+            GeoRegion gr = context.getSearchRegion();
 
             return get(url, path)
-                    .queryString("location", String.format("%s,%s", sLat, sLon))
-                    .queryString("radius", sRad)
+                    .queryString("location", String.format("%.6f,%.6f", gr.getLatitude(), gr.getLongitude()))
+                    .queryString("radius", String.format("%.6f", gr.getRadius()))
                     .queryString("language", "en")
                     .queryString("key", getGateConfiguration().getGooglePlacesApiKey());
         }
