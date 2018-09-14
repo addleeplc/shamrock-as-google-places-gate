@@ -14,6 +14,7 @@ import com.haulmont.shamrock.address.utils.GeoHelper;
 import com.haulmont.shamrock.address.utils.StringHelper;
 import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.*;
+import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.parser.AddressParseException;
 import com.haulmont.shamrock.as.google.gate.utils.CityGeometry;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressSearchUtils;
@@ -26,10 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
@@ -138,10 +136,26 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
         List<Address> res = new ArrayList<>();
         for (PlacesResult r : placesResults) {
-            Address address = convertSearchResult(context, r);
-            if (address != null) res.add(address);
+            if (isValidPlaceResult(r)) {
+                Address address = convertSearchResult(context, r);
+                if (address != null) res.add(address);
+            }
         }
         return res;
+    }
+
+    private boolean isValidPlaceResult(PlacesResult pr) {
+        List<String> types = pr.getTypes();
+        if (CollectionUtils.isEmpty(types)) return false;
+
+        if (types.size() == 1) {
+            return org.apache.commons.collections4.CollectionUtils.containsAny(
+                    types,
+                    Arrays.asList(GElement.postal_code.name(), GElement.postal_town.name(), GElement.postal_code_prefix.name(), GElement.postal_code_suffix.name())
+            );
+        }
+
+        return true;
     }
 
     private Address convertSearchResult(SearchContext context, PlacesResult result) {
@@ -313,7 +327,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
             Address o = res.isEmpty() ? null : res.get(0);
 
-            logger.debug("Reverse geocode address by location (loc: {},{}, res: '{}', resSize: {}) ({} ms)", context.getSearchRegion().getLatitude(), context.getSearchRegion().getLongitude(), o != null ? o.getAddressData().getFormattedAddress(): "N/A", res.size(), System.currentTimeMillis() - ts);
+            logger.debug("Reverse geocode address by location (loc: {},{}, res: '{}', resSize: {}) ({} ms)", context.getSearchRegion().getLatitude(), context.getSearchRegion().getLongitude(), o != null ? o.getAddressData().getFormattedAddress() : "N/A", res.size(), System.currentTimeMillis() - ts);
 
             return res;
         } catch (ServiceException e) {
