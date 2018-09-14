@@ -149,7 +149,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         if (CollectionUtils.isEmpty(types)) return false;
 
         if (types.size() == 1) {
-            return org.apache.commons.collections4.CollectionUtils.containsAny(
+            return !org.apache.commons.collections4.CollectionUtils.containsAny(
                     types,
                     Arrays.asList(GElement.postal_code.name(), GElement.postal_town.name(), GElement.postal_code_prefix.name(), GElement.postal_code_suffix.name())
             );
