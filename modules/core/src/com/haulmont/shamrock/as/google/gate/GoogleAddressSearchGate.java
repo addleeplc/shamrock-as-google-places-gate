@@ -43,9 +43,9 @@ public class GoogleAddressSearchGate implements AddressSearchGate {
 
     public GoogleAddressSearchGate() {
         if (AppContext.getServiceName().contains("google-places")) {
-            delegator = new GooglePlacesAddressSearchGate();
+            delegator = AppContext.getBean(GooglePlacesAddressSearchGate.class);
         } else if (AppContext.getServiceName().contains("google-geocode")) {
-            delegator = new GoogleGeocodeAddressSearchGate();
+            delegator = AppContext.getBean(GoogleGeocodeAddressSearchGate.class);
         } else {
             delegator = null;
         }

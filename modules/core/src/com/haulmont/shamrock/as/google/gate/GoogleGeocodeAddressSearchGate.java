@@ -9,19 +9,20 @@ package com.haulmont.shamrock.as.google.gate;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
-import com.haulmont.monaco.unirest.UnirestCommand;
 import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.Location;
 import com.haulmont.shamrock.address.context.*;
 import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.dto.*;
 import com.haulmont.shamrock.as.google.gate.parser.AddressParseException;
+import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;
+import com.haulmont.shamrock.as.google.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
 import com.haulmont.shamrock.geo.PostcodeHelper;
-import com.mashape.unirest.request.BaseRequest;
-import com.mashape.unirest.request.HttpRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.picocontainer.annotations.Component;
+import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +31,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Nikita Bozhko on 07.01.17.
- * Project Shamrock
- */
+@Component
 public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
-    private static final Logger logger = LoggerFactory.getLogger(GoogleGeocodeAddressSearchGate.class);
+    @Inject
+    private Logger logger;
 
-    private static final String GEOCODE_RESULT_TYPES = "street_address|premise|subpremise|park|point_of_interest";
+    @Inject
+    private GoogleGeocodingService googleGeocodingService;
+
+    @Inject
+    private GooglePlacesService googlePlacesService;
 
     @Override
     public String getId() {
@@ -55,42 +58,17 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         final List<Address> res = new ArrayList<>();
 
-        GeocodingResponse response = new GoogleGeocodeSearchCommand(context).execute();
-        GoogleApiStatus status = response.getStatus();
-        if (status == GoogleApiStatus.UNKNOWN_ERROR || status == GoogleApiStatus.UNKNOWN) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Search API responds with non-OK status (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.INVALID_REQUEST) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Search API responds with invalid request (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.REQUEST_DENIED) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Search API responds with request denied (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.OVER_QUERY_LIMIT) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Search API responds with over query limit (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.ZERO_RESULTS) {
-            logger.debug("Empty result for search string {}", context.getSearchString());
-        } else {
-            if (CollectionUtils.isNotEmpty(response.getResults())) res.addAll(convertSearchResponse(response));
-        }
+        List<PlaceDetails> places = googleGeocodingService.geocode(context);
+
+        if (CollectionUtils.isNotEmpty(places)) res.addAll(convertSearchResponse(places));
 
         logger.debug("Search address by text (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
 
         return res;
     }
 
-    private List<Address> convertSearchResponse(GeocodingResponse response) {
-        List<GeocodingResult> results = response.getResults();
-        for (GeocodingResult o : results) {
+    private List<Address> convertSearchResponse(List<PlaceDetails> places) {
+        for (PlaceDetails o : places) {
             Map<String, AddressComponent> components = GoogleAddressUtils.convert(o.getAddressComponents());
 
             try {
@@ -121,30 +99,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
         Location loc = context.getLocation();
         if (loc != null && loc.getLat() != null && loc.getLon() != null) {
-            final Address res;
-
-            /*if (StringUtils.isNotBlank(context.getAddress())) {
-                Address a = geocodeByAddress(context);
-                if (a != null && a.getAddressData() != null) {
-                    Location aLocation = a.getAddressData().getLocation();
-                    if (aLocation != null && aLocation.getLat() != null && aLocation.getLon() != null) {
-                        double distance = GeoHelper.getGeoDistance(loc.getLon(), loc.getLat(), aLocation.getLon(), aLocation.getLat());
-                        if (distance < getGateConfiguration().getDistanceThreshold()) {
-                            res = a;
-                        } else {
-                            res = geocodeByLocation(context);
-                        }
-                    } else {
-                        res = geocodeByLocation(context);
-                    }
-                } else {
-                    res = geocodeByLocation(context);
-                }
-            } else {
-                res = geocodeByLocation(context);
-            }*/
-
-            res = geocodeByLocation(context);
+            final Address res = geocodeByLocation(context);
 
             logger.debug("Geocode address by location (loc: {},{}, res: '{}') ({} ms)", loc.getLat(), loc.getLon(), res != null ? res.getAddressData().getFormattedAddress() : "N/A", System.currentTimeMillis() - ts);
 
@@ -159,88 +114,40 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
     }
 
     private Address geocodeByAddress(final GeocodeContext context) {
-        GeocodingResponse response = new GoogleGeocodeGeocodeCommand(context).execute();
-        GoogleApiStatus status = response.getStatus();
-        if (status == GoogleApiStatus.UNKNOWN_ERROR || status == GoogleApiStatus.UNKNOWN) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with non-OK status (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.INVALID_REQUEST) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with invalid request (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.REQUEST_DENIED) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with request denied (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.OVER_QUERY_LIMIT) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with over query limit (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.ZERO_RESULTS) {
-            return null;
-        } else {
-            if (CollectionUtils.isNotEmpty(response.getResults())) {
-                Address address = convertGeocodeResponse(response);
+        List<PlaceDetails> places = googleGeocodingService.geocode(context);
 
-                if (address != null) {
-                    AddressComponents addressComponents = address.getAddressData().getAddressComponents();
-                    if (StringUtils.isNotBlank(addressComponents.getPostcode())) {
-                        if (StringUtils.equalsIgnoreCase(context.getCountry(), "GB") || StringUtils.equalsIgnoreCase(addressComponents.getCountry(), "GB")) {
-                            String postcode = context.getPostcode();
-                            if (StringUtils.isBlank(postcode))
-                                postcode = PostcodeHelper.parsePostcode(context.getAddress());
+        if (CollectionUtils.isNotEmpty(places)) {
+            Address address = convertGeocodeResponse(places);
 
-                            if (StringUtils.isNotBlank(postcode) && StringUtils.isNotBlank(addressComponents.getPostcode())) {
-                                String postcodeArea = postcode.substring(0, postcode.length() - 2);
+            if (address != null) {
+                AddressComponents addressComponents = address.getAddressData().getAddressComponents();
+                if (StringUtils.isNotBlank(addressComponents.getPostcode())) {
+                    if (StringUtils.equalsIgnoreCase(context.getCountry(), "GB") || StringUtils.equalsIgnoreCase(addressComponents.getCountry(), "GB")) {
+                        String postcode = context.getPostcode();
+                        if (StringUtils.isBlank(postcode))
+                            postcode = PostcodeHelper.parsePostcode(context.getAddress());
 
-                                if (!StringUtils.startsWithIgnoreCase(addressComponents.getPostcode().replace(" ", ""), postcodeArea.replace(" ", "")))
-                                    return null;
-                            }
+                        if (StringUtils.isNotBlank(postcode) && StringUtils.isNotBlank(addressComponents.getPostcode())) {
+                            String postcodeArea = postcode.substring(0, postcode.length() - 2);
+
+                            if (!StringUtils.startsWithIgnoreCase(addressComponents.getPostcode().replace(" ", ""), postcodeArea.replace(" ", "")))
+                                return null;
                         }
                     }
                 }
-
-                return address;
             }
+
+            return address;
         }
 
         return null;
     }
 
     private Address geocodeByLocation(final GeocodeContext context) {
-        GeocodingResponse response = new GoogleGeocodeGeocodeCommand(context).execute();
-        GoogleApiStatus status = response.getStatus();
-        if (status == GoogleApiStatus.UNKNOWN_ERROR || status == GoogleApiStatus.UNKNOWN) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with non-OK status (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.INVALID_REQUEST) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with invalid request (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.REQUEST_DENIED) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with request denied (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.OVER_QUERY_LIMIT) {
-            throw new ServiceException(
-                    ErrorCode.FAILED_DEPENDENCY,
-                    String.format("GoogleGeocode Geocode API responds with over query limit (status: %s)", status)
-            );
-        } else if (status == GoogleApiStatus.ZERO_RESULTS) {
-            return null;
-        } else {
-            if (CollectionUtils.isNotEmpty(response.getResults())) {
-                return convertGeocodeResponse(response);
-            }
+        List<PlaceDetails> places = googleGeocodingService.reverseGeocode(context);
+
+        if (CollectionUtils.isNotEmpty(places)) {
+            return convertGeocodeResponse(places);
         }
 
         return null;
@@ -251,9 +158,8 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         throw new UnsupportedOperationException("Unsupported operation for " + getId() + " gate");
     }
 
-    private Address convertGeocodeResponse(GeocodingResponse response) {
-        List<GeocodingResult> results = response.getResults();
-        for (GeocodingResult o : results) {
+    private Address convertGeocodeResponse(List<PlaceDetails> places) {
+        for (PlaceDetails o : places) {
             Map<String, AddressComponent> components = GoogleAddressUtils.convert(o.getAddressComponents());
 
             try {
@@ -291,52 +197,26 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
                 Address a = ctx.getAddress();
 
                 String id = AddressHelper.getAddressId(a);
-                if (id == null)
-                    return null;
+                if (id == null) return null;
 
-                PlaceDetailsResponse placeDetailsResponse = new GoogleGeocodeRefineCommand(id).execute();
+                PlaceDetails placeDetails = googlePlacesService.getPlaceDetails(id);
 
-                GoogleApiStatus status = placeDetailsResponse.getStatus();
-                if (status == GoogleApiStatus.UNKNOWN_ERROR || status == GoogleApiStatus.UNKNOWN) {
-                    throw new ServiceException(
-                            ErrorCode.FAILED_DEPENDENCY,
-                            String.format("GooglePlaces Reverse Geocode API responds with non-OK status (status: %s)", status)
-                    );
-                } else if (status == GoogleApiStatus.INVALID_REQUEST) {
-                    throw new ServiceException(
-                            ErrorCode.FAILED_DEPENDENCY,
-                            String.format("GooglePlaces Reverse Geocode API responds with invalid request (status: %s)", status)
-                    );
-                } else if (status == GoogleApiStatus.REQUEST_DENIED) {
-                    throw new ServiceException(
-                            ErrorCode.FAILED_DEPENDENCY,
-                            String.format("GooglePlaces Reverse Geocode API responds with request denied (status: %s)", status)
-                    );
-                } else if (status == GoogleApiStatus.OVER_QUERY_LIMIT) {
-                    throw new ServiceException(
-                            ErrorCode.FAILED_DEPENDENCY,
-                            String.format("GooglePlaces Reverse Geocode API responds with over query limit (status: %s)", status)
-                    );
-                } else if (status == GoogleApiStatus.ZERO_RESULTS) {
+                if (placeDetails == null) {
                     return null;
                 } else {
-                    if (placeDetailsResponse.getResult() == null) {
-                        return null;
-                    } else {
-                        Address address = convertRefineResult(placeDetailsResponse);
-                        if (address != null) {
-                            logger.info(
-                                    String.format(
-                                            "Refine address '%s/%s' (%s, %s), result: %s",
-                                            a.getId(), a.getAddressData().getFormattedAddress(),
-                                            ctx.getRefineType().name(), ctx.getAddress().getAddressData().getAddressComponents().getCountry(),
-                                            address.getAddressData().getFormattedAddress()
-                                    )
-                            );
-                        }
-
-                        return address;
+                    Address address = convertRefineResult(placeDetails);
+                    if (address != null) {
+                        logger.info(
+                                String.format(
+                                        "Refine address '%s/%s' (%s, %s), result: %s",
+                                        a.getId(), a.getAddressData().getFormattedAddress(),
+                                        ctx.getRefineType().name(), ctx.getAddress().getAddressData().getAddressComponents().getCountry(),
+                                        address.getAddressData().getFormattedAddress()
+                                )
+                        );
                     }
+
+                    return address;
                 }
             } catch (ServiceException e) {
                 throw e;
@@ -346,15 +226,14 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         }
     }
 
-    private Address convertRefineResult(PlaceDetailsResponse response) {
-        PlaceDetailsResult details = response.getResult();
-        Map<String, AddressComponent> components = GoogleAddressUtils.convert(details.getAddressComponents());
+    private Address convertRefineResult(PlaceDetails placeDetails) {
+        Map<String, AddressComponent> components = GoogleAddressUtils.convert(placeDetails.getAddressComponents());
 
         try {
-            Address res = parseAddress(details.getName(), details.getFormattedAddress(), details.getGeometry(), components, details.getTypes());
+            Address res = parseAddress(placeDetails.getName(), placeDetails.getFormattedAddress(), placeDetails.getGeometry(), components, placeDetails.getTypes());
 
             if (res != null) {
-                res.setId(String.format("%s|%s", getId(), details.getId()));
+                res.setId(String.format("%s|%s", getId(), placeDetails.getId()));
                 res.setRefined(true);
 
                 return res;
@@ -366,7 +245,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         }
     }
 
-    private static Address parseAddress(String placeName, String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
+    private Address parseAddress(String placeName, String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) {
         try {
             return GoogleAddressUtils.parseAddress(placeName, formattedAddress, geometry, components, types);
         } catch (AddressParseException e) {
@@ -376,140 +255,4 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         return null;
     }
 
-    private static GateConfiguration getGateConfiguration() {
-        return AppContext.getConfig().get(GateConfiguration.class);
-    }
-
-    private static class GoogleGeocodeSearchCommand extends UnirestCommand<GeocodingResponse> {
-        private SearchContext context;
-
-        public GoogleGeocodeSearchCommand(SearchContext context) {
-            super("GoogleGeocode.Search", GeocodingResponse.class);
-            this.context = context;
-        }
-
-        @Override
-        protected BaseRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, path)
-                    .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey())
-                    .queryString("address", context.getSearchString());
-
-            if (StringUtils.isNotBlank(context.getCountry()) || StringUtils.isNotBlank(context.getCity())) {
-                boolean f = true;
-
-                StringBuilder buffer = new StringBuilder("");
-                if (StringUtils.isNotBlank(context.getCountry())) {
-                    buffer.append("country:").append(context.getCountry());
-                    f = false;
-                }
-
-                if (StringUtils.isNotBlank(context.getCity())) {
-                    if (!f) buffer.append("|");
-                    buffer.append("locality:").append(context.getCity());
-                    f = false;
-                }
-
-                request = request.queryString("components", buffer.toString());
-            }
-
-            return request;
-        }
-
-        @Override
-        protected String getUrl() {
-            return getGateConfiguration().getApiUrl();
-        }
-
-        @Override
-        protected Path getPath() {
-            return new Path("/geocode/json");
-        }
-    }
-
-    private static class GoogleGeocodeGeocodeCommand extends UnirestCommand<GeocodingResponse> {
-        private GeocodeContext context;
-
-        public GoogleGeocodeGeocodeCommand(GeocodeContext context) {
-            super("GoogleGeocode.Geocode", GeocodingResponse.class);
-            this.context = context;
-        }
-
-        @Override
-        protected BaseRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, path)
-                    .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey());
-
-            Location location = context.getLocation();
-            if (location != null && location.getLat() != null && location.getLon() != null) {
-                request = request.queryString("latlng", String.format("%.6f,%.6f", location.getLat(), location.getLon()))
-                        .queryString("location_type", "ROOFTOP")
-                        .queryString("result_type", GEOCODE_RESULT_TYPES);
-
-                if (StringUtils.isNotBlank(context.getAddress()))
-                    request = request.queryString("address", context.getAddress())
-                            .queryString("location_type", "ROOFTOP")
-                            .queryString("result_type", GEOCODE_RESULT_TYPES);
-            } else {
-                request = request.queryString("address", context.getAddress());
-                if (StringUtils.isNotBlank(context.getCountry()) || StringUtils.isNotBlank(context.getCity())) {
-                    boolean f = true;
-
-                    StringBuilder buffer = new StringBuilder();
-                    if (StringUtils.isNotBlank(context.getCountry())) {
-                        buffer.append("country:").append(context.getCountry());
-                        f = false;
-                    }
-
-                    if (StringUtils.isNotBlank(context.getCity())) {
-                        if (!f) buffer.append("|");
-                        buffer.append("locality:").append(context.getCity());
-                        f = false;
-                    }
-
-                    request = request.queryString("components", buffer.toString());
-                }
-            }
-
-            return request;
-        }
-
-        @Override
-        protected String getUrl() {
-            return getGateConfiguration().getApiUrl();
-        }
-
-        @Override
-        protected Path getPath() {
-            return new Path("/geocode/json");
-        }
-    }
-
-    private static class GoogleGeocodeRefineCommand extends UnirestCommand<PlaceDetailsResponse> {
-        private String placeId;
-
-        public GoogleGeocodeRefineCommand(String placeId) {
-            super("GoogleGeocode.Refine", PlaceDetailsResponse.class);
-            this.placeId = placeId;
-        }
-
-        @Override
-        protected BaseRequest createRequest(String url, Path path) {
-            return get(url, path)
-                    .queryString("placeid", placeId)
-                    .queryString("language", "en")
-                    .queryString("key", getGateConfiguration().getGoogleGeocodeApiKey());
-        }
-
-        @Override
-        protected String getUrl() {
-            return getGateConfiguration().getApiUrl();
-        }
-
-        @Override
-        protected Path getPath() {
-            return new Path("/place/details/json");
-        }
-    }
 }

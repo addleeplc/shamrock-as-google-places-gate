@@ -1,12 +1,12 @@
 /*
- * Copyright 2008 - 2017 Haulmont Technology Ltd. All Rights Reserved.
+ * Copyright 2008 - 2018 Haulmont Technology Ltd. All Rights Reserved.
  * Haulmont Technology proprietary and confidential.
  * Use is subject to license terms.
  */
 
-package com.haulmont.shamrock.as.google.gate.dto;
+package com.haulmont.shamrock.as.google.gate.services.dto.google;
 
-public enum GoogleApiStatus {
+public enum ResponseStatus {
     OK,
     ZERO_RESULTS,
     OVER_QUERY_LIMIT,
@@ -15,8 +15,8 @@ public enum GoogleApiStatus {
     UNKNOWN_ERROR,
     UNKNOWN;
 
-    public static GoogleApiStatus fromString(GoogleApiStatus res) {
-        for (GoogleApiStatus status : values()) {
+    public static ResponseStatus fromString(ResponseStatus res) {
+        for (ResponseStatus status : values()) {
             if (status.name().equals(res)) {
                 return status;
             }

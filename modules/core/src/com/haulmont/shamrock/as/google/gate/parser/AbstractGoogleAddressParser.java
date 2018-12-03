@@ -11,7 +11,7 @@ import com.haulmont.shamrock.address.Address;
 import com.haulmont.shamrock.address.AddressType;
 import com.haulmont.shamrock.address.utils.AddressBuilder;
 import com.haulmont.shamrock.address.utils.AddressHelper;
-import com.haulmont.shamrock.as.google.gate.GateConfiguration;
+import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
 import com.haulmont.shamrock.as.google.gate.constants.GoogleAddressParserConstants;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
@@ -192,7 +192,7 @@ public abstract class AbstractGoogleAddressParser {
     }
 
     protected boolean isCountryRequiredPostcode(String country) {
-        GateConfiguration conf = AppContext.getConfig().get(GateConfiguration.class);
+        ServiceConfiguration conf = AppContext.getConfig().get(ServiceConfiguration.class);
 
         String s = conf.getCountriesNotRequiredPostcode();
         if (StringUtils.isBlank(s))

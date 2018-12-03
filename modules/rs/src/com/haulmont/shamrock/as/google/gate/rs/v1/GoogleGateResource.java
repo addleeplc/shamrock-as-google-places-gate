@@ -12,6 +12,7 @@ import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.response.Response;
 import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.context.*;
+import com.haulmont.shamrock.as.google.gate.GoogleAddressSearchGate;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.GeocodeResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.RefineResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.ReverseGeocodingResponse;
@@ -191,7 +192,7 @@ public class GoogleGateResource {
         }
     }
 
-    private AddressSearchGate getGate() {
-        return AppContext.getBean(AddressSearchGate.class);
+    private GoogleAddressSearchGate getGate() {
+        return AppContext.getBean(GoogleAddressSearchGate.class);
     }
 }

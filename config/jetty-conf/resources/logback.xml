@@ -10,7 +10,7 @@
     <property name="monaco-rs.level.MaskingLoggerInterceptor" value="DEBUG"/>
 
     <logger name="com.haulmont.shamrock.as.google.gate" level="DEBUG">
-        <appender-ref ref="MONACO_APP_FILE_ASYNC"/>
+        <appender-ref ref="MONACO_APP"/>
     </logger>
 
 </configuration>

@@ -6,7 +6,7 @@
 
 allprojects {
     ext.artifactGroup = 'com.haulmont.shamrock'
-    ext.artifactVersion = '1.1'
+    ext.artifactVersion = '1.2'
     ext.isSnapshot = true
 
     ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"

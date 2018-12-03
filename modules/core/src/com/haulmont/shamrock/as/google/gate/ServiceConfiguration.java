@@ -8,9 +8,11 @@ package com.haulmont.shamrock.as.google.gate;
 
 import com.haulmont.monaco.config.annotations.Config;
 import com.haulmont.monaco.config.annotations.Property;
+import org.picocontainer.annotations.Component;
 
 @Config
-public interface GateConfiguration {
+@Component
+public interface ServiceConfiguration {
     @Property("api.url")
     String getApiUrl();
 
@@ -19,15 +21,6 @@ public interface GateConfiguration {
 
     @Property("api.key.geocode")
     String getGoogleGeocodeApiKey();
-
-    @Property("timeout")
-    Integer getTimeout();
-
-    @Property("distanceThreshold")
-    Double getDistanceThreshold();
-
-    @Property("maxSearchPages")
-    int getMaxSearchPages();
 
     @Property("countries.postcode.notRequired")
     String getCountriesNotRequiredPostcode();
