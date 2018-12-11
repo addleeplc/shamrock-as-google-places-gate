@@ -13,6 +13,9 @@ import org.picocontainer.annotations.Component;
 @Config
 @Component
 public interface ServiceConfiguration {
+
+    String ENABLE_FORMATTED_ADDRESS_PARSING = "enableFormattedAddressParsing";
+
     @Property("api.url")
     String getApiUrl();
 
@@ -24,4 +27,7 @@ public interface ServiceConfiguration {
 
     @Property("countries.postcode.notRequired")
     String getCountriesNotRequiredPostcode();
+
+    @Property(ENABLE_FORMATTED_ADDRESS_PARSING)
+    Boolean getEnableFormattedAddressParsing();
 }

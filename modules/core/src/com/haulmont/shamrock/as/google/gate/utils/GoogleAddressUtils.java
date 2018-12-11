@@ -6,13 +6,11 @@
 
 package com.haulmont.shamrock.as.google.gate.utils;
 
-import com.haulmont.monaco.AppContext;
-import com.haulmont.shamrock.address.Address;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
+import com.haulmont.shamrock.as.google.gate.dto.Location;
+import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
-import com.haulmont.shamrock.as.google.gate.parser.AbstractGoogleAddressParser;
-import com.haulmont.shamrock.as.google.gate.parser.AddressParseException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -20,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class GoogleAddressUtils {
-    private static String BASE_PARSERS_PACKAGE = "com.haulmont.shamrock.as.google.gate.parser";
 
     public static Map<String, AddressComponent> convert(List<AddressComponent> components) {
         Map<String, AddressComponent> res = new HashMap<>();
@@ -36,16 +33,7 @@ public final class GoogleAddressUtils {
         return res;
     }
 
-    public static Address parseAddress(String placeName, String formattedAddress, Geometry geometry, Map<String, AddressComponent> components, List<String> types) throws AddressParseException {
-        String countryValue = getFirstShort(components, GElement.country, GElement.political);
-        if (StringUtils.isBlank(countryValue)) {
-            throw new AddressParseException("Country is null");
-        }
-
-        return getParser(countryValue).parse(placeName, formattedAddress, geometry, components, types);
-    }
-
-    private static String getFirstShort(Map<String, AddressComponent> components, GElement... elements) {
+    public static String getFirstShort(Map<String, AddressComponent> components, GElement... elements) {
         return getFirst(components, false, elements);
     }
 
@@ -75,11 +63,37 @@ public final class GoogleAddressUtils {
         }
     }
 
-    private static AbstractGoogleAddressParser getParser(String country) {
-        AbstractGoogleAddressParser parser = AppContext.getBean(BASE_PARSERS_PACKAGE + "." + country.toLowerCase());
-        if (parser == null)
-            return AppContext.getBean(BASE_PARSERS_PACKAGE);
-        else
-            return parser;
+    public static com.haulmont.shamrock.address.Location convert(Geometry geometry) {
+        if (geometry != null) {
+            Location location = geometry.getLocation();
+            if (location != null) {
+                com.haulmont.shamrock.address.Location l = new com.haulmont.shamrock.address.Location();
+                l.setLat(location.getLat());
+                l.setLon(location.getLng());
+
+                return l;
+            }
+        }
+
+        return null;
+    }
+
+    public static String getFormattedAddress(Place place) {
+        String formattedAddress = StringUtils.isBlank(place.getFormattedAddress()) ? place.getVicinity() : place.getFormattedAddress();
+
+        List<String> types = place.getTypes();
+        if (types != null) {
+            if (types.contains("street_address")) {
+                return formattedAddress;
+            } else {
+                return concat(place.getName(), formattedAddress);
+            }
+        } else {
+            return concat(place.getName(), formattedAddress);
+        }
+    }
+
+    private static String concat(String name, String address) {
+        return StringUtils.isBlank(name) ? address : (name + ", " + address);
     }
 }

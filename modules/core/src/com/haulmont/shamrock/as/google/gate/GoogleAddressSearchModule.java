@@ -8,38 +8,94 @@ package com.haulmont.shamrock.as.google.gate;
 
 import com.haulmont.monaco.annotations.Module;
 import com.haulmont.monaco.container.ModuleLoader;
-import com.haulmont.shamrock.as.google.gate.parser.Parser;
-import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Set;
+import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverter;
+import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
+import com.haulmont.shamrock.as.google.gate.parsers.PlaceParser;
+import com.haulmont.shamrock.as.google.gate.parsers.PlaceParsingService;
+import org.picocontainer.MutablePicoContainer;
 
 @Module(name = "google-address-search-module", depends = {"monaco-core"})
 public class GoogleAddressSearchModule extends ModuleLoader {
-    private static Logger logger = LoggerFactory.getLogger(GoogleAddressSearchModule.class);
 
     public GoogleAddressSearchModule() {
         super();
         packages(getClass().getPackage().getName());
 
-        final String baseParsersPkg = "com.haulmont.shamrock.as.google.gate.parser";
-        Reflections reflections = new Reflections(baseParsersPkg);
+        register((container, c) -> {
+            PlaceParser.Component a = c.getAnnotation(PlaceParser.Component.class);
+            if (a != null) {
+                container.addComponent(c);
+                container.addComponent("google-address-search-ComponentLifecycleStrategy(" + c.getName() + ")", new PlaceParserLifecycleStrategy(container, c));
 
-        final Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Parser.class);
-        for (Class<?> aClass : classes) {
-            final Parser annotation = aClass.getAnnotation(Parser.class);
-            try {
-                if (StringUtils.isBlank(annotation.value())) {
-                    component(baseParsersPkg, aClass.newInstance());
-                } else {
-                    component(aClass.getPackage().getName(), aClass.newInstance());
-                }
-            } catch (Throwable t) {
-                logger.error("Unable to init parser " + (StringUtils.isBlank(annotation.value()) ? "Default" : annotation.value()), t);
-                throw new RuntimeException(t);
+                return true;
+            } else {
+                return false;
             }
+        });
+
+        register((container, c) -> {
+            PlaceDetailsConverter.Component a = c.getAnnotation(PlaceDetailsConverter.Component.class);
+            if (a != null) {
+                container.addComponent(c);
+                container.addComponent("google-address-search-ComponentLifecycleStrategy(" + c.getName() + ")", new PlaceDetailsConverterLifecycleStrategy(container, c));
+
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    public static class PlaceParserLifecycleStrategy {
+        private MutablePicoContainer container;
+        private Class<?> c;
+
+        PlaceParserLifecycleStrategy(MutablePicoContainer container, Class<?> c) {
+            this.container = container;
+            this.c = c;
+        }
+
+        public void start() {
+            PlaceParser.Component a = c.getAnnotation(PlaceParser.Component.class);
+            PlaceParser parser = (PlaceParser) container.getComponent(c);
+
+            PlaceParsingService service = container.getComponent(PlaceParsingService.class);
+            service.register(parser);
+        }
+
+        public void stop() {
+
+        }
+
+        public void dispose() {
+
         }
     }
+
+    public static class PlaceDetailsConverterLifecycleStrategy {
+        private MutablePicoContainer container;
+        private Class<?> c;
+
+        PlaceDetailsConverterLifecycleStrategy(MutablePicoContainer container, Class<?> c) {
+            this.container = container;
+            this.c = c;
+        }
+
+        public void start() {
+            PlaceDetailsConverter.Component a = c.getAnnotation(PlaceDetailsConverter.Component.class);
+            PlaceDetailsConverter converter = (PlaceDetailsConverter) container.getComponent(c);
+
+            PlaceDetailsConverterService service = container.getComponent(PlaceDetailsConverterService.class);
+            service.register(a.country(), converter);
+        }
+
+        public void stop() {
+
+        }
+
+        public void dispose() {
+
+        }
+    }
+
 }

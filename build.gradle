@@ -77,15 +77,22 @@ configure([coreModule, rsModule]) {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
-    dependencies {
-        testCompile 'junit:junit:4.12'
-    }
-
     task sourceJar(type: Jar) {
         from file('src')
         classifier = 'sources'
     }
 
+    dependencies {
+        testCompile(group: 'org.testng', name: 'testng', version: '6.8.8')
+    }
+
+    test {
+        useTestNG()
+        scanForTestClasses = false
+        includes = ['**/*Test.class']
+        jvmArgs '-XX:-UseSplitVerifier'
+    }
+    
     artifacts {
         archives sourceJar
     }
