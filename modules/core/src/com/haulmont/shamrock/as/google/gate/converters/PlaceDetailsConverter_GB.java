@@ -16,11 +16,14 @@ import java.util.Map;
 @Component
 @PlaceDetailsConverter.Component(country = "GB")
 public class PlaceDetailsConverter_GB extends DefaultPlaceDetailsConverter {
+
+    private static final String LONDON = "London";
+
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
         String city = getFirstLong(components, GElement.administrative_area_level_2);
         if (StringUtils.isNotBlank(city) && StringUtils.equalsIgnoreCase(city, "Greater London")) {
-            city = "London";
+            city = LONDON;
         } else {
             city = getFirstLong(components, GElement.locality, GElement.postal_town);
             if (StringUtils.isBlank(city))
@@ -28,11 +31,15 @@ public class PlaceDetailsConverter_GB extends DefaultPlaceDetailsConverter {
 
             if (city != null) {
                 if (city.equalsIgnoreCase("Greater London")) {
-                    city = "London";
+                    city = LONDON;
                 }
             } else {
                 city = getFirstLong(components, GElement.administrative_area_level_1);
             }
+        }
+
+        if (StringUtils.equalsIgnoreCase("City Of London", city)) {
+            city = LONDON;
         }
 
         return city;
