@@ -14,8 +14,8 @@ allprojects {
 
     //Docker environment setup
     ext.dockerDestFile = project.file('Dockerfile')
-    ext.parentImage = 'shamrock/openjdk8'
-    ext.parentImageTag = 'u144b1'
+    ext.parentImage = 'shamrock-microservices-base-image'
+    ext.parentImageTag = 'openjdk8-u144b1'
     ext.dockerServerDir = '/opt/jetty'
 
     ext.appPort = Integer.parseInt("${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}")
@@ -23,9 +23,7 @@ allprojects {
     ext.jmxPort = Integer.parseInt("${project.hasProperty('googleProviderJmxPort') ? googleProviderJmxPort : 59999}")
     ext.publishPorts = ['tcp': [appPort, debugPort, jmxPort]]
 
-    ext.imageTagSuffix = Boolean.valueOf(System.getenv('IS_TEST')) ?
-            '-test' :
-            ''
+    ext.imageTagSuffix = Boolean.valueOf(System.getenv('IS_TEST')) ? '-test' : ''
     ext.dockerUrl = System.getenv('SHAMROCK_DOCKER_URL')
 
     //Jetty setup
@@ -46,7 +44,7 @@ buildscript {
             url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
         }
         dependencies {
-            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:1.5-SNAPSHOT'
+            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:2.0-SNAPSHOT'
         }
     }
 }
@@ -125,7 +123,7 @@ configure(coreModule) {
         compile 'commons-codec:commons-codec:1.10'
     }
 
-    task deploy(dependsOn: assemble, type: DeployJettyTask) {
+    task deploy(dependsOn: assemble, type: com.haulmont.shamrock.jetty.DeployJettyTask) {
         appName = "shamrock-as-google-${project.googleProviderName}-gate"
         appJars('shamrock-as-google-gate-core')
     }
@@ -152,7 +150,7 @@ configure(rsModule) {
     }
 
 
-    task deploy(dependsOn: [assemble, ':initVersion', ':createReleaseNotes'], type: DeployJettyTask) {
+    task deploy(dependsOn: [assemble, ':initVersion', ':createReleaseNotes'], type: com.haulmont.shamrock.jetty.DeployJettyTask) {
         appName = "shamrock-as-google-${project.googleProviderName}-gate"
         appJars('shamrock-as-google-gate-core', 'shamrock-as-google-gate-rs')
     }
