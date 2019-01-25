@@ -164,7 +164,12 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
             }
 
             if (BooleanUtils.isTrue(configuration.getEnableFormattedAddressParsing())) {
-                return placeParsingService.parse(place, getId());
+                Address address = placeParsingService.parse(place, getId());
+                if (address == null) {
+                    return refine(res);
+                } else {
+                    return address;
+                }
             } else {
                 return refine(res);
             }
