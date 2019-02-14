@@ -3,36 +3,6 @@
  * Haulmont Technology proprietary and confidential.
  * Use is subject to license terms.
  */
-
-/*allprojects {
-    ext.artifactGroup = 'com.haulmont.shamrock'
-    ext.artifactVersion = '1.2'
-    ext.isSnapshot = true
-
-    ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"
-    ext.app = "shamrock-as-google-${project.googleProviderName}-gate"
-
-    //Docker environment setup
-    ext.dockerDestFile = project.file('Dockerfile')
-    ext.parentImage = 'shamrock-microservices-base-image'
-    ext.parentImageTag = 'openjdk8-u144b1'
-    ext.dockerServerDir = '/opt/jetty'
-
-    ext.appPort = Integer.parseInt("${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}")
-    ext.debugPort = Integer.parseInt("${project.hasProperty('googleProviderDebugPort') ? googleProviderDebugPort : 19999}")
-    ext.jmxPort = Integer.parseInt("${project.hasProperty('googleProviderJmxPort') ? googleProviderJmxPort : 59999}")
-    ext.publishPorts = ['tcp': [appPort, debugPort, jmxPort]]
-
-    ext.imageTagSuffix = Boolean.valueOf(System.getenv('IS_TEST')) ? '-test' : ''
-    ext.dockerUrl = System.getenv('SHAMROCK_DOCKER_URL')
-
-    //Jetty setup
-    ext.serverDir = new File("$rootDir.absolutePath/jetty_base").canonicalPath
-    ext.serverHome = new File("$rootDir.absolutePath/jetty_home").canonicalPath
-    ext.jettyConfigDir = './config/jetty-conf'
-    ext.jettyVersion = '9.2.11.v20150529'
-}*/
-
 allprojects {
     ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"
 }
@@ -142,6 +112,8 @@ configure(coreModule) {
     dependencies {
         compile "com.haulmont.monaco:monaco-core:${monaco_version}"
         compile "com.haulmont.monaco:monaco-config:${monaco_version}"
+        compile "com.haulmont.monaco:monaco-graylog-reporter:${monaco_version}"
+        compile "com.haulmont.monaco:monaco-sentry-reporter:${monaco_version}"
         compile "com.haulmont.monaco:monaco-unirest:${monaco_version}"
 
         compile 'com.haulmont.shamrock:shamrock-as-common-data:1.0-SNAPSHOT'

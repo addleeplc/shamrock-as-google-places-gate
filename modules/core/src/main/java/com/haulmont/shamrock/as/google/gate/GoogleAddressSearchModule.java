@@ -14,7 +14,7 @@ import com.haulmont.shamrock.as.google.gate.parsers.PlaceParser;
 import com.haulmont.shamrock.as.google.gate.parsers.PlaceParsingService;
 import org.picocontainer.MutablePicoContainer;
 
-@Module(name = "google-address-search-module", depends = {"monaco-core"})
+@Module(name = "google-address-search-module", depends = {"monaco-core", "graylog-reporter", "sentry-reporter"})
 public class GoogleAddressSearchModule extends ModuleLoader {
 
     public GoogleAddressSearchModule() {
