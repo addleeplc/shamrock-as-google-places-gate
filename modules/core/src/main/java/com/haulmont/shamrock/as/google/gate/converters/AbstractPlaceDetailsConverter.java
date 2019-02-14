@@ -54,9 +54,9 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
         String buildingName = parseBuildingName(placeName, components, types);
 
         String subBuildingName = parseSubBuildingName(placeName, components, types);
-        String subBuildingNumber = parseSubBuildingNumber(components);
+        String subBuildingNumber = parseSubBuildingNumber(formattedAddress, components);
 
-        String buildingNumber = parseBuildingNumber(components);
+        String buildingNumber = parseBuildingNumber(formattedAddress, components);
         String street = parseStreet(formattedAddress, components);
         if (StringUtils.isNotBlank(street) && StringUtils.equalsAny(street, AddressHelper.ParseStreetNameConstants.STREET_SUFFIXES.split("\\|")))
             street = null;
@@ -119,9 +119,9 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
 
     protected abstract String parseCompanyName(String placeName, Map<String, AddressComponent> components, List<String> types);
 
-    protected abstract String parseBuildingNumber(Map<String, AddressComponent> components);
+    protected abstract String parseBuildingNumber(String formattedAddress, Map<String, AddressComponent> components);
 
-    protected abstract String parseSubBuildingNumber(Map<String, AddressComponent> components);
+    protected abstract String parseSubBuildingNumber(String formattedAddress, Map<String, AddressComponent> components);
 
     protected abstract String parseStreet(String formattedAddress, Map<String, AddressComponent> components);
 

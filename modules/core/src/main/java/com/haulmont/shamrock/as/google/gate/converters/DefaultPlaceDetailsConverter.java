@@ -62,12 +62,12 @@ public class DefaultPlaceDetailsConverter extends AbstractPlaceDetailsConverter 
     }
 
     @Override
-    protected String parseBuildingNumber(Map<String, AddressComponent> components) {
+    protected String parseBuildingNumber(String formattedAddress, Map<String, AddressComponent> components) {
         return getFirstLong(components, GElement.street_number);
     }
 
     @Override
-    protected String parseSubBuildingNumber(Map<String, AddressComponent> components) {
+    protected String parseSubBuildingNumber(String formattedAddress, Map<String, AddressComponent> components) {
         return null;
     }
 

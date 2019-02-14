@@ -4,7 +4,7 @@
  * Use is subject to license terms.
  */
 
-allprojects {
+/*allprojects {
     ext.artifactGroup = 'com.haulmont.shamrock'
     ext.artifactVersion = '1.2'
     ext.isSnapshot = true
@@ -31,6 +31,10 @@ allprojects {
     ext.serverHome = new File("$rootDir.absolutePath/jetty_home").canonicalPath
     ext.jettyConfigDir = './config/jetty-conf'
     ext.jettyVersion = '9.2.11.v20150529'
+}*/
+
+allprojects {
+    ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"
 }
 
 buildscript {
@@ -44,7 +48,7 @@ buildscript {
             url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
         }
         dependencies {
-            classpath 'com.haulmont.shamrock.gradle:shamrock-plugins:2.0-SNAPSHOT'
+            classpath 'com.haulmont.shamrock.gradle:shamrock-plugin:3.0-SNAPSHOT'
         }
     }
 }
@@ -52,19 +56,57 @@ buildscript {
 apply(plugin: 'idea')
 apply(plugin: 'shamrock-services')
 
-idea {
-    project {
-        jdkName = '1.8'
-        languageLevel = '1.8'
+shamrock {
+    service {
+        group = 'com.haulmont.shamrock'
+        version = '1.2'
+        name = "shamrock-as-google-${project.googleProviderName}-gate"
+        ports {
+            app = Integer.parseInt("${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}")
+            debug = Integer.parseInt("${project.hasProperty('googleProviderDebugPort') ? googleProviderDebugPort : 19999}")
+            jmx = Integer.parseInt("${project.hasProperty('googleProviderJmxPort') ? googleProviderJmxPort : 59999}")
+        }
+    }
+    java {
+        xmx = '256m'
+    }
+    jetty {
+        version = '9.4.14.v20181114'
+        modules {
+            module_deploy {
 
-        vcs = 'Git'
+            }
+            module_ext {
+
+            }
+            module_http {
+
+            }
+            module_logging {
+
+            }
+            module_jndi {
+
+            }
+            module_plus {
+
+            }
+            module_annotations {
+
+            }
+        }
+    }
+    kubernetes {
+        docker {
+            baseImage = 'shamrock-microservices-base-image:openjdk11'
+        }
     }
 }
 
 def coreModule = project(':shamrock-as-google-gate-core')
 def rsModule = project(':shamrock-as-google-gate-rs')
 
-def monaco_version = '3.0-SNAPSHOT'
+def monaco_version = '3.1-SNAPSHOT'
 
 configure([coreModule, rsModule]) {
     apply(plugin: 'java')
@@ -72,23 +114,19 @@ configure([coreModule, rsModule]) {
     apply(plugin: 'maven')
     apply(plugin: 'shamrock-services')
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
     task sourceJar(type: Jar) {
         from file('src')
         classifier = 'sources'
     }
 
     dependencies {
-        testCompile(group: 'org.testng', name: 'testng', version: '6.8.8')
+        testCompile(group: 'org.testng', name: 'testng', version: '6.14.3')
     }
 
     test {
         useTestNG()
         scanForTestClasses = false
         includes = ['**/*Test.class']
-        jvmArgs '-XX:-UseSplitVerifier'
     }
     
     artifacts {
@@ -123,8 +161,8 @@ configure(coreModule) {
         compile 'commons-codec:commons-codec:1.10'
     }
 
-    task deploy(dependsOn: assemble, type: com.haulmont.shamrock.jetty.DeployJettyTask) {
-        appName = "shamrock-as-google-${project.googleProviderName}-gate"
+    task deploy(dependsOn: assemble, type: ShamrockDeployJettyTask) {
+        excludeConfigDirs = ['database-scripts', 'jetty-conf']
         appJars('shamrock-as-google-gate-core')
     }
 }
@@ -148,38 +186,21 @@ configure(rsModule) {
         manifest {
         }
     }
-
-
-    task deploy(dependsOn: [assemble, ':initVersion', ':createReleaseNotes'], type: com.haulmont.shamrock.jetty.DeployJettyTask) {
-        appName = "shamrock-as-google-${project.googleProviderName}-gate"
+    
+    task deploy(dependsOn: [assemble], type: ShamrockDeployJettyTask) {
+        excludeConfigDirs = ['database-scripts', 'jetty-conf']
         appJars('shamrock-as-google-gate-core', 'shamrock-as-google-gate-rs')
-    }
-    deploy << {
-        copy {
-            from "$rootDir.absolutePath/config"
-            into "$serverDir/conf/$appName"
-            exclude "jetty-conf"
-        }
-    }
-
-    deploy << {
-        copy {
-            from configurations.extraLibs
-            into "$serverDir/webapps/$appName/WEB-INF/lib"
-        }
     }
 
     deploy {
         doLast {
-            def appName = "shamrock-as-google-${project.googleProviderName}-gate"
-
             def tokens = [GOOGLE_PROVIDER_NAME: "${project.googleProviderName}"]
 
-            new File("$serverDir/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate.xml")
-                    .renameTo("$serverDir/shamrock-as-google-${project.googleProviderName}-gate.xml")
+            new File("${getJettyBaseDir()}/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate.xml")
+                    .renameTo("${getJettyBaseDir()}/${shamrock.service.name}.xml")
 
-            replaceTokens(new File("$serverDir/webapps/$appName/WEB-INF/web.xml"), tokens)
-            new File("$serverDir/conf/$appName").eachFile { file ->
+            replaceTokens(new File("${getJettyBaseDir()}/webapps/${shamrock.service.name}/WEB-INF/web.xml"), tokens)
+            new File("${getJettyBaseDir()}/conf/${shamrock.service.name}").eachFile { file ->
                 replaceTokens(file, tokens)
             }
         }

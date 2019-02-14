@@ -37,7 +37,7 @@ public class PlaceDetailsConverter_JP extends DefaultPlaceDetailsConverter {
     }
 
     @Override
-    protected String parseBuildingNumber(Map<String, AddressComponent> components) {
+    protected String parseBuildingNumber(String formattedAddress, Map<String, AddressComponent> components) {
         String cityDistrict = getExact(components, true, GElement.sublocality_level_3, GElement.sublocality, GElement.political);
         String cityBlock = getExact(components, true, GElement.sublocality_level_4, GElement.sublocality, GElement.political);
         String buildingNumber = getExact(components, true, GElement.premise);
