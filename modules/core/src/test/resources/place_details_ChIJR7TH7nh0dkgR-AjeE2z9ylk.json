@@ -1,0 +1,121 @@
+{
+  "html_attributions" : [],
+  "result" : {
+    "address_components" : [
+      {
+        "long_name" : "Ashford",
+        "short_name" : "Ashford",
+        "types" : [ "locality", "political" ]
+      },
+      {
+        "long_name" : "Feltham",
+        "short_name" : "Feltham",
+        "types" : [ "postal_town" ]
+      },
+      {
+        "long_name" : "Surrey",
+        "short_name" : "Surrey",
+        "types" : [ "administrative_area_level_2", "political" ]
+      },
+      {
+        "long_name" : "England",
+        "short_name" : "England",
+        "types" : [ "administrative_area_level_1", "political" ]
+      },
+      {
+        "long_name" : "United Kingdom",
+        "short_name" : "GB",
+        "types" : [ "country", "political" ]
+      },
+      {
+        "long_name" : "TW13 4RL",
+        "short_name" : "TW13 4RL",
+        "types" : [ "postal_code" ]
+      }
+    ],
+    "adr_address" : "\u003cspan class=\"extended-address\"\u003eAshford\u003c/span\u003e, \u003cspan class=\"locality\"\u003eFeltham\u003c/span\u003e \u003cspan class=\"postal-code\"\u003eTW13 4RL\u003c/span\u003e, \u003cspan class=\"country-name\"\u003eUK\u003c/span\u003e",
+    "formatted_address" : "Ashford, Feltham TW13 4RL, UK",
+    "geometry" : {
+      "location" : {
+        "lat" : 51.4284374,
+        "lng" : -0.4306233
+      },
+      "viewport" : {
+        "northeast" : {
+          "lat" : 51.4298121302915,
+          "lng" : -0.4292217197084979
+        },
+        "southwest" : {
+          "lat" : 51.4271141697085,
+          "lng" : -0.431919680291502
+        }
+      }
+    },
+    "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/generic_business-71.png",
+    "id" : "34a58fbbf23bd65a638193d728aff2945c63d381",
+    "name" : "BP Lakeview",
+    "place_id" : "ChIJR7TH7nh0dkgR-AjeE2z9ylk",
+    "plus_code" : {
+      "compound_code" : "CHH9+9Q Ashford, United Kingdom",
+      "global_code" : "9C3XCHH9+9Q"
+    },
+    "rating" : 4.7,
+    "reference" : "ChIJR7TH7nh0dkgR-AjeE2z9ylk",
+    "reviews" : [
+      {
+        "author_name" : "Peter Cuthbert",
+        "author_url" : "https://www.google.com/maps/contrib/117436751601360568743/reviews",
+        "language" : "en",
+        "profile_photo_url" : "https://lh5.googleusercontent.com/-E9Bjkk_y894/AAAAAAAAAAI/AAAAAAAAAAA/ACHi3rdPvc02EyguhuKoI72ASZbapMt43Q/s128-c0x00000000-cc-rp-mo-ba5/photo.jpg",
+        "rating" : 5,
+        "relative_time_description" : "10 months ago",
+        "text" : "Very good offices",
+        "time" : 1528376304
+      },
+      {
+        "author_name" : "Gatherlight Young",
+        "author_url" : "https://www.google.com/maps/contrib/114484921735380034491/reviews",
+        "language" : "en",
+        "profile_photo_url" : "https://lh4.googleusercontent.com/-yNs4iJb-Jz4/AAAAAAAAAAI/AAAAAAAAqWE/rubZL_R-1aM/s128-c0x00000000-cc-rp-mo/photo.jpg",
+        "rating" : 4,
+        "relative_time_description" : "a year ago",
+        "text" : "Nice 89",
+        "time" : 1498088265
+      },
+      {
+        "author_name" : "Tracey W",
+        "author_url" : "https://www.google.com/maps/contrib/106030978082840828378/reviews",
+        "profile_photo_url" : "https://lh5.googleusercontent.com/-pGL5WaJMWO4/AAAAAAAAAAI/AAAAAAAAOj4/0586TJE5Wjs/s128-c0x00000000-cc-rp-mo-ba3/photo.jpg",
+        "rating" : 5,
+        "relative_time_description" : "3 months ago",
+        "text" : "",
+        "time" : 1545720906
+      },
+      {
+        "author_name" : "Robert Kasper",
+        "author_url" : "https://www.google.com/maps/contrib/109466464259131137833/reviews",
+        "profile_photo_url" : "https://lh5.googleusercontent.com/-E79QNdRjx6Q/AAAAAAAAAAI/AAAAAAAABgM/rGb1qO4vEMo/s128-c0x00000000-cc-rp-mo-ba3/photo.jpg",
+        "rating" : 5,
+        "relative_time_description" : "6 months ago",
+        "text" : "",
+        "time" : 1539861606
+      },
+      {
+        "author_name" : "Nadia Siddiqui",
+        "author_url" : "https://www.google.com/maps/contrib/117732825601694329032/reviews",
+        "profile_photo_url" : "https://lh5.googleusercontent.com/-SDkdcaFgFEg/AAAAAAAAAAI/AAAAAAABdEs/0vMfx8PyEis/s128-c0x00000000-cc-rp-mo/photo.jpg",
+        "rating" : 5,
+        "relative_time_description" : "a year ago",
+        "text" : "",
+        "time" : 1499410141
+      }
+    ],
+    "scope" : "GOOGLE",
+    "types" : [ "point_of_interest", "establishment" ],
+    "url" : "https://maps.google.com/?cid=6470262455302752504",
+    "user_ratings_total" : 7,
+    "utc_offset" : 60,
+    "vicinity" : "Ashford, Feltham"
+  },
+  "status" : "OK"
+}
