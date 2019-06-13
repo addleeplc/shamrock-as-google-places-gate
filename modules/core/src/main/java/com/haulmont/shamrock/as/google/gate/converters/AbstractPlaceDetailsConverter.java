@@ -98,8 +98,8 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
         String address = parseAddress(formattedAddress, components, types, ctx);
         if (StringUtils.isBlank(address)) address = AddressHelper.buildAddress(a);
 
-        if (StringUtils.isBlank(address))
-            throw new RuntimeException("Address is null");
+        if (StringUtils.isBlank(address)) throw new RuntimeException("Address is null");
+        if (address.endsWith(", ")) address = address.substring(0, address.length() - 2);
 
         a.getAddressData().getAddressComponents().setAddress(address);
         a.getAddressData().setFormattedAddress(AddressHelper.getName(a));

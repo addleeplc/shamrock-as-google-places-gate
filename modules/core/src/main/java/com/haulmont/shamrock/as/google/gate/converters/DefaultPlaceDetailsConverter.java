@@ -151,8 +151,22 @@ public class DefaultPlaceDetailsConverter extends AbstractPlaceDetailsConverter 
 
         String buildingNumber = ctx.buildingNumber;
         String subBuildingNumber = ctx.subBuildingNumber;
-        if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber + "-") && StringUtils.startsWith(address, buildingNumber))
-            address = subBuildingNumber + "-" + address;
+        String street = ctx.street;
+        if (StringUtils.isNotBlank(street) && !StringUtils.containsIgnoreCase(address, street)) {
+            if (StringUtils.isNotBlank(buildingNumber) && StringUtils.isNotBlank(subBuildingNumber)) {
+                street = buildingNumber + "-" + subBuildingNumber + " " + street;
+            } else if (StringUtils.isNotBlank(buildingNumber)) {
+                street = buildingNumber + " " + street;
+            }
+
+            address = address + ", " + street;
+        } else {
+            if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber + "-") && StringUtils.startsWith(address, buildingNumber)) {
+                address = subBuildingNumber + "-" + address;
+            } else if (StringUtils.isNotBlank(buildingNumber) && StringUtils.startsWithIgnoreCase(address, buildingNumber)) {
+                address = buildingNumber + " " + address;
+            }
+        }
 
         String building = ctx.building;
         if (StringUtils.isNotBlank(building) && !StringUtils.containsIgnoreCase(address, building))
