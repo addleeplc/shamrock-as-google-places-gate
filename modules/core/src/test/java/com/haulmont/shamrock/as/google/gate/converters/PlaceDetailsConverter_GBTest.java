@@ -9,6 +9,7 @@ package com.haulmont.shamrock.as.google.gate.converters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haulmont.monaco.jackson.ObjectMapperContainer;
 import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.address.AddressData;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
@@ -25,14 +26,32 @@ import java.util.Map;
 public class PlaceDetailsConverter_GBTest {
     @Test
     public void test() throws IOException {
-        PlaceDetails place = load("/place_details_ChIJR7TH7nh0dkgR-AjeE2z9ylk.json");
+        PlaceDetails place;
+        Address res;
+        AddressData data;
 
-        Address res = convert(place);
+        //
 
-        Assert.assertEquals(res.getAddressData().getAddressComponents().getPostcode(), "TW13 4RL");
-        Assert.assertEquals(res.getAddressData().getAddressComponents().getCity(), "Ashford");
+        place = load("/place_details_ChIJR7TH7nh0dkgR-AjeE2z9ylk.json");
+        res = convert(place);
+        data = res.getAddressData();
 
-//        System.out.println("res = " + res);
+        Assert.assertEquals(data.getAddressComponents().getPostcode(), "TW13 4RL");
+        Assert.assertEquals(data.getAddressComponents().getCity(), "Ashford");
+
+        //
+
+        place = load("/place_details_ChIJ49kVQ3d0dkgR8tx5cAC2L0Y.json");
+        res = convert(place);
+        data = res.getAddressData();
+
+        Assert.assertEquals(data.getFormattedAddress(), "343 Feltham Hill Road, Ashford, TW15 1LP");
+        Assert.assertEquals(data.getAddressComponents().getAddress(), "343 Feltham Hill Road");
+
+        Assert.assertEquals(data.getAddressComponents().getBuildingNumber(), "343");
+        Assert.assertEquals(data.getAddressComponents().getStreet(), "Feltham Hill Road");
+        Assert.assertEquals(data.getAddressComponents().getPostcode(), "TW15 1LP");
+        Assert.assertEquals(data.getAddressComponents().getCity(), "Ashford");
     }
 
     private PlaceDetails load(String resource) throws IOException {

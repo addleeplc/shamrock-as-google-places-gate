@@ -163,7 +163,7 @@ public class DefaultPlaceDetailsConverter extends AbstractPlaceDetailsConverter 
         } else {
             if (StringUtils.isNotBlank(subBuildingNumber) && !StringUtils.containsIgnoreCase(address, subBuildingNumber + "-") && StringUtils.startsWith(address, buildingNumber)) {
                 address = subBuildingNumber + "-" + address;
-            } else if (StringUtils.isNotBlank(buildingNumber) && StringUtils.startsWithIgnoreCase(address, buildingNumber)) {
+            } else if (StringUtils.isNotBlank(buildingNumber) && !StringUtils.startsWithIgnoreCase(address, buildingNumber)) {
                 address = buildingNumber + " " + address;
             }
         }
