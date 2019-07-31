@@ -29,10 +29,7 @@ import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class GooglePlacesAddressSearchGate implements AddressSearchGate {
@@ -97,7 +94,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 //First step
                 addresses.addAll(doSearch(context));
 
-                if (CollectionUtils.isEmpty(addresses)) {
+                if (!haveGoodAddresses(context, addresses)) {
                     SearchContext temp = GoogleAddressSearchUtils.clone(context);
                     temp.setCity(context.getPreferredCity());
                     temp.setCountry(context.getPreferredCountry());
@@ -111,6 +108,25 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         final List<Address> res = GoogleAddressSearchUtils.filter(addresses);
 
         logger.debug("Search address by text (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
+
+        return res;
+    }
+
+    private boolean haveGoodAddresses(SearchContext context, Collection<Address> addresses) {
+        if (CollectionUtils.isEmpty(addresses)) return false;
+
+        boolean res = true;
+
+        String preferredCountry = context.getPreferredCountry();
+        if (StringUtils.isBlank(context.getCountry()) && StringUtils.isNotBlank(preferredCountry)) {
+            for (Address address : addresses) {
+                AddressData addressData = address.getAddressData();
+                if (addressData != null) {
+                    AddressComponents addressComponents = addressData.getAddressComponents();
+                    if (addressComponents != null) res = res && StringUtils.equals(addressComponents.getCountry(), preferredCountry);
+                }
+            }
+        }
 
         return res;
     }
