@@ -25,8 +25,8 @@ public interface ServiceConfiguration {
     @Property("api.key.geocode")
     String getGoogleGeocodeApiKey();
 
-    @Property("countries.postcode.notRequired")
-    String getCountriesNotRequiredPostcode();
+    @Property("countries.postcode.require")
+    String getCountriesRequirePostcode();
 
     @Property(ENABLE_FORMATTED_ADDRESS_PARSING)
     Boolean getEnableFormattedAddressParsing();

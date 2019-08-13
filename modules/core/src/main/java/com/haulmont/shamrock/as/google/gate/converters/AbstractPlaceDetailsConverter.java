@@ -179,12 +179,11 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
     protected boolean isCountryRequiredPostcode(String country) {
         ServiceConfiguration conf = AppContext.getConfig().get(ServiceConfiguration.class);
 
-        String s = conf.getCountriesNotRequiredPostcode();
-        if (StringUtils.isBlank(s))
-            return true;
+        String s = conf.getCountriesRequirePostcode();
+        if (StringUtils.isBlank(s)) return false;
 
         s = StringUtils.deleteWhitespace(s);
-        return !(new HashSet<>(Arrays.asList(s.split("[;,]"))).contains(country));
+        return (new HashSet<>(Arrays.asList(s.split("[;,]"))).contains(country));
     }
 
     protected String getFirstLong(Map<String, AddressComponent> components, GElement... elements) {
