@@ -78,6 +78,18 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
         ctx.street = street;
         ctx.city = city;
 
+        if (street == null && StringUtils.isNotBlank(formattedAddress)) {
+            if (formattedAddress.contains(ctx.city)) street = formattedAddress.substring(0, formattedAddress.indexOf(ctx.city));
+
+            if (StringUtils.contains(street, ctx.company)) street = street.replace(ctx.company, "");
+            if (StringUtils.contains(street, ctx.building)) street = street.replace(ctx.building, "");
+
+            if (StringUtils.isNotBlank(street)) {
+                street = street.replace(", ", " ").replaceAll("\\s+", " ").trim();
+                ctx.street = street;
+            }
+        }
+
         com.haulmont.shamrock.address.Location location = GoogleAddressUtils.convert(place.getGeometry());
 
         String specifics = parseAddressSpecifics(types);
