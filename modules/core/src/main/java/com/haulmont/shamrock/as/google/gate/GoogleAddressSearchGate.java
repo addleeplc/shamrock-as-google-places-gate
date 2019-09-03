@@ -16,8 +16,8 @@ import com.haulmont.shamrock.address.context.RefineContext;
 import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
 import com.haulmont.shamrock.address.context.SearchBeneathContext;
 import com.haulmont.shamrock.address.context.SearchContext;
-import com.mashape.unirest.http.ObjectMapper;
-import com.mashape.unirest.http.Unirest;
+import kong.unirest.ObjectMapper;
+import kong.unirest.Unirest;
 import org.picocontainer.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class GoogleAddressSearchGate implements AddressSearchGate {
     private static final Logger logger = LoggerFactory.getLogger(GoogleAddressSearchGate.class);
 
     static {
-        Unirest.setObjectMapper(new JacksonObjectMapper());
+        Unirest.config().setObjectMapper(new JacksonObjectMapper());
     }
 
     private final AddressSearchGate delegator;
@@ -87,8 +87,7 @@ public class GoogleAddressSearchGate implements AddressSearchGate {
         @Override
         public <T> T readValue(String value, Class<T> valueType) {
             try {
-                if (logger.isDebugEnabled())
-                    logger.debug("Response: \n{}", value);
+                if (logger.isDebugEnabled()) logger.debug("Response: \n{}", value);
 
                 return rw.reader(valueType).readValue(value);
             } catch (IOException e) {
