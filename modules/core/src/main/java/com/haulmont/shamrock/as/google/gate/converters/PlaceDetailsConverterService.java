@@ -49,7 +49,7 @@ public class PlaceDetailsConverterService {
             throw new RuntimeException("Country is null");
         }
 
-        if (country.equals("JE")) {
+        if (!country.equals("JE")) {
             Geometry geometry = place.getGeometry();
             if (geometry != null && geometry.getLocation() != null) {
                 Location location = geometry.getLocation();
