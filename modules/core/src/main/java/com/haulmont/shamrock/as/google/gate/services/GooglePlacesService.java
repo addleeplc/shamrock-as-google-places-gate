@@ -6,11 +6,13 @@
 
 package com.haulmont.shamrock.as.google.gate.services;
 
+import com.google.common.geometry.S2LatLngRect;
 import com.haulmont.monaco.unirest.UnirestCommand;
 import com.haulmont.shamrock.address.context.GeoRegion;
 import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
 import com.haulmont.shamrock.address.context.SearchContext;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
+import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
@@ -80,8 +82,19 @@ public class GooglePlacesService {
                     .queryString("inputtype", INPUT_TYPE)
                     .queryString("fields", FIELDS);
 
-            if (StringUtils.isNotBlank(ctx.getCountry()))
+            if (StringUtils.isNotBlank(ctx.getCountry())) {
                 request = request.queryString("region", ctx.getCountry());
+
+                if (ctx.getCountry().equals("JE")) {
+                    S2LatLngRect bound = GeometryConstants.JERSEY_POLYGON.getRectBound();
+                    String locationbias = String.format(
+                            "rectangle:%f,%f|%f,%f",
+                            bound.lo().latDegrees(), bound.lo().lngDegrees(),
+                            bound.hi().latDegrees(), bound.hi().lngDegrees()
+                    );
+                    request = request.queryString("locationbias", locationbias);
+                }
+            }
 
             return request;
         }

@@ -76,7 +76,7 @@ shamrock {
 def coreModule = project(':shamrock-as-google-gate-core')
 def rsModule = project(':shamrock-as-google-gate-rs')
 
-def monaco_version = '3.1-SNAPSHOT'
+def monaco_version = '3.2-SNAPSHOT'
 
 configure([coreModule, rsModule]) {
     apply(plugin: 'java')
@@ -126,6 +126,8 @@ configure(coreModule) {
         compile 'com.mashape.unirest:unirest-java:1.4.9'
 
         compile 'org.slf4j:jcl-over-slf4j:1.7.21'
+
+        compile 'org.isuper:s2-geometry-library-java:0.0.1'
 
         compile 'org.apache.commons:commons-lang3:3.6'
         compile 'commons-io:commons-io:2.5'

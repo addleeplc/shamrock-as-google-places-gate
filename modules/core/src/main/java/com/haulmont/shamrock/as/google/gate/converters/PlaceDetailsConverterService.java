@@ -6,8 +6,13 @@
 
 package com.haulmont.shamrock.as.google.gate.converters;
 
+import com.google.common.geometry.S2LatLng;
+import com.google.common.geometry.S2Point;
 import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
+import com.haulmont.shamrock.as.google.gate.dto.Geometry;
+import com.haulmont.shamrock.as.google.gate.dto.Location;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
@@ -42,6 +47,17 @@ public class PlaceDetailsConverterService {
         String country = GoogleAddressUtils.getFirstShort(components, GElement.country, GElement.political);
         if (StringUtils.isBlank(country)) {
             throw new RuntimeException("Country is null");
+        }
+
+        if (country.equals("JE")) {
+            Geometry geometry = place.getGeometry();
+            if (geometry != null && geometry.getLocation() != null) {
+                Location location = geometry.getLocation();
+                if (location.getLat() != null && location.getLng() != null) {
+                    S2Point p = S2LatLng.fromDegrees(location.getLat(), location.getLng()).toPoint();
+                    if (GeometryConstants.JERSEY_POLYGON.contains(p)) country = "JE";
+                }
+            }
         }
 
         try {
