@@ -19,8 +19,7 @@ import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.FindPlaceResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlaceDetailsResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlacesResponse;
-import com.mashape.unirest.request.BaseRequest;
-import com.mashape.unirest.request.HttpRequest;
+import kong.unirest.HttpRequest;
 import org.apache.commons.lang.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
@@ -74,7 +73,7 @@ public class GooglePlacesService {
 
 
         @Override
-        protected BaseRequest createRequest(String url, Path path) {
+        protected HttpRequest createRequest(String url, Path path) {
             HttpRequest request = get(url, path)
                     .queryString("language", LANGUAGE)
                     .queryString("key", configuration.getGooglePlacesApiKey())
@@ -123,7 +122,7 @@ public class GooglePlacesService {
         }
 
         @Override
-        protected BaseRequest createRequest(String url, Path path) {
+        protected HttpRequest createRequest(String url, Path path) {
             return get(url, path)
                     .queryString("placeid", placeId)
                     .queryString("language", LANGUAGE)
@@ -154,7 +153,7 @@ public class GooglePlacesService {
         }
 
         @Override
-        protected BaseRequest createRequest(String url, Path path) {
+        protected HttpRequest createRequest(String url, Path path) {
             GeoRegion gr = context.getSearchRegion();
 
             return get(url, path)

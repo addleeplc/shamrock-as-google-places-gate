@@ -15,8 +15,7 @@ import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.geocoding.GeocodingResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlaceDetailsResponse;
-import com.mashape.unirest.request.BaseRequest;
-import com.mashape.unirest.request.HttpRequest;
+import kong.unirest.HttpRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
@@ -80,7 +79,7 @@ public class GoogleGeocodingService {
         }
 
         @Override
-        protected BaseRequest createRequest(String url, Path path) {
+        protected HttpRequest createRequest(String url, Path path) {
             String searchString = getSearchString();
             String country = getCountry();
             String city = getCity();
@@ -166,7 +165,7 @@ public class GoogleGeocodingService {
         }
 
         @Override
-        protected BaseRequest createRequest(String url, Path path) {
+        protected HttpRequest createRequest(String url, Path path) {
             HttpRequest request = get(url, path)
                     .queryString("language", LANGUAGE)
                     .queryString("key", configuration.getGoogleGeocodeApiKey());
@@ -207,7 +206,7 @@ public class GoogleGeocodingService {
         }
 
         @Override
-        protected BaseRequest createRequest(String url, Path path) {
+        protected HttpRequest createRequest(String url, Path path) {
             return get(url, path)
                     .queryString("place_id", placeId)
                     .queryString("language", LANGUAGE)
