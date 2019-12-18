@@ -8,6 +8,7 @@ package com.haulmont.shamrock.as.google.gate;
 
 import com.haulmont.monaco.annotations.Module;
 import com.haulmont.monaco.container.ModuleLoader;
+import com.haulmont.monaco.jackson.ObjectReaderWriterFactory;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverter;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.parsers.PlaceParser;
@@ -44,6 +45,8 @@ public class GoogleAddressSearchModule extends ModuleLoader {
                 return false;
             }
         });
+
+        component(ObjectReaderWriterFactory.class);
     }
 
     public static class PlaceParserLifecycleStrategy {
