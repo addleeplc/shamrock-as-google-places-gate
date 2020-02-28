@@ -7,6 +7,8 @@
 package com.haulmont.shamrock.as.google.gate.utils;
 
 import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.address.AddressComponents;
+import com.haulmont.shamrock.address.AddressData;
 import com.haulmont.shamrock.address.context.SearchContext;
 import org.apache.commons.lang.StringUtils;
 
@@ -28,15 +30,22 @@ public final class GoogleAddressSearchUtils {
 
     public static List<Address> filter(List<Address> addresses) {
         List<Address> res = new ArrayList<>();
+
         for (Address address : addresses) {
             if (address != null) {
-                if (address.getAddressData() != null) {
-                    if (address.getAddressData().getAddressComponents() != null) {
-                        if (StringUtils.isNotBlank(address.getAddressData().getAddressComponents().getAddress())) {
-                            if (!containsJunkWords(address)) {
-                                if (!"GB".equals(address.getAddressData().getAddressComponents().getCountry()) || GB_POSTCODE_PATTERN.matcher(address.getAddressData().getAddressComponents().getPostcode()).find()) {
+                AddressData data = address.getAddressData();
+                if (data != null) {
+                    AddressComponents components = data.getAddressComponents();
+                    if (components != null) {
+                        if (StringUtils.isNotBlank(components.getAddress()) && !containsJunkWords(address)) {
+                            String country = components.getCountry();
+                            if ("GB".equals(country)) {
+                                String postcode = components.getPostcode();
+                                if (StringUtils.isNotBlank(postcode) && GB_POSTCODE_PATTERN.matcher(postcode).find()) {
                                     res.add(address);
                                 }
+                            } else {
+                                res.add(address);
                             }
                         }
                     }
