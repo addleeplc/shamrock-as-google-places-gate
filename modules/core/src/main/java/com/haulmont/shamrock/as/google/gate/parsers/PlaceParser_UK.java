@@ -60,7 +60,7 @@ public class PlaceParser_UK implements PlaceParser {
 
         part = parts[parts.length - 2];
         streetName = AddressHelper.parseStreetName(part, AddressHelper.ParseAccuracy.LOW);
-        if (StringUtils.isNotBlank(streetName) && streetName.equalsIgnoreCase(part.trim())) {
+        if (StringUtils.isNotBlank(streetName) && part.trim().endsWith(streetName)) {
             components.setStreet(streetName);
 
             components.setAddress(getAddress(place, concat(parts, parts.length - 1)));
@@ -73,7 +73,7 @@ public class PlaceParser_UK implements PlaceParser {
         } else if (parts.length > 2) {
             part = parts[parts.length - 3];
             streetName = AddressHelper.parseStreetName(part, AddressHelper.ParseAccuracy.LOW);
-            if (StringUtils.isNotBlank(streetName) && streetName.equalsIgnoreCase(part.trim())) {
+            if (StringUtils.isNotBlank(streetName) && part.trim().endsWith(streetName)) {
                 components.setStreet(streetName);
 
                 components.setAddress(getAddress(place, concat(parts, parts.length - 2)));
