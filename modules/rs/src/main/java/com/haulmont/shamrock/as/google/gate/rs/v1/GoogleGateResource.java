@@ -15,6 +15,8 @@ import com.haulmont.shamrock.address.Address;
 import com.haulmont.shamrock.address.GeocodeContext;
 import com.haulmont.shamrock.address.Location;
 import com.haulmont.shamrock.address.context.*;
+import com.haulmont.shamrock.as.context.AutocompleteContext;
+import com.haulmont.shamrock.as.dto.LatLon;
 import com.haulmont.shamrock.as.google.gate.GoogleAddressSearchGate;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.GeocodeResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.RefineResponse;
@@ -26,8 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Nikita Bozhko on 01.01.17.
@@ -38,6 +40,9 @@ import java.util.List;
 @Produces({MediaType.APPLICATION_JSON})
 @Consumes({MediaType.APPLICATION_JSON})
 public class GoogleGateResource {
+
+    public static final Pattern LOCATION_PATTERN = Pattern.compile("([-+]?[0-9]*\\.?[0-9]+),([-+]?[0-9]*\\.?[0-9]+)");
+
     @GET
     @Path("search")
     public Response search(
@@ -78,12 +83,94 @@ public class GoogleGateResource {
             ctx.setStartIndex(startIndex);
             ctx.setMaxResults(maxResults);
 
-            List<Address> res = new ArrayList<>(getGate().search(ctx));
-
-            return new SearchResponse(ErrorCode.OK, res);
+            return new SearchResponse(ErrorCode.OK, getGate().search(ctx));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'search_string' must be non-null");
         }
+    }
+
+    @GET
+    @Path("autocomplete")
+    public Response autocomplete(
+            @QueryParam("search_string") String searchString,
+            @QueryParam("preferred_city") String preferredCity,
+            @QueryParam("preferred_country") String preferredCountry,
+            @QueryParam("city") String city,
+            @QueryParam("country") String country,
+            @QueryParam("origin") String origin,
+            @QueryParam("location") String location,
+            @QueryParam("radius") Double radius
+    ) {
+        if (StringUtils.isNotBlank(searchString)) {
+            AutocompleteContext ctx = new AutocompleteContext();
+            ctx.setSearchString(searchString);
+
+            if (StringUtils.isNotBlank(preferredCity))
+                ctx.setPreferredCity(preferredCity);
+
+            if (StringUtils.isNotBlank(preferredCountry))
+                ctx.setPreferredCountry(preferredCountry);
+
+            if (StringUtils.isNotBlank(city))
+                ctx.setCity(city);
+
+            if (StringUtils.isNotBlank(country))
+                ctx.setCountry(country);
+
+            if (StringUtils.isNotBlank(origin)) {
+                try {
+                    LatLon o = parseLatLon(origin);
+
+                    com.haulmont.shamrock.as.dto.Location l = new com.haulmont.shamrock.as.dto.Location();
+
+                    l.setLat(o.getLat());
+                    l.setLon(o.getLon());
+
+                    ctx.setOrigin(l);
+                } catch (IllegalArgumentException e) {
+                    throw new ServiceException(ErrorCode.BAD_REQUEST, "Can't parse 'origin'", e);
+                }
+            }
+
+            if (StringUtils.isNotBlank(location)) {
+                try {
+                    LatLon o = parseLatLon(location);
+
+                    com.haulmont.shamrock.as.dto.CircularRegion l = new com.haulmont.shamrock.as.dto.CircularRegion();
+
+                    l.setLat(o.getLat());
+                    l.setLon(o.getLon());
+                    l.setRadius(radius == null ? 1000.0 : radius);
+
+                    ctx.setSearchRegion(l);
+                } catch (IllegalArgumentException e) {
+                    throw new ServiceException(ErrorCode.BAD_REQUEST, "Can't parse 'location'", e);
+                }
+            }
+
+            return new SearchResponse(ErrorCode.OK, getGate().autocomplete(ctx));
+        } else {
+            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'search_string' must be non-null");
+        }
+    }
+
+    private LatLon parseLatLon(String s) {
+        LatLon o;
+
+        Matcher matcher = LOCATION_PATTERN.matcher(s);
+        if (matcher.matches()) {
+            o = new LatLon();
+
+            String slat = matcher.group(1);
+            String slon = matcher.group(2);
+
+            o.setLat(Double.valueOf(slat));
+            o.setLon(Double.valueOf(slon));
+        } else {
+            throw new IllegalArgumentException("Can't parse:" + s);
+        }
+
+        return o;
     }
 
     @GET

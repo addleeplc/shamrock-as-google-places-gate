@@ -41,13 +41,13 @@ public class PlaceParserUKTest {
 
         //
 
-//        components = parser.parse(createPlace("Guinness Road Trading Estate, Guinness Rd, Stretford, Manchester M17 1SB, UK"));
-//
-//        Assert.assertNotNull(components);
-//        Assert.assertEquals(components.getPostcode(), "M17 1SB");
-//        Assert.assertEquals(components.getCity(), "Stretford");
-//        Assert.assertEquals(components.getAddress(), "Guinness Road Trading Estate, Guinness Rd");
-//        Assert.assertEquals(components.getStreet(), "Guinness Rd");
+        components = parser.parse(createPlace("Guinness Road Trading Estate, Guinness Rd, Stretford, Manchester M17 1SB, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertEquals(components.getPostcode(), "M17 1SB");
+        Assert.assertEquals(components.getCity(), "Manchester");
+        Assert.assertEquals(components.getAddress(), "Guinness Road Trading Estate, Guinness Rd");
+        Assert.assertEquals(components.getStreet(), "Guinness Rd");
 
         //
 
@@ -59,6 +59,33 @@ public class PlaceParserUKTest {
         Assert.assertEquals(components.getAddress(), "107 Scarle Rd");
         Assert.assertEquals(components.getStreet(), "Scarle Rd");
 //        Assert.assertEquals(components.getBuildingNumber(), "107");
+    }
+
+    @Test
+    public void testAutocomplete() {
+        PlaceParser_UK parser = new PlaceParser_UK();
+        AddressComponents components;
+
+        //
+
+        components = parser.parse(createPlace("Euston Square Hotel, North Gower Street, London, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertNull(components.getPostcode());
+        Assert.assertEquals(components.getCity(), "London");
+        Assert.assertEquals(components.getAddress(), "Euston Square Hotel, North Gower Street");
+        Assert.assertEquals(components.getStreet(), "North Gower Street");
+
+        //
+
+        components = parser.parse(createPlace("Euston Square Station, London, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertNull(components.getPostcode());
+        Assert.assertEquals(components.getCity(), "London");
+//        Assert.assertEquals(components.getAddress(), "Euston Square Station");
+        Assert.assertNull(components.getStreet());
+
     }
 
     private Place createPlace(String formattedAddress) {

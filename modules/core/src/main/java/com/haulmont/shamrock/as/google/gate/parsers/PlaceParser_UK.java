@@ -25,50 +25,69 @@ public class PlaceParser_UK implements PlaceParser {
         String formattedAddress = place.getFormattedAddress();
 
         if (formattedAddress.endsWith(COUNTRY_SUFFIX)) {
+            AddressComponents components = new AddressComponents();
+            components.setCountry("GB");
+
             String s = getSubstring(formattedAddress, COUNTRY_SUFFIX);
 
             String postcode = PostcodeHelper.parsePostcode(s);
             if (postcode != null) {
                 if (s.endsWith(postcode)) {
+                    components.setPostcode(postcode);
+
                     s = getSubstring(s, postcode);
 
-                    String buildingAddress = AddressHelper.parseBuildingAddress(s);
-                    if (buildingAddress != null) {
-                        int i = s.indexOf(buildingAddress);
-                        if (i >= 0) {
-                            String o = s.substring(i + buildingAddress.length() + COMPONENTS_DIVIDER.length());
-                            String[] parts = o.split(COMPONENTS_DIVIDER);
-                            if (parts.length == 1 || parts.length == 2) {
-                                AddressComponents components = new AddressComponents();
-
-                                components.setAddress(getAddress(place, s.substring(0, i + buildingAddress.length())));
-                                components.setCity(StringUtils.trim(parts[parts.length - 1]));
-                                components.setPostcode(postcode);
-                                components.setCountry("GB");
-                                components.setStreet(AddressHelper.parseStreetName(buildingAddress, AddressHelper.ParseAccuracy.MEDIUM));
-
-                                if (isBusinessName(place)) {
-                                    components.setCompany(place.getName());
-                                }
-
-                                return components;
-                            } else {
-                                return null;
-                            }
-                        } else {
-                            return null;
-                        }
-                    } else {
-                        return null;
-                    }
+                    return parseAddressComponents(place, s, components);
                 } else {
                     return null;
                 }
             } else {
-                return null;
+                return parseAddressComponents(place, s, components);
             }
         } else {
             return null;
+        }
+    }
+
+    private AddressComponents parseAddressComponents(Place place, String s, AddressComponents components) {
+        String[] parts = s.split(COMPONENTS_DIVIDER);
+        if (parts.length < 2) return null;
+
+        components.setCity(parts[parts.length - 1].trim());
+
+        String part;
+        String streetName;
+
+        part = parts[parts.length - 2];
+        streetName = AddressHelper.parseStreetName(part, AddressHelper.ParseAccuracy.LOW);
+        if (StringUtils.isNotBlank(streetName) && streetName.equalsIgnoreCase(part.trim())) {
+            components.setStreet(streetName);
+
+            components.setAddress(getAddress(place, concat(parts, parts.length - 1)));
+
+            if (isBusinessName(place)) {
+                components.setCompany(place.getName());
+            }
+
+            return components;
+        } else if (parts.length > 2) {
+            part = parts[parts.length - 3];
+            streetName = AddressHelper.parseStreetName(part, AddressHelper.ParseAccuracy.LOW);
+            if (StringUtils.isNotBlank(streetName) && streetName.equalsIgnoreCase(part.trim())) {
+                components.setStreet(streetName);
+
+                components.setAddress(getAddress(place, concat(parts, parts.length - 2)));
+
+                if (isBusinessName(place)) {
+                    components.setCompany(place.getName());
+                }
+
+                return components;
+            } else {
+                return components;
+            }
+        } else {
+            return components;
         }
     }
 
@@ -95,5 +114,17 @@ public class PlaceParser_UK implements PlaceParser {
 
     private static String concat(String name, String address) {
         return StringUtils.isBlank(name) ? address : (name + ", " + address);
+    }
+
+    private static String concat(String[] parts, int li) {
+        StringBuilder builder = new StringBuilder();
+
+        int i = 0;
+        for (; i < li - 1; i++) {
+            builder.append(parts[i].trim()).append(COMPONENTS_DIVIDER);
+        }
+        builder.append(parts[i]);
+
+        return builder.toString();
     }
 }

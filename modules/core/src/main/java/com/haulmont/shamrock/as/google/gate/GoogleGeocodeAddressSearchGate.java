@@ -8,12 +8,16 @@ package com.haulmont.shamrock.as.google.gate;
 
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
-import com.haulmont.shamrock.address.*;
+import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.address.AddressComponents;
+import com.haulmont.shamrock.address.GeocodeContext;
+import com.haulmont.shamrock.address.Location;
 import com.haulmont.shamrock.address.context.RefineContext;
 import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
 import com.haulmont.shamrock.address.context.SearchBeneathContext;
 import com.haulmont.shamrock.address.context.SearchContext;
 import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;
@@ -66,6 +70,11 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         logger.debug("Search address by text (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
 
         return res;
+    }
+
+    @Override
+    public List<Address> autocomplete(AutocompleteContext ctx) {
+        throw new UnsupportedOperationException("Unsupported operation for " + getId() + " gate");
     }
 
     private List<Address> convertSearchResponse(List<PlaceDetails> places) {

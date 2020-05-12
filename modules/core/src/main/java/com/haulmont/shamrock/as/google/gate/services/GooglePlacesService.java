@@ -11,20 +11,26 @@ import com.haulmont.monaco.unirest.UnirestCommand;
 import com.haulmont.shamrock.address.context.GeoRegion;
 import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
 import com.haulmont.shamrock.address.context.SearchContext;
+import com.haulmont.shamrock.as.context.AutocompleteContext;
+import com.haulmont.shamrock.as.dto.CircularRegion;
+import com.haulmont.shamrock.as.dto.Location;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
 import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
+import com.haulmont.shamrock.as.google.gate.dto.Prediction;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.FindPlaceResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlaceDetailsResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlacesResponse;
+import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PredictionsResponse;
 import kong.unirest.HttpRequest;
 import org.apache.commons.lang.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class GooglePlacesService {
@@ -40,6 +46,17 @@ public class GooglePlacesService {
 
         ResponseStatus status = response.getStatus();
         return GoogleResponseUtils.checkResponse(status, response::getCandidates);
+    }
+
+    public List<Prediction> autocomplete(AutocompleteContext context) {
+        PredictionsResponse response = new GooglePlacesAutocompleteCommand(context).execute();
+
+        ResponseStatus status = response.getStatus();
+        return GoogleResponseUtils.checkResponse(status,  () -> filter(response.getPredictions()));
+    }
+
+    private List<Prediction> filter(List<Prediction> predictions) {
+        return predictions.stream().filter(p -> p.getTypes().contains("establishment") || p.getTypes().contains("street_address") || p.getTypes().contains("premise")).collect(Collectors.toList());
     }
 
     public List<Place> getPlaces(ReverseGeocodingContext context) {
@@ -106,6 +123,57 @@ public class GooglePlacesService {
         @Override
         protected Path getPath() {
             return new Path("/place/findplacefromtext/json");
+        }
+    }
+
+    class GooglePlacesAutocompleteCommand extends UnirestCommand<PredictionsResponse> {
+
+        static final String LANGUAGE = "en";
+
+        private AutocompleteContext ctx;
+
+        GooglePlacesAutocompleteCommand(AutocompleteContext ctx) {
+            super(SERVICE_NAME, PredictionsResponse.class);
+            this.ctx = ctx;
+        }
+
+
+        @Override
+        protected HttpRequest createRequest(String url, Path path) {
+            HttpRequest request = get(url, path)
+                    .queryString("language", LANGUAGE)
+                    .queryString("key", configuration.getGooglePlacesApiKey())
+                    .queryString("input", ctx.getSearchString());
+
+            Location origin = ctx.getOrigin();
+            if (origin != null) {
+                request = request.queryString("origin", String.format("%.6f,%.6f", origin.getLat(), origin.getLon()));
+            }
+
+            CircularRegion searchRegion = ctx.getSearchRegion();
+            if (searchRegion != null) {
+                request = request.queryString("location", String.format("%.6f,%.6f", searchRegion.getLat(), searchRegion.getLon()));
+                request = request.queryString("radius", String.format("%.6f", searchRegion.getRadius()));
+            } else if (origin != null) {
+                request = request.queryString("location", String.format("%.6f,%.6f", origin.getLat(), origin.getLon()));
+                request = request.queryString("radius", String.format("%.6f", 1000.0));
+            }
+
+            if (StringUtils.isNotBlank(ctx.getCountry())) {
+                request = request.queryString("components", "country:" + StringUtils.lowerCase(ctx.getCountry()));
+            }
+
+            return request;
+        }
+
+        @Override
+        protected String getUrl() {
+            return configuration.getApiUrl();
+        }
+
+        @Override
+        protected Path getPath() {
+            return new Path("/place/autocomplete/json");
         }
     }
 

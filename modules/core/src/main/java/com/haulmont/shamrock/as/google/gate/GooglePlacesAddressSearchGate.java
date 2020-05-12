@@ -10,11 +10,13 @@ import com.haulmont.shamrock.address.context.*;
 import com.haulmont.shamrock.address.gis.GISUtils;
 import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.address.utils.GeoHelper;
+import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
+import com.haulmont.shamrock.as.google.gate.dto.Prediction;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.parsers.PlaceParsingService;
 import com.haulmont.shamrock.as.google.gate.services.GooglePlacesService;
@@ -108,6 +110,39 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         final List<Address> res = GoogleAddressSearchUtils.filter(addresses);
 
         logger.debug("Search address by text (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
+
+        return res;
+    }
+
+    @Override
+    public List<Address> autocomplete(AutocompleteContext ctx) {
+        List<Prediction> predictions = googlePlacesService.autocomplete(ctx);
+
+        List<Address> res = new ArrayList<>();
+        for (Prediction prediction : predictions) {
+            Place place = new Place();
+
+            place.setId(prediction.getId());
+            place.setFormattedAddress(prediction.getDescription());
+            place.setTypes(prediction.getTypes());
+            place.setPlaceId(prediction.getPlaceId());
+
+            Address address = placeParsingService.parse(place, getId());
+            if (address == null) {
+                address = new Address();
+
+                AddressData data = new AddressData();
+                AddressComponents components = new AddressComponents();
+
+                address.setId(String.format("%s|%s", getId(), prediction.getPlaceId()));
+                data.setFormattedAddress(prediction.getDescription());
+
+                data.setAddressComponents(components);
+                address.setAddressData(data);
+            }
+
+            res.add(address);
+        }
 
         return res;
     }
