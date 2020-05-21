@@ -115,36 +115,51 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
     }
 
     @Override
-    public List<Address> autocomplete(AutocompleteContext ctx) {
-        List<Prediction> predictions = googlePlacesService.autocomplete(ctx);
+    public List<Address> autocomplete(AutocompleteContext context) {
+        long ts = System.currentTimeMillis();
 
+        List<Prediction> predictions = googlePlacesService.autocomplete(context);
+        List<Address> res = convert(predictions);
+
+        logger.debug("Autocomplete address (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
+
+        return res;
+    }
+
+    private List<Address> convert(List<Prediction> predictions) {
         List<Address> res = new ArrayList<>();
         for (Prediction prediction : predictions) {
-            Place place = new Place();
-
-            place.setId(prediction.getId());
-            place.setFormattedAddress(prediction.getDescription());
-            place.setTypes(prediction.getTypes());
-            place.setPlaceId(prediction.getPlaceId());
-
-            Address address = placeParsingService.parse(place, getId());
-            if (address == null) {
-                address = new Address();
-
-                AddressData data = new AddressData();
-                AddressComponents components = new AddressComponents();
-
-                address.setId(String.format("%s|%s", getId(), prediction.getPlaceId()));
-                data.setFormattedAddress(prediction.getDescription());
-
-                data.setAddressComponents(components);
-                address.setAddressData(data);
-            }
+            Address address = convert(prediction);
 
             res.add(address);
         }
 
         return res;
+    }
+
+    private Address convert(Prediction prediction) {
+        Place place = new Place();
+
+        place.setId(prediction.getId());
+        place.setFormattedAddress(prediction.getDescription());
+        place.setTypes(prediction.getTypes());
+        place.setPlaceId(prediction.getPlaceId());
+
+        Address address = placeParsingService.parse(place, getId());
+        if (address == null) {
+            address = new Address();
+
+            AddressData data = new AddressData();
+            AddressComponents components = new AddressComponents();
+
+            address.setId(String.format("%s|%s", getId(), prediction.getPlaceId()));
+            data.setFormattedAddress(prediction.getDescription());
+
+            data.setAddressComponents(components);
+            address.setAddressData(data);
+        }
+
+        return address;
     }
 
     private boolean haveGoodAddresses(SearchContext context, Collection<Address> addresses) {
