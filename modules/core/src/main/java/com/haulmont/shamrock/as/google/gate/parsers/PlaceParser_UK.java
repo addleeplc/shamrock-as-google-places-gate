@@ -30,7 +30,7 @@ public class PlaceParser_UK implements PlaceParser {
 
             String s = getSubstring(formattedAddress, COUNTRY_SUFFIX);
 
-            String postcode = PostcodeHelper.parsePostcode(s);
+            String postcode = PostcodeHelper.parsePostcode(s, false);
             if (postcode != null) {
                 if (s.endsWith(postcode)) {
                     components.setPostcode(postcode);

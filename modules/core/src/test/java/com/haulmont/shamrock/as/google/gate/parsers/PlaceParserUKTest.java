@@ -71,6 +71,7 @@ public class PlaceParserUKTest {
         components = parser.parse(createPlace("Euston Square Hotel, North Gower Street, London, UK"));
 
         Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
         Assert.assertNull(components.getPostcode());
         Assert.assertEquals(components.getCity(), "London");
         Assert.assertEquals(components.getAddress(), "Euston Square Hotel, North Gower Street");
@@ -81,10 +82,47 @@ public class PlaceParserUKTest {
         components = parser.parse(createPlace("Euston Square Station, London, UK"));
 
         Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
         Assert.assertNull(components.getPostcode());
         Assert.assertEquals(components.getCity(), "London");
 //        Assert.assertEquals(components.getAddress(), "Euston Square Station");
         Assert.assertNull(components.getStreet());
+
+
+        //
+
+        components = parser.parse(createPlace("AA Admirals Club Lounge Heathrow Terminal 3, Longford, Hounslow, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
+
+        //
+
+        components = parser.parse(createPlace("Novotel London Heathrow Airport T1 T2 and T3, Bath Road, Heathrow, Hayes, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
+
+        //
+
+        components = parser.parse(createPlace("Marks & Spencer HEATHROW AIRPORT T3 SIMPLY FOOD, Arrivals Lounge, Nelson Road, Hounslow, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
+
+        //
+
+        components = parser.parse(createPlace("Heathrow Terminal 3, Hounslow, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
+
+        //
+
+        components = parser.parse(createPlace("Heathrow Short Stay Parking Terminal 3, Heathrow Airport (LHR), Camberley Road, Hounslow, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
 
     }
 
