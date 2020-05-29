@@ -127,6 +127,8 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
     }
 
     private List<Address> convert(List<Prediction> predictions) {
+        if (predictions == null) return Collections.emptyList();
+
         List<Address> res = new ArrayList<>();
 
         boolean filterNonParsedAddresses = Optional.ofNullable(configuration.geFilterNonParsedAddressed()).orElse(Boolean.TRUE);
