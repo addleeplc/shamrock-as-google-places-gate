@@ -15,6 +15,7 @@ import org.picocontainer.annotations.Component;
 public interface ServiceConfiguration {
 
     String ENABLE_FORMATTED_ADDRESS_PARSING = "enableFormattedAddressParsing";
+    String FILTER_NON_PARSED_ADDRESSES = "filterNonParsedAddressed";
 
     @Property("api.url")
     String getApiUrl();
@@ -30,4 +31,7 @@ public interface ServiceConfiguration {
 
     @Property(ENABLE_FORMATTED_ADDRESS_PARSING)
     Boolean getEnableFormattedAddressParsing();
+
+    @Property(FILTER_NON_PARSED_ADDRESSES)
+    Boolean geFilterNonParsedAddressed();
 }

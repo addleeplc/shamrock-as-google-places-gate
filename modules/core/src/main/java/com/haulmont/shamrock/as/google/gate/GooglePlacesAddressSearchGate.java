@@ -128,10 +128,23 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
     private List<Address> convert(List<Prediction> predictions) {
         List<Address> res = new ArrayList<>();
+
+        boolean filterNonParsedAddresses = Optional.ofNullable(configuration.geFilterNonParsedAddressed()).orElse(Boolean.TRUE);
+
         for (Prediction prediction : predictions) {
             Address address = convert(prediction);
 
-            res.add(address);
+            if (filterNonParsedAddresses) {
+                AddressData data = address.getAddressData();
+                if (data != null) {
+                    AddressComponents components = data.getAddressComponents();
+                    if (components != null && StringUtils.isNotBlank(components.getCountry())) {
+                        res.add(address);
+                    }
+                }
+            } else {
+                res.add(address);
+            }
         }
 
         return res;
