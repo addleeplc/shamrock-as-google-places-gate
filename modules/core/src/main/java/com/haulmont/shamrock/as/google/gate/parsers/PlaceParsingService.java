@@ -15,45 +15,54 @@ import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class PlaceParsingService {
     @Inject
     private Logger logger;
 
-    private List<PlaceParser> parsers = new ArrayList<>();
+    private Map<String, PlaceParser> parsers = new HashMap<>();
 
     public Address parse(Place place, String source) {
-        for (PlaceParser parser : parsers) {
-            try {
-                AddressComponents components = parser.parse(place);
-                if (components != null) {
-                    Address res = new Address();
-                    AddressData data = new AddressData();
-                    res.setAddressData(data);
+        String s = place.getFormattedAddress();
 
-                    String formattedAddress = GoogleAddressUtils.getFormattedAddress(place);
-                    data.setFormattedAddress(formattedAddress);
+        String[] parts = s.split(PlaceParser.COMPONENTS_DIVIDER);
+        String lastPart = parts[parts.length - 1];
 
-                    data.setAddressComponents(components);
-                    data.setLocation(GoogleAddressUtils.convert(place.getGeometry()));
+        PlaceParser parser = parsers.get(lastPart);
+        if (parser == null) {
+            logger.debug("No parse registered for '" + lastPart + "'");
+            return null;
+        }
 
-                    res.setId(String.format("%s|%s", source, place.getPlaceId()));
-                    res.setRefined(false);
+        try {
+            AddressComponents components = parser.parse(place);
+            if (components != null) {
+                Address res = new Address();
+                AddressData data = new AddressData();
+                res.setAddressData(data);
 
-                    return res;
-                }
-            } catch (Exception e) {
-                logger.warn(String.format("Failed to parse address '%s': %s", GoogleAddressUtils.getFormattedAddress(place), e.getMessage()));
+                String formattedAddress = GoogleAddressUtils.getFormattedAddress(place);
+                data.setFormattedAddress(formattedAddress);
+
+                data.setAddressComponents(components);
+                data.setLocation(GoogleAddressUtils.convert(place.getGeometry()));
+
+                res.setId(String.format("%s|%s", source, place.getPlaceId()));
+                res.setRefined(false);
+
+                return res;
             }
+        } catch (Exception e) {
+            logger.warn(String.format("Failed to parse address '%s': %s", GoogleAddressUtils.getFormattedAddress(place), e.getMessage()));
         }
 
         return null;
     }
 
-    public void register(PlaceParser parser) {
-        parsers.add(parser);
+    public void register(String code, PlaceParser parser) {
+        parsers.put(code, parser);
     }
 }

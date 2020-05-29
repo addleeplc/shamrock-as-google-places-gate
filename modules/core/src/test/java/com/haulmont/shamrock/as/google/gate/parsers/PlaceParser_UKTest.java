@@ -7,15 +7,15 @@
 package com.haulmont.shamrock.as.google.gate.parsers;
 
 import com.haulmont.shamrock.address.AddressComponents;
-import com.haulmont.shamrock.as.google.gate.dto.Place;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class PlaceParserUKTest {
+public class PlaceParser_UKTest extends AbstractPlaceParserTest {
 
     @Test
     public void test() {
-        PlaceParser_UK parser = new PlaceParser_UK();
+        PlaceParser parser = getParser();
+
         AddressComponents components;
 
         //
@@ -63,7 +63,7 @@ public class PlaceParserUKTest {
 
     @Test
     public void testAutocomplete() {
-        PlaceParser_UK parser = new PlaceParser_UK();
+        PlaceParser parser = getParser();
         AddressComponents components;
 
         //
@@ -126,11 +126,8 @@ public class PlaceParserUKTest {
 
     }
 
-    private Place createPlace(String formattedAddress) {
-        Place res = new Place();
-
-        res.setFormattedAddress(formattedAddress);
-
-        return res;
+    protected PlaceParser getParser() {
+        return new PlaceParser_UK();
     }
+
 }

@@ -15,11 +15,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 public interface PlaceParser {
+    String COMPONENTS_DIVIDER = ", ";
+
     AddressComponents parse(Place place);
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     @interface Component {
-
+        String[] value();
     }
 }

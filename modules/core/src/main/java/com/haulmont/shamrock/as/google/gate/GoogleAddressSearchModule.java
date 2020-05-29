@@ -63,7 +63,11 @@ public class GoogleAddressSearchModule extends ModuleLoader {
             PlaceParser parser = (PlaceParser) container.getComponent(c);
 
             PlaceParsingService service = container.getComponent(PlaceParsingService.class);
-            service.register(parser);
+
+            String[] codes = a.value();
+            for (String code : codes) {
+                service.register(code, parser);
+            }
         }
 
         public void stop() {
