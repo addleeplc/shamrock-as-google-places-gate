@@ -12,6 +12,7 @@ import com.haulmont.shamrock.geo.utils.PostalCodeUtils;
 import org.picocontainer.annotations.Component;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 @Component
 @PlaceParser.Component({PlaceParser_IE.COUNTRY_NAME})
@@ -92,9 +93,14 @@ public class PlaceParser_IE extends AbstractPlaceParser {
         return components;
     }
 
+    private final static Pattern DUBLIN = Pattern.compile("\\b" + "Dublin( [0-9])?" + "\\b", Pattern.CASE_INSENSITIVE);
+
     private void __parseComponents(Place place, String[] parts, AddressComponents components) {
 
         String city = parts[parts.length - 1].trim();
+        if (DUBLIN.matcher(city).matches()) {
+            city = "Dublin";
+        }
         components.setCity(city);
 
         String address = getAddress(place, concat(parts, parts.length - 1));
