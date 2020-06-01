@@ -14,6 +14,7 @@ import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.geocoding.GeocodingResponse;
+import com.haulmont.shamrock.as.google.gate.services.dto.google.places.GeocodePlaceByIdResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlaceDetailsResponse;
 import kong.unirest.HttpRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -54,10 +55,19 @@ public class GoogleGeocodingService {
     }
 
     public PlaceDetails getPlaceDetails(String id) {
-        PlaceDetailsResponse response = new GoogleGeocodePlaceDetailsCommand(id).execute();
+        GeocodePlaceByIdResponse response = new GoogleGeocodePlaceDetailsCommand(id).execute();
 
         ResponseStatus status = response.getStatus();
-        return GoogleResponseUtils.checkResponse(status, response::getResult);
+        return GoogleResponseUtils.checkResponse(status, () -> {
+            List<PlaceDetails> results = response.getResults();
+            if (results == null || results.isEmpty()) {
+                return null;
+            } else if (results.size() == 1) {
+                return results.get(0);
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        });
     }
 
     //
@@ -194,14 +204,14 @@ public class GoogleGeocodingService {
         }
     }
 
-    class GoogleGeocodePlaceDetailsCommand extends UnirestCommand<PlaceDetailsResponse> {
+    class GoogleGeocodePlaceDetailsCommand extends UnirestCommand<GeocodePlaceByIdResponse> {
 
         static final String LANGUAGE = "en";
 
         private String placeId;
 
         GoogleGeocodePlaceDetailsCommand(String placeId) {
-            super(SERVICE_NAME, PlaceDetailsResponse.class);
+            super(SERVICE_NAME, GeocodePlaceByIdResponse.class);
             this.placeId = placeId;
         }
 

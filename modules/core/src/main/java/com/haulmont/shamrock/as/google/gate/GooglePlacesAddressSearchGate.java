@@ -8,14 +8,11 @@ import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.shamrock.address.*;
 import com.haulmont.shamrock.address.context.*;
 import com.haulmont.shamrock.address.gis.GISUtils;
-import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.address.utils.GeoHelper;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
-import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
-import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.dto.Prediction;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.parsers.PlaceParsingService;
@@ -46,7 +43,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
     private PlaceParsingService placeParsingService;
 
     @Inject
-    private PlaceDetailsConverterService placeDetailsConverterService;
+    private PlaceDetailsService placeDetailsService;
 
     @Inject
     private ServiceConfiguration configuration;
@@ -284,49 +281,8 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
     }
 
     @Override
-    public Address refine(RefineContext context) throws RuntimeException {
-        return doRefine(context);
-    }
-
-    private Address doRefine(RefineContext context) {
-        if (context.getAddress().isRefined()) {
-            return AddressHelper.convert(context.getAddress(), context.getRefineType());
-        } else {
-            try {
-                Address a = context.getAddress();
-
-                String id = AddressHelper.getAddressId(a);
-                if (id == null) return null;
-
-                PlaceDetails placeDetails = googlePlacesService.getPlaceDetails(id);
-
-                if (placeDetails == null) {
-                    return null;
-                } else {
-                    Address address = convertRefineResult(placeDetails);
-                    if (address != null) {
-                        logger.info(
-                                String.format(
-                                        "Refine address '%s/%s' (%s, %s), result: %s",
-                                        a.getId(), a.getAddressData().getFormattedAddress(),
-                                        context.getRefineType().name(), getRequestedCountry(context),
-                                        address.getAddressData().getFormattedAddress()
-                                )
-                        );
-                    }
-
-                    return address;
-                }
-            } catch (ServiceException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new ServiceException(ErrorCode.SERVER_ERROR, "Unknown error", t);
-            }
-        }
-    }
-
-    private Address convertRefineResult(PlaceDetails details) {
-        return placeDetailsConverterService.convert(details, getId());
+    public Address refine(RefineContext context) {
+        return placeDetailsService.getDetails(context, getId());
     }
 
     @Override
@@ -394,7 +350,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 refineContext.setAddress(tmp);
                 refineContext.setRefineType(RefineType.DEFAULT);
 
-                Address a = doRefine(refineContext);
+                Address a = placeDetailsService.getDetails(refineContext, getId());
                 if (isAddressCoordinatesBlank(a)) {
                     Location l = a.getAddressData().getLocation();
                     double distance = GeoHelper.getGeoDistance(l.getLon(), l.getLat(), context.getSearchRegion().getLongitude(), context.getSearchRegion().getLatitude());

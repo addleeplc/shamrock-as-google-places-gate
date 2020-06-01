@@ -11,8 +11,10 @@ import com.haulmont.shamrock.as.google.gate.dto.Geometry;
 import com.haulmont.shamrock.as.google.gate.dto.Location;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,13 +83,8 @@ public final class GoogleAddressUtils {
     public static String getFormattedAddress(Place place) {
         String formattedAddress = StringUtils.isBlank(place.getFormattedAddress()) ? place.getVicinity() : place.getFormattedAddress();
 
-        List<String> types = place.getTypes();
-        if (types != null) {
-            if (types.contains("street_address")) {
-                return formattedAddress;
-            } else {
-                return concat(place.getName(), formattedAddress);
-            }
+        if (isBuilding(place)) {
+            return formattedAddress;
         } else {
             return concat(place.getName(), formattedAddress);
         }
@@ -95,5 +92,16 @@ public final class GoogleAddressUtils {
 
     private static String concat(String name, String address) {
         return StringUtils.isBlank(name) ? address : (name + ", " + address);
+    }
+
+    public static boolean isBuilding(Place place) {
+        List<String> types = place.getTypes();
+        return isBuilding(types);
+    }
+
+    public static boolean isBuilding(List<String> types) {
+        if (types == null) return false;
+
+        return CollectionUtils.containsAny(types, Arrays.asList(GElement.street_address.name(), GElement.route.name(), GElement.premise.name(), GElement.subpremise.name()));
     }
 }

@@ -10,6 +10,7 @@ import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GType;
+import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
@@ -53,8 +54,7 @@ public class DefaultPlaceDetailsConverter extends AbstractPlaceDetailsConverter 
 
     @Override
     protected String parseCompanyName(String placeName, Map<String, AddressComponent> components, List<String> types) {
-        if (!CollectionUtils.containsAny(types, Arrays.asList(GElement.street_address.name(), GElement.route.name(), GElement.premise.name(), GElement.subpremise.name()))
-                && StringUtils.isNotBlank(placeName)) {
+        if (StringUtils.isNotBlank(placeName) &&  !GoogleAddressUtils.isBuilding(types)) {
             return placeName.replace(", ", " ").replace(",", " ");
         } else {
             return null;

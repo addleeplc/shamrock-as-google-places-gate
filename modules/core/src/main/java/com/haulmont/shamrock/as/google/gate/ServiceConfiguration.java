@@ -16,6 +16,7 @@ public interface ServiceConfiguration {
 
     String ENABLE_FORMATTED_ADDRESS_PARSING = "enableFormattedAddressParsing";
     String FILTER_NON_PARSED_ADDRESSES = "filterNonParsedAddressed";
+    String USE_GEOCODE_API_FOR_PLACE_DETAILS = "useGeocodeAPIForPlaceDetails";
 
     @Property("api.url")
     String getApiUrl();
@@ -34,4 +35,7 @@ public interface ServiceConfiguration {
 
     @Property(FILTER_NON_PARSED_ADDRESSES)
     Boolean geFilterNonParsedAddressed();
+
+    @Property(USE_GEOCODE_API_FOR_PLACE_DETAILS)
+    Boolean getUseGeocodeAPIForPlaceDetails();
 }

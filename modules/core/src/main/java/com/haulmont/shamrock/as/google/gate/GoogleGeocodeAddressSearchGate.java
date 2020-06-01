@@ -6,8 +6,6 @@
 
 package com.haulmont.shamrock.as.google.gate;
 
-import com.haulmont.monaco.ServiceException;
-import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.shamrock.address.Address;
 import com.haulmont.shamrock.address.AddressComponents;
 import com.haulmont.shamrock.address.GeocodeContext;
@@ -16,12 +14,10 @@ import com.haulmont.shamrock.address.context.RefineContext;
 import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
 import com.haulmont.shamrock.address.context.SearchBeneathContext;
 import com.haulmont.shamrock.address.context.SearchContext;
-import com.haulmont.shamrock.address.utils.AddressHelper;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;
-import com.haulmont.shamrock.as.google.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.geo.PostcodeHelper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,10 +38,10 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
     private GoogleGeocodingService googleGeocodingService;
 
     @Inject
-    private GooglePlacesService googlePlacesService;
+    private PlaceDetailsConverterService placeDetailsConverterService;
 
     @Inject
-    private PlaceDetailsConverterService placeDetailsConverterService;
+    private PlaceDetailsService placeDetailsService;
 
 
     @Override
@@ -96,7 +92,7 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
     @Override
     public Address refine(RefineContext context) {
-        return doRefine(context);
+        return placeDetailsService.getDetails(context, getId());
     }
 
     @Override
@@ -179,45 +175,6 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
         return null;
     }
 
-    private Address doRefine(RefineContext ctx) {
-        if (ctx.getAddress().isRefined()) {
-            return AddressHelper.convert(ctx.getAddress(), ctx.getRefineType());
-        } else {
-            try {
-                Address a = ctx.getAddress();
 
-                String id = AddressHelper.getAddressId(a);
-                if (id == null) return null;
-
-                PlaceDetails placeDetails = googlePlacesService.getPlaceDetails(id);
-
-                if (placeDetails == null) {
-                    return null;
-                } else {
-                    Address address = convertRefineResult(placeDetails);
-                    if (address != null) {
-                        logger.info(
-                                String.format(
-                                        "Refine address '%s/%s' (%s, %s), result: %s",
-                                        a.getId(), a.getAddressData().getFormattedAddress(),
-                                        ctx.getRefineType().name(), ctx.getAddress().getAddressData().getAddressComponents().getCountry(),
-                                        address.getAddressData().getFormattedAddress()
-                                )
-                        );
-                    }
-
-                    return address;
-                }
-            } catch (ServiceException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new ServiceException(ErrorCode.SERVER_ERROR, "Unknown error", t);
-            }
-        }
-    }
-
-    private Address convertRefineResult(PlaceDetails place) {
-        return placeDetailsConverterService.convert(place, getId());
-    }
 
 }
