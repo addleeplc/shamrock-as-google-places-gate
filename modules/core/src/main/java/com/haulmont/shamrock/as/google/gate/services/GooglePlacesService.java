@@ -13,7 +13,7 @@ import com.haulmont.shamrock.as.contexts.ReverseGeocodingContext;
 import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.dto.CircularRegion;
-import com.haulmont.shamrock.as.dto.Location;
+import com.haulmont.shamrock.as.dto.LocationWithAccuracy;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
 import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
@@ -145,7 +145,7 @@ public class GooglePlacesService {
                     .queryString("key", configuration.getGooglePlacesApiKey())
                     .queryString("input", ctx.getSearchString());
 
-            Location origin = ctx.getOrigin();
+            LocationWithAccuracy origin = ctx.getOrigin();
             if (origin != null) {
                 request = request.queryString("origin", String.format("%.6f,%.6f", origin.getLat(), origin.getLon()));
             }

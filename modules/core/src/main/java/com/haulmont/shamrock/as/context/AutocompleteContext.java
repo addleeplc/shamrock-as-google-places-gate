@@ -9,7 +9,7 @@ package com.haulmont.shamrock.as.context;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.dto.CircularRegion;
-import com.haulmont.shamrock.as.dto.Location;
+import com.haulmont.shamrock.as.dto.LocationWithAccuracy;
 
 public class AutocompleteContext extends SearchContext {
 
@@ -17,7 +17,7 @@ public class AutocompleteContext extends SearchContext {
     private CircularRegion searchRegion;
 
     @JsonProperty("origin")
-    private Location origin;
+    private LocationWithAccuracy origin;
 
     public CircularRegion getSearchRegion() {
         return searchRegion;
@@ -27,11 +27,11 @@ public class AutocompleteContext extends SearchContext {
         this.searchRegion = searchRegion;
     }
 
-    public Location getOrigin() {
+    public LocationWithAccuracy getOrigin() {
         return origin;
     }
 
-    public void setOrigin(Location origin) {
+    public void setOrigin(LocationWithAccuracy origin) {
         this.origin = origin;
     }
 }

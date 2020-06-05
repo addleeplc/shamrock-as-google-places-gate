@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Location extends LatLon {
+public class LocationWithAccuracy extends LatLon {
 
     @JsonProperty("accuracy")
     private Double accuracy;

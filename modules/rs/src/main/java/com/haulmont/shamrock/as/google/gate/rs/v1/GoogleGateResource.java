@@ -12,10 +12,7 @@ import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.response.Response;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.contexts.*;
-import com.haulmont.shamrock.as.dto.Accuracy;
-import com.haulmont.shamrock.as.dto.Address;
-import com.haulmont.shamrock.as.dto.LatLon;
-import com.haulmont.shamrock.as.dto.Location;
+import com.haulmont.shamrock.as.dto.*;
 import com.haulmont.shamrock.as.google.gate.GoogleAddressSearchGate;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.GeocodeResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.RefineResponse;
@@ -120,7 +117,7 @@ public class GoogleGateResource {
                 try {
                     LatLon o = parseLatLon(origin);
 
-                    com.haulmont.shamrock.as.dto.Location l = new com.haulmont.shamrock.as.dto.Location();
+                    LocationWithAccuracy l = new LocationWithAccuracy();
 
                     l.setLat(o.getLat());
                     l.setLon(o.getLon());
@@ -253,7 +250,7 @@ public class GoogleGateResource {
         Location location = new Location();
         location.setLat(latitude);
         location.setLon(longitude);
-        //location.setAccuracy(accuracy);
+        location.setAccuracy(accuracy);
         context.setLocation(location);
 
         context.setRadius(radius);
