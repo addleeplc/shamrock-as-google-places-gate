@@ -73,10 +73,12 @@ shamrock {
     }
 }
 
+def monaco_version = '3.2-SNAPSHOT'
+def as_commons_version = '2.0-SNAPSHOT'
+
 def coreModule = project(':shamrock-as-google-gate-core')
 def rsModule = project(':shamrock-as-google-gate-rs')
 
-def monaco_version = '3.2-SNAPSHOT'
 
 configure([coreModule, rsModule]) {
     apply(plugin: 'java')
@@ -116,10 +118,10 @@ configure(coreModule) {
         compile "com.haulmont.monaco:monaco-sentry-reporter:${monaco_version}"
         compile "com.haulmont.monaco:monaco-unirest:${monaco_version}"
 
-        compile 'com.haulmont.shamrock:shamrock-as-common-data:1.0-SNAPSHOT'
-        compile 'com.haulmont.shamrock:shamrock-as-common-utils:1.0-SNAPSHOT'
-        compile 'com.haulmont.shamrock:shamrock-as-common-gate:1.0-SNAPSHOT'
-        compile 'com.haulmont.shamrock:shamrock-as-common-gis:1.0-SNAPSHOT'
+        compile "com.haulmont.shamrock:shamrock-as-commons-model:${as_commons_version}"
+        compile "com.haulmont.shamrock:shamrock-as-commons-parsers:${as_commons_version}"
+        compile "com.haulmont.shamrock:shamrock-as-commons-utils:${as_commons_version}"
+        compile "com.haulmont.shamrock:shamrock-as-commons-gis:${as_commons_version}"
 
         compile 'com.haulmont.shamrock:shamrock-geo-common:1.2'
 

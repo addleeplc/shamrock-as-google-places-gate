@@ -6,7 +6,7 @@
 
 package com.haulmont.shamrock.as.google.gate.parsers;
 
-import com.haulmont.shamrock.address.AddressComponents;
+import com.haulmont.shamrock.as.dto.AddressComponents;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

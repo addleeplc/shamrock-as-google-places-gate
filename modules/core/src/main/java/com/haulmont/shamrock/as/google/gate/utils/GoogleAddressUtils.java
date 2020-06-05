@@ -65,11 +65,11 @@ public final class GoogleAddressUtils {
         }
     }
 
-    public static com.haulmont.shamrock.address.Location convert(Geometry geometry) {
+    public static com.haulmont.shamrock.as.dto.Location convert(Geometry geometry) {
         if (geometry != null) {
             Location location = geometry.getLocation();
             if (location != null) {
-                com.haulmont.shamrock.address.Location l = new com.haulmont.shamrock.address.Location();
+                com.haulmont.shamrock.as.dto.Location l = new com.haulmont.shamrock.as.dto.Location();
                 l.setLat(location.getLat());
                 l.setLon(location.getLng());
 

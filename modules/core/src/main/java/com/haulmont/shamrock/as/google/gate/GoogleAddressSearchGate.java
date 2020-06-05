@@ -9,12 +9,12 @@ package com.haulmont.shamrock.as.google.gate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.jackson.ObjectReaderWriterFactory;
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.GeocodeContext;
-import com.haulmont.shamrock.address.context.RefineContext;
-import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
-import com.haulmont.shamrock.address.context.SearchBeneathContext;
-import com.haulmont.shamrock.address.context.SearchContext;
+import com.haulmont.shamrock.as.dto.Address;
+import com.haulmont.shamrock.as.contexts.GeocodeContext;
+import com.haulmont.shamrock.as.contexts.RefineContext;
+import com.haulmont.shamrock.as.contexts.ReverseGeocodingContext;
+import com.haulmont.shamrock.as.contexts.SearchBeneathContext;
+import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import kong.unirest.ObjectMapper;
 import kong.unirest.Unirest;
@@ -59,11 +59,6 @@ public class GoogleAddressSearchGate implements AddressSearchGate {
     @Override
     public List<Address> search(SearchContext context) {
         return delegator.search(context);
-    }
-
-    @Override
-    public List<Address> searchBeneath(SearchBeneathContext context) {
-        return delegator.searchBeneath(context);
     }
 
     @Override

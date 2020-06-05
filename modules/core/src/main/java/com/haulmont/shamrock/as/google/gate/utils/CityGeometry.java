@@ -6,7 +6,7 @@
 
 package com.haulmont.shamrock.as.google.gate.utils;
 
-import com.haulmont.shamrock.address.gis.Geometry;
+import com.haulmont.shamrock.as.gis.Geometry;
 
 public class CityGeometry extends Geometry {
     private String country;

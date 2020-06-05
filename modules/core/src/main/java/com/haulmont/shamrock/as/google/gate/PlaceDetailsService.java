@@ -6,10 +6,10 @@ package com.haulmont.shamrock.as.google.gate;
 
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressData;
-import com.haulmont.shamrock.address.context.RefineContext;
-import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.dto.Address;
+import com.haulmont.shamrock.as.dto.AddressData;
+import com.haulmont.shamrock.as.contexts.RefineContext;
+import com.haulmont.shamrock.as.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;

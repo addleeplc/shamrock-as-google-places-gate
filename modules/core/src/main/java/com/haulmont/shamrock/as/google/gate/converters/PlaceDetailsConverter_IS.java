@@ -6,7 +6,7 @@
 
 package com.haulmont.shamrock.as.google.gate.converters;
 
-import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GType;

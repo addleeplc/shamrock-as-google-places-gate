@@ -6,15 +6,13 @@
 
 package com.haulmont.shamrock.as.google.gate.parsers;
 
-import com.haulmont.shamrock.address.AddressComponents;
-import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.commons.parsers.AddressComponentsParser;
+import com.haulmont.shamrock.as.commons.parsers.AddressComponentsParser_EN;
+import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
-import com.haulmont.shamrock.geo.PostcodeHelper;
 import com.haulmont.shamrock.geo.utils.PostalCodeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
-
-import java.util.List;
 
 @Component
 @PlaceParser.Component({PlaceParser_UK.COUNTRY_CODE, PlaceParser_UK.COUNTRY_NAME})
@@ -31,6 +29,11 @@ public class PlaceParser_UK extends AbstractPlaceParser {
     private static final String COUNTRY_NAME_SUFFIX = COMPONENTS_DIVIDER + COUNTRY_NAME;
 
     //
+
+    private AddressComponentsParser componentsParser = new AddressComponentsParser_EN();
+
+    //
+
 
     public AddressComponents parse(Place place) {
         String formattedAddress = place.getFormattedAddress();
@@ -84,8 +87,11 @@ public class PlaceParser_UK extends AbstractPlaceParser {
         String streetName;
 
         part = parts[parts.length - 2];
-        streetName = AddressHelper.parseStreetName(part, AddressHelper.ParseAccuracy.LOW);
-        if (StringUtils.isNotBlank(streetName) && part.trim().endsWith(streetName)) {
+        streetName = parseStreetName(part);
+        if (StringUtils.isNotBlank(streetName)
+                && part.trim().endsWith(streetName)
+                && ((parts.length == 2 && !StringUtils.endsWithIgnoreCase(streetName, part)) || (parts.length > 2)))
+        {
             components.setStreet(streetName);
 
             components.setAddress(getAddress(place, concat(parts, parts.length - 1)));
@@ -97,8 +103,11 @@ public class PlaceParser_UK extends AbstractPlaceParser {
             return components;
         } else if (parts.length > 2) {
             part = parts[parts.length - 3];
-            streetName = AddressHelper.parseStreetName(part, AddressHelper.ParseAccuracy.LOW);
-            if (StringUtils.isNotBlank(streetName) && part.trim().endsWith(streetName)) {
+            streetName = parseStreetName(part);
+            if (StringUtils.isNotBlank(streetName)
+                    && part.trim().endsWith(streetName)
+                    && ((parts.length == 3 && !StringUtils.endsWithIgnoreCase(streetName, part)) || (parts.length > 3)))
+            {
                 components.setStreet(streetName);
 
                 components.setAddress(getAddress(place, concat(parts, parts.length - 2)));
@@ -116,4 +125,8 @@ public class PlaceParser_UK extends AbstractPlaceParser {
         }
     }
 
+    private String parseStreetName(String part) {
+        AddressComponentsParser.Part parsedStreetName = componentsParser.parseStreetName(new String[]{part});
+        return parsedStreetName != null ? parsedStreetName.getMatchedPart() : null;
+    }
 }

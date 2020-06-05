@@ -7,7 +7,7 @@
 package com.haulmont.shamrock.as.context;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.haulmont.shamrock.address.context.SearchContext;
+import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.dto.CircularRegion;
 import com.haulmont.shamrock.as.dto.Location;
 

@@ -6,9 +6,9 @@
 
 package com.haulmont.shamrock.as.google.gate.parsers;
 
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressComponents;
-import com.haulmont.shamrock.address.AddressData;
+import com.haulmont.shamrock.as.dto.Address;
+import com.haulmont.shamrock.as.dto.AddressComponents;
+import com.haulmont.shamrock.as.dto.AddressData;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
 import org.picocontainer.annotations.Component;

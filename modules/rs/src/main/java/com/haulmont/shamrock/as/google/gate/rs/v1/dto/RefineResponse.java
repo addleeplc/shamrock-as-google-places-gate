@@ -8,7 +8,7 @@ package com.haulmont.shamrock.as.google.gate.rs.v1.dto;
 
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.response.Response;
-import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.as.dto.Address;
 
 /*
  * Author: Nikita Bozhko

@@ -7,7 +7,7 @@
 package com.haulmont.shamrock.as.google.gate.parsers;
 
 import com.haulmont.bali.lang.MapUtils;
-import com.haulmont.shamrock.address.AddressComponents;
+import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.geo.utils.PostalCodeUtils;
 import org.apache.commons.collections4.BidiMap;

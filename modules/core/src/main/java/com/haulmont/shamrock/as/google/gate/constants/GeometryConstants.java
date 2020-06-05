@@ -7,7 +7,7 @@
 package com.haulmont.shamrock.as.google.gate.constants;
 
 import com.google.common.geometry.*;
-import com.haulmont.shamrock.address.gis.Geometry;
+import com.haulmont.shamrock.as.gis.Geometry;
 import com.haulmont.shamrock.as.google.gate.utils.CityGeometry;
 
 import java.util.ArrayList;

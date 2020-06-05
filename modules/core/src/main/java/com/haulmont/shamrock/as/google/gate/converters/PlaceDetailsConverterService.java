@@ -8,7 +8,7 @@ package com.haulmont.shamrock.as.google.gate.converters;
 
 import com.google.common.geometry.S2LatLng;
 import com.google.common.geometry.S2Point;
-import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.Geometry;

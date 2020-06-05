@@ -6,7 +6,7 @@
 
 package com.haulmont.shamrock.as.google.gate.constants;
 
-import com.haulmont.shamrock.address.AddressType;
+import com.haulmont.shamrock.as.dto.AddressType;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 
 import java.util.HashMap;

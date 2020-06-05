@@ -7,15 +7,14 @@
 package com.haulmont.shamrock.as.google.gate.services;
 
 import com.haulmont.monaco.unirest.UnirestCommand;
-import com.haulmont.shamrock.address.GeocodeContext;
-import com.haulmont.shamrock.address.Location;
-import com.haulmont.shamrock.address.context.SearchContext;
+import com.haulmont.shamrock.as.contexts.GeocodeContext;
+import com.haulmont.shamrock.as.contexts.SearchContext;
+import com.haulmont.shamrock.as.dto.Location;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.geocoding.GeocodingResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.GeocodePlaceByIdResponse;
-import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlaceDetailsResponse;
 import kong.unirest.HttpRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;

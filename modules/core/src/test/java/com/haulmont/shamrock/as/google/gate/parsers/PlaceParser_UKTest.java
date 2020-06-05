@@ -6,7 +6,7 @@
 
 package com.haulmont.shamrock.as.google.gate.parsers;
 
-import com.haulmont.shamrock.address.AddressComponents;
+import com.haulmont.shamrock.as.dto.AddressComponents;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -122,6 +122,33 @@ public class PlaceParser_UKTest extends AbstractPlaceParserTest {
         components = parser.parse(createPlace("Heathrow Short Stay Parking Terminal 3, Heathrow Airport (LHR), Camberley Road, Hounslow, UK"));
 
         Assert.assertNotNull(components);
+        Assert.assertEquals(components.getCountry(), "GB");
+
+        //
+
+        components = parser.parse(createPlace("TailWings Pet Travel, Heathrow Airport, Hounslow, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertNull(components.getStreet());
+        Assert.assertEquals(components.getCity(), "Hounslow");
+        Assert.assertEquals(components.getCountry(), "GB");
+
+        //
+
+        components = parser.parse(createPlace("Marks & Spencer SUNBURY CROSS SIMPLY FOOD, Staines Road West, Sunbury-on-Thames, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertNull(components.getStreet());
+        Assert.assertEquals(components.getCity(), "Sunbury-on-Thames");
+        Assert.assertEquals(components.getCountry(), "GB");
+
+        //
+
+        components = parser.parse(createPlace("M&S Simply Food, Hounslow, UK"));
+
+        Assert.assertNotNull(components);
+        Assert.assertNull(components.getStreet());
+        Assert.assertEquals(components.getCity(), "Hounslow");
         Assert.assertEquals(components.getCountry(), "GB");
 
     }

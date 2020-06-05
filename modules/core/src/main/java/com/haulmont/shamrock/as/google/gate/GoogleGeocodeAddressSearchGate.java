@@ -6,15 +6,11 @@
 
 package com.haulmont.shamrock.as.google.gate;
 
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressComponents;
-import com.haulmont.shamrock.address.GeocodeContext;
-import com.haulmont.shamrock.address.Location;
-import com.haulmont.shamrock.address.context.RefineContext;
-import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
-import com.haulmont.shamrock.address.context.SearchBeneathContext;
-import com.haulmont.shamrock.address.context.SearchContext;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
+import com.haulmont.shamrock.as.contexts.*;
+import com.haulmont.shamrock.as.dto.Address;
+import com.haulmont.shamrock.as.dto.AddressComponents;
+import com.haulmont.shamrock.as.dto.Location;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;

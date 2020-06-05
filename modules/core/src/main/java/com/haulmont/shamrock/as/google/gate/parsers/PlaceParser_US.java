@@ -6,8 +6,9 @@
 
 package com.haulmont.shamrock.as.google.gate.parsers;
 
-import com.haulmont.shamrock.address.AddressComponents;
-import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.commons.parsers.AddressComponentsParser;
+import com.haulmont.shamrock.as.commons.parsers.AddressComponentsParser_EN;
+import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.geo.utils.PostalCodeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +27,10 @@ public class PlaceParser_US extends AbstractPlaceParser {
 
     private static final String COUNTRY_CODE_SUFFIX = COMPONENTS_DIVIDER + COUNTRY_CODE;
     private static final String COUNTRY_NAME_SUFFIX = COMPONENTS_DIVIDER + COUNTRY_NAME;
+
+    //
+
+    private AddressComponentsParser componentsParser = new AddressComponentsParser_EN();
 
     //
 
@@ -85,8 +90,11 @@ public class PlaceParser_US extends AbstractPlaceParser {
         String streetName;
 
         part = parts[parts.length - 3];
-        streetName = AddressHelper.parseStreetName(part, AddressHelper.ParseAccuracy.LOW);
-        if (StringUtils.isNotBlank(streetName) && part.trim().endsWith(streetName)) {
+        streetName = parseStreetName(part);
+        if (StringUtils.isNotBlank(streetName)
+                && part.trim().endsWith(streetName)
+                && ((parts.length == 3 && !StringUtils.endsWithIgnoreCase(streetName, part)) || (parts.length > 3)))
+        {
             components.setStreet(streetName);
 
             components.setAddress(getAddress(place, concat(parts, parts.length - 2)));
@@ -99,6 +107,11 @@ public class PlaceParser_US extends AbstractPlaceParser {
         } else {
             return components;
         }
+    }
+
+    private String parseStreetName(String part) {
+        AddressComponentsParser.Part parsedStreetName = componentsParser.parseStreetName(new String[]{part});
+        return parsedStreetName != null ? parsedStreetName.getMatchedPart() : null;
     }
 
 }

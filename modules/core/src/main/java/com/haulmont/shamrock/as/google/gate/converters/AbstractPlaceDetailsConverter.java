@@ -7,10 +7,8 @@
 package com.haulmont.shamrock.as.google.gate.converters;
 
 import com.haulmont.monaco.AppContext;
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressType;
-import com.haulmont.shamrock.address.utils.AddressBuilder;
-import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.dto.Address;
+import com.haulmont.shamrock.as.dto.AddressType;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
 import com.haulmont.shamrock.as.google.gate.constants.GoogleAddressParserConstants;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
@@ -18,6 +16,8 @@ import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GType;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
+import com.haulmont.shamrock.as.utils.AddressBuilder;
+import com.haulmont.shamrock.as.utils.AddressHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -92,7 +92,7 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
             }
         }
 
-        com.haulmont.shamrock.address.Location location = GoogleAddressUtils.convert(place.getGeometry());
+        com.haulmont.shamrock.as.dto.Location location = GoogleAddressUtils.convert(place.getGeometry());
 
         String specifics = parseAddressSpecifics(types);
         AddressType addressType = parseAddressType(types);

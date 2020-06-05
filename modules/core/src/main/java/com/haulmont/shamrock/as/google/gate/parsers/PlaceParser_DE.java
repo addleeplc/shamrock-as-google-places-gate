@@ -6,14 +6,10 @@
 
 package com.haulmont.shamrock.as.google.gate.parsers;
 
-import com.haulmont.shamrock.address.AddressComponents;
-import com.haulmont.shamrock.address.utils.AddressHelper;
+import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.geo.utils.PostalCodeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
-
-import java.util.List;
 
 @Component
 @PlaceParser.Component({PlaceParser_DE.COUNTRY_NAME})

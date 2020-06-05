@@ -6,10 +6,10 @@
 
 package com.haulmont.shamrock.as.google.gate.utils;
 
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressComponents;
-import com.haulmont.shamrock.address.AddressData;
-import com.haulmont.shamrock.address.context.SearchContext;
+import com.haulmont.shamrock.as.contexts.SearchContext;
+import com.haulmont.shamrock.as.dto.Address;
+import com.haulmont.shamrock.as.dto.AddressComponents;
+import com.haulmont.shamrock.as.dto.AddressData;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;

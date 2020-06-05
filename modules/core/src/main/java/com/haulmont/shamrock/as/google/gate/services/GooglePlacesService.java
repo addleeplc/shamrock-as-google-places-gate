@@ -8,9 +8,9 @@ package com.haulmont.shamrock.as.google.gate.services;
 
 import com.google.common.geometry.S2LatLngRect;
 import com.haulmont.monaco.unirest.UnirestCommand;
-import com.haulmont.shamrock.address.context.GeoRegion;
-import com.haulmont.shamrock.address.context.ReverseGeocodingContext;
-import com.haulmont.shamrock.address.context.SearchContext;
+import com.haulmont.shamrock.as.contexts.GeoRegion;
+import com.haulmont.shamrock.as.contexts.ReverseGeocodingContext;
+import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.dto.CircularRegion;
 import com.haulmont.shamrock.as.dto.Location;

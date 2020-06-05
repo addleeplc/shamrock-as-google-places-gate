@@ -8,8 +8,8 @@ package com.haulmont.shamrock.as.google.gate.converters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haulmont.monaco.jackson.ObjectMapperContainer;
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.AddressData;
+import com.haulmont.shamrock.as.dto.Address;
+import com.haulmont.shamrock.as.dto.AddressData;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;

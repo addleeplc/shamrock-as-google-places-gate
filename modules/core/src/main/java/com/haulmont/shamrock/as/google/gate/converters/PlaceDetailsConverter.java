@@ -6,7 +6,7 @@
 
 package com.haulmont.shamrock.as.google.gate.converters;
 
-import com.haulmont.shamrock.address.Address;
+import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 

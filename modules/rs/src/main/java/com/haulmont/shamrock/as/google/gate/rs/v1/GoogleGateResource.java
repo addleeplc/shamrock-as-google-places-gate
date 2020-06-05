@@ -10,13 +10,12 @@ import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.response.Response;
-import com.haulmont.shamrock.address.Accuracy;
-import com.haulmont.shamrock.address.Address;
-import com.haulmont.shamrock.address.GeocodeContext;
-import com.haulmont.shamrock.address.Location;
-import com.haulmont.shamrock.address.context.*;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
+import com.haulmont.shamrock.as.contexts.*;
+import com.haulmont.shamrock.as.dto.Accuracy;
+import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.LatLon;
+import com.haulmont.shamrock.as.dto.Location;
 import com.haulmont.shamrock.as.google.gate.GoogleAddressSearchGate;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.GeocodeResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.RefineResponse;
@@ -173,37 +172,37 @@ public class GoogleGateResource {
         return o;
     }
 
-    @GET
-    @Path("search/beneath")
-    public Response searchBeneath(
-            @QueryParam("search_flats") boolean searchFlats,
-            @QueryParam("search_business_names") boolean searchBusinessNames,
-            @QueryParam("start_index") Integer startIndex,
-            @QueryParam("max_results") Integer maxResults,
-            @QueryParam("flatten") boolean flatten,
-            @QueryParam("city") String city,
-            @QueryParam("preferred_city") String preferredCity,
-            @QueryParam("address_id") String addressId
-    ) {
-        if (StringUtils.isBlank(addressId))
-            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'address_id' must be non-null");
-
-        SearchBeneathContext ctx = new SearchBeneathContext();
-
-        Address a = new Address();
-        a.setId(addressId);
-        ctx.setAddress(a);
-
-        ctx.setCity(city);
-        ctx.setSearchFlats(searchFlats);
-        ctx.setSearchBusinessNames(searchBusinessNames);
-
-        ctx.setStartIndex(startIndex);
-        ctx.setMaxResults(maxResults);
-        ctx.setFlatten(flatten);
-
-        return new SearchResponse(ErrorCode.OK, getGate().searchBeneath(ctx));
-    }
+//    @GET
+//    @Path("search/beneath")
+//    public Response searchBeneath(
+//            @QueryParam("search_flats") boolean searchFlats,
+//            @QueryParam("search_business_names") boolean searchBusinessNames,
+//            @QueryParam("start_index") Integer startIndex,
+//            @QueryParam("max_results") Integer maxResults,
+//            @QueryParam("flatten") boolean flatten,
+//            @QueryParam("city") String city,
+//            @QueryParam("preferred_city") String preferredCity,
+//            @QueryParam("address_id") String addressId
+//    ) {
+//        if (StringUtils.isBlank(addressId))
+//            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'address_id' must be non-null");
+//
+//        SearchBeneathContext ctx = new SearchBeneathContext();
+//
+//        Address a = new Address();
+//        a.setId(addressId);
+//        ctx.setAddress(a);
+//
+//        ctx.setCity(city);
+//        ctx.setSearchFlats(searchFlats);
+//        ctx.setSearchBusinessNames(searchBusinessNames);
+//
+//        ctx.setStartIndex(startIndex);
+//        ctx.setMaxResults(maxResults);
+//        ctx.setFlatten(flatten);
+//
+//        return new SearchResponse(ErrorCode.OK, getGate().searchBeneath(ctx));
+//    }
 
     @POST
     @Path("refine")
@@ -254,7 +253,7 @@ public class GoogleGateResource {
         Location location = new Location();
         location.setLat(latitude);
         location.setLon(longitude);
-        location.setAccuracy(accuracy);
+        //location.setAccuracy(accuracy);
         context.setLocation(location);
 
         context.setRadius(radius);
