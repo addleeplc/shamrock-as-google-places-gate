@@ -6,15 +6,15 @@ package com.haulmont.shamrock.as.google.gate;
 
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
+import com.haulmont.shamrock.as.contexts.RefineContext;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.AddressData;
-import com.haulmont.shamrock.as.contexts.RefineContext;
-import com.haulmont.shamrock.as.utils.AddressHelper;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;
 import com.haulmont.shamrock.as.google.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
+import com.haulmont.shamrock.as.utils.AddressHelper;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
@@ -79,11 +79,13 @@ public class PlaceDetailsService {
                 } else {
                     Address address = convertRefineResult(placeDetails, source);
                     if (address != null) {
+                        AddressData addressData = ctx.getAddress().getAddressData();
+                        String country = addressData != null && addressData.getAddressComponents() != null ? addressData.getAddressComponents().getCountry() : "N/A";
                         logger.info(
                                 String.format(
                                         "Refine address '%s/%s' (%s, %s), result: %s",
                                         a.getId(), formattedAddress,
-                                        ctx.getRefineType().name(), ctx.getAddress().getAddressData().getAddressComponents().getCountry(),
+                                        ctx.getRefineType().name(), country,
                                         address.getAddressData().getFormattedAddress()
                                 )
                         );
