@@ -8,10 +8,10 @@ package com.haulmont.shamrock.as.google.gate.services;
 
 import com.google.common.geometry.S2LatLngRect;
 import com.haulmont.monaco.unirest.UnirestCommand;
+import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.contexts.GeoRegion;
 import com.haulmont.shamrock.as.contexts.ReverseGeocodingContext;
 import com.haulmont.shamrock.as.contexts.SearchContext;
-import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.dto.CircularRegion;
 import com.haulmont.shamrock.as.dto.LocationWithAccuracy;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
@@ -24,7 +24,7 @@ import com.haulmont.shamrock.as.google.gate.services.dto.google.places.FindPlace
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlaceDetailsResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlacesResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PredictionsResponse;
-import kong.unirest.HttpRequest;
+import kong.unirest.GetRequest;
 import org.apache.commons.lang.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
@@ -90,10 +90,10 @@ public class GooglePlacesService {
 
 
         @Override
-        protected HttpRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, path)
+        protected GetRequest createRequest(String url, Path path) {
+            GetRequest request = get(url, path)
                     .queryString("language", LANGUAGE)
-                    .queryString("key", configuration.getGooglePlacesApiKey())
+                    .queryString("key", getApiKey())
                     .queryString("input", ctx.getSearchString())
                     .queryString("inputtype", INPUT_TYPE)
                     .queryString("fields", FIELDS);
@@ -113,6 +113,11 @@ public class GooglePlacesService {
             }
 
             return request;
+        }
+
+        private String getApiKey() {
+            String key = configuration.getGooglePlacesTextSearchApiKey();
+            return StringUtils.isNotBlank(key) ? key : configuration.getGooglePlacesApiKey();
         }
 
         @Override
@@ -139,10 +144,10 @@ public class GooglePlacesService {
 
 
         @Override
-        protected HttpRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, path)
+        protected GetRequest createRequest(String url, Path path) {
+            GetRequest request = get(url, path)
                     .queryString("language", LANGUAGE)
-                    .queryString("key", configuration.getGooglePlacesApiKey())
+                    .queryString("key", getApiKey())
                     .queryString("input", ctx.getSearchString());
 
             LocationWithAccuracy origin = ctx.getOrigin();
@@ -164,6 +169,11 @@ public class GooglePlacesService {
             }
 
             return request;
+        }
+
+        private String getApiKey() {
+            String key = configuration.getGooglePlacesAutocompleteApiKey();
+            return StringUtils.isNotBlank(key) ? key : configuration.getGooglePlacesApiKey();
         }
 
         @Override
@@ -190,12 +200,17 @@ public class GooglePlacesService {
         }
 
         @Override
-        protected HttpRequest createRequest(String url, Path path) {
+        protected GetRequest createRequest(String url, Path path) {
             return get(url, path)
                     .queryString("placeid", placeId)
                     .queryString("language", LANGUAGE)
-                    .queryString("key", configuration.getGooglePlacesApiKey())
+                    .queryString("key", getApiKey())
                     .queryString("fields", FIELDS);
+        }
+
+        private String getApiKey() {
+            String key = configuration.getGooglePlacesDetailsApiKey();
+            return StringUtils.isNotBlank(key) ? key : configuration.getGooglePlacesApiKey();
         }
 
         @Override
@@ -221,14 +236,19 @@ public class GooglePlacesService {
         }
 
         @Override
-        protected HttpRequest createRequest(String url, Path path) {
+        protected GetRequest createRequest(String url, Path path) {
             GeoRegion gr = context.getSearchRegion();
 
             return get(url, path)
                     .queryString("location", String.format("%.6f,%.6f", gr.getLatitude(), gr.getLongitude()))
                     .queryString("radius", String.format("%.6f", gr.getRadius()))
                     .queryString("language", LANGUAGE)
-                    .queryString("key", configuration.getGooglePlacesApiKey());
+                    .queryString("key", getApiKey());
+        }
+
+        private String getApiKey() {
+            String key = configuration.getGooglePlacesNearbySearchApiKey();
+            return StringUtils.isNotBlank(key) ? key : configuration.getGooglePlacesApiKey();
         }
 
         @Override

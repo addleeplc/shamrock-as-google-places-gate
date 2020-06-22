@@ -15,7 +15,7 @@ import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.geocoding.GeocodingResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.GeocodePlaceByIdResponse;
-import kong.unirest.HttpRequest;
+import kong.unirest.GetRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
@@ -88,21 +88,21 @@ public class GoogleGeocodingService {
         }
 
         @Override
-        protected HttpRequest createRequest(String url, Path path) {
+        protected GetRequest createRequest(String url, Path path) {
             String searchString = getSearchString();
             String country = getCountry();
             String city = getCity();
 
-            HttpRequest request = get(url, path)
+            GetRequest request = get(url, path)
                     .queryString("language", LANGUAGE)
-                    .queryString("key", configuration.getGoogleGeocodeApiKey())
+                    .queryString("key", getApiKey())
                     .queryString("address", searchString);
 
 
             if (StringUtils.isNotBlank(country) || StringUtils.isNotBlank(city)) {
                 boolean f = true;
 
-                StringBuilder buffer = new StringBuilder("");
+                StringBuilder buffer = new StringBuilder();
                 if (StringUtils.isNotBlank(country)) {
                     buffer.append("country:").append(country);
                     f = false;
@@ -111,13 +111,17 @@ public class GoogleGeocodingService {
                 if (StringUtils.isNotBlank(city)) {
                     if (!f) buffer.append("|");
                     buffer.append("locality:").append(city);
-                    f = false;
                 }
 
                 request = request.queryString("components", buffer.toString());
             }
 
             return request;
+        }
+
+        private String getApiKey() {
+            String key = configuration.getGoogleGeocodeTextSearchApiKey();
+            return org.apache.commons.lang.StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
         }
 
         private String getSearchString() {
@@ -174,10 +178,10 @@ public class GoogleGeocodingService {
         }
 
         @Override
-        protected HttpRequest createRequest(String url, Path path) {
-            HttpRequest request = get(url, path)
+        protected GetRequest createRequest(String url, Path path) {
+            GetRequest request = get(url, path)
                     .queryString("language", LANGUAGE)
-                    .queryString("key", configuration.getGoogleGeocodeApiKey());
+                    .queryString("key", getApiKey());
 
             Location location = context.getLocation();
             request = request.queryString("latlng", String.format("%.6f,%.6f", location.getLat(), location.getLon()))
@@ -190,6 +194,11 @@ public class GoogleGeocodingService {
                         .queryString("result_type", GEOCODE_RESULT_TYPES);
 
             return request;
+        }
+
+        private String getApiKey() {
+            String key = configuration.getGoogleGeocodeLocationSearchApiKey();
+            return org.apache.commons.lang.StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
         }
 
         @Override
@@ -215,11 +224,16 @@ public class GoogleGeocodingService {
         }
 
         @Override
-        protected HttpRequest createRequest(String url, Path path) {
+        protected GetRequest createRequest(String url, Path path) {
             return get(url, path)
                     .queryString("place_id", placeId)
                     .queryString("language", LANGUAGE)
-                    .queryString("key", configuration.getGooglePlacesApiKey());
+                    .queryString("key", getApiKey());
+        }
+
+        private String getApiKey() {
+            String key = configuration.getGoogleGeocodePlaceDetailsApiKey();
+            return org.apache.commons.lang.StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
         }
 
         @Override

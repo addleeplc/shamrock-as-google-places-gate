@@ -39,14 +39,11 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
     @Inject
     private PlaceDetailsService placeDetailsService;
 
+    //
 
     @Override
     public String getId() {
         return "google-geocode";
-    }
-
-    public List<Address> searchBeneath(SearchBeneathContext context) {
-        throw new UnsupportedOperationException("Unsupported for " + getId() + " gate");
     }
 
     @Override

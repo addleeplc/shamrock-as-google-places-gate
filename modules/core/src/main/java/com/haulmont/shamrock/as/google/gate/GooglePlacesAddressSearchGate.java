@@ -1,9 +1,7 @@
 package com.haulmont.shamrock.as.google.gate;
 
 import com.google.common.collect.Lists;
-import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.ServiceException;
-import com.haulmont.monaco.config.Properties;
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.contexts.*;
@@ -53,21 +51,13 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
     //
 
-    private Properties properties;
-
-    //
-
     public GooglePlacesAddressSearchGate() {
-        properties = AppContext.getConfig().getProperties();
+
     }
 
     @Override
     public String getId() {
         return "google-places";
-    }
-
-    public List<Address> searchBeneath(SearchBeneathContext context) {
-        throw new UnsupportedOperationException("Unsupported for " + getId() + " gate");
     }
 
     @Override
@@ -132,6 +122,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         List<Address> res = new ArrayList<>();
 
         boolean filterNonParsedAddresses = Optional.ofNullable(configuration.geFilterNonParsedAddressed()).orElse(Boolean.TRUE);
+        boolean callDetailsForNonParsedAddressed = Optional.ofNullable(configuration.getCallDetailsForNonParsedAddressed()).orElse(Boolean.FALSE);
 
         for (Prediction prediction : predictions) {
             Address address = convert(prediction);
@@ -142,9 +133,13 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                     AddressComponents components = data.getAddressComponents();
                     if (components != null && StringUtils.isNotBlank(components.getCountry())) {
                         res.add(address);
+                    } else if (callDetailsForNonParsedAddressed) {
+                        res.add(refine(address));
                     }
+                } else {
+                    res.add(refine(address));
                 }
-            } else {
+            } else if (callDetailsForNonParsedAddressed) {
                 res.add(address);
             }
         }
@@ -376,13 +371,6 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         );
 
         return res;
-    }
-
-    private String getRequestedCountry(RefineContext context) {
-        String reqCountry = null;
-        if (context.getAddress().getAddressData() != null && context.getAddress().getAddressData().getAddressComponents() != null)
-            reqCountry = context.getAddress().getAddressData().getAddressComponents().getCountry();
-        return reqCountry;
     }
 
     private boolean isAddressCoordinatesBlank(Address address) {
