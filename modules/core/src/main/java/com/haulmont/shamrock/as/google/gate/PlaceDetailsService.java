@@ -6,6 +6,7 @@ package com.haulmont.shamrock.as.google.gate;
 
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
+import com.haulmont.shamrock.as.commons.parsers.AddressComponentsParser_EN;
 import com.haulmont.shamrock.as.contexts.RefineContext;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.AddressData;
@@ -43,6 +44,10 @@ public class PlaceDetailsService {
 
     //
 
+    private AddressComponentsParser_EN componentsParser = new AddressComponentsParser_EN();
+
+    //
+
     public Address getDetails(RefineContext ctx, String source) {
         if (ctx.getAddress().isRefined()) {
             return AddressHelper.convert(ctx.getAddress(), ctx.getRefineType());
@@ -68,10 +73,12 @@ public class PlaceDetailsService {
                         String name = parts[0];
 
                         List<String> types = placeDetails.getTypes();
-                        if (!GoogleAddressUtils.isBuilding(types)
-                        ) {
+                        if (!GoogleAddressUtils.isBuilding(types) && !isBuilding(name))
+                        {
                             placeDetails.setName(name);
                         }
+                    } else {
+                        placeDetails = googlePlacesService.getPlaceDetails(id);
                     }
                 } else {
                     placeDetails = googlePlacesService.getPlaceDetails(id);
@@ -101,6 +108,15 @@ public class PlaceDetailsService {
             } catch (Throwable t) {
                 throw new ServiceException(ErrorCode.SERVER_ERROR, "Unknown error", t);
             }
+        }
+    }
+
+    private boolean isBuilding(String name) {
+        try {
+            return componentsParser.parseBuildingName(new String[]{name}) != null;
+        } catch (Exception e) {
+            logger.warn("Fail to parse building name", e);
+            return false;
         }
     }
 
