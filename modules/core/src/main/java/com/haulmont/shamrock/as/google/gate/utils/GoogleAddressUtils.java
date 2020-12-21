@@ -39,6 +39,10 @@ public final class GoogleAddressUtils {
         return getFirst(components, false, elements);
     }
 
+    public static String getFirstLong(Map<String, AddressComponent> components, GElement... elements) {
+        return getFirst(components, true, elements);
+    }
+
     private static String getFirst(Map<String, AddressComponent> components, boolean isGetLongName, GElement... elements) {
 
         if (elements == null || elements.length == 0) {

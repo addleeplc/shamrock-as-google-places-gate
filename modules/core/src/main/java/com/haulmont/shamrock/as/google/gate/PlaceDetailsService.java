@@ -11,7 +11,9 @@ import com.haulmont.shamrock.as.contexts.RefineContext;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.AddressData;
 import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterService;
+import com.haulmont.shamrock.as.google.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
+import com.haulmont.shamrock.as.google.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;
 import com.haulmont.shamrock.as.google.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
@@ -21,7 +23,9 @@ import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -73,9 +77,23 @@ public class PlaceDetailsService {
                         String name = parts[0];
 
                         List<String> types = placeDetails.getTypes();
-                        if (!GoogleAddressUtils.isBuilding(types) && !isBuilding(name))
-                        {
-                            placeDetails.setName(name);
+                        if (!GoogleAddressUtils.isBuilding(types)) {
+                            if (isBuilding(name)) {
+                                Map<String, AddressComponent> components = GoogleAddressUtils.convert(placeDetails.getAddressComponents());
+                                String buildingName = GoogleAddressUtils.getFirstLong(components, GElement.premise, GElement.subpremise);
+
+                                if (StringUtils.isBlank(buildingName)) {
+                                    AddressComponent component = new AddressComponent();
+
+                                    component.setTypes(Collections.singletonList(GElement.premise.name()));
+                                    component.setLongName(name);
+                                    component.setShortName(name);
+
+                                    placeDetails.getAddressComponents().add(component);
+                                }
+                            } else {
+                                placeDetails.setName(name);
+                            }
                         }
                     } else {
                         placeDetails = googlePlacesService.getPlaceDetails(id);
@@ -87,7 +105,7 @@ public class PlaceDetailsService {
                 if (placeDetails == null) {
                     return null;
                 } else {
-                    Address address = convertRefineResult(placeDetails, source);
+                    Address address = placeDetailsConverterService.convert(placeDetails, source);
                     if (address != null) {
                         AddressData addressData = ctx.getAddress().getAddressData();
                         String country = addressData != null && addressData.getAddressComponents() != null ? addressData.getAddressComponents().getCountry() : "N/A";
@@ -120,7 +138,4 @@ public class PlaceDetailsService {
         }
     }
 
-    private Address convertRefineResult(PlaceDetails place, String source) {
-        return placeDetailsConverterService.convert(place, source);
-    }
 }
