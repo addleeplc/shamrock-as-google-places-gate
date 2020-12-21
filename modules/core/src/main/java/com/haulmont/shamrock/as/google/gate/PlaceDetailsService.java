@@ -15,6 +15,7 @@ import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;
 import com.haulmont.shamrock.as.google.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
 import com.haulmont.shamrock.as.utils.AddressHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
@@ -53,11 +54,13 @@ public class PlaceDetailsService {
                 if (id == null) return null;
 
                 AddressData data = a.getAddressData();
-                String formattedAddress = data.getFormattedAddress();
+                String formattedAddress = data == null ? null : data.getFormattedAddress();
 
                 PlaceDetails placeDetails;
 
-                if (Optional.ofNullable(configuration.getUseGeocodeAPIForPlaceDetails()).orElse(Boolean.FALSE)) {
+                if (StringUtils.isNotBlank(formattedAddress) &&
+                        Optional.ofNullable(configuration.getUseGeocodeAPIForPlaceDetails()).orElse(Boolean.FALSE)
+                ) {
                     placeDetails = googleGeocodingService.getPlaceDetails(id);
                     if (placeDetails != null) {
 
