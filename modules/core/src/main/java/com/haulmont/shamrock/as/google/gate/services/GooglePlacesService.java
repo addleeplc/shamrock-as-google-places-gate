@@ -7,6 +7,7 @@
 package com.haulmont.shamrock.as.google.gate.services;
 
 import com.google.common.geometry.S2LatLngRect;
+import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.unirest.UnirestCommand;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.contexts.GeoRegion;
@@ -15,6 +16,7 @@ import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.dto.CircularRegion;
 import com.haulmont.shamrock.as.dto.LocationWithAccuracy;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
+import com.haulmont.shamrock.as.google.gate.config.GoogleConfigurationService;
 import com.haulmont.shamrock.as.google.gate.constants.GeometryConstants;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
@@ -38,6 +40,9 @@ public class GooglePlacesService {
 
     @Inject
     private ServiceConfiguration configuration;
+
+    @Inject
+    private GoogleConfigurationService googleConfigurationService;
 
     //
 
@@ -71,6 +76,13 @@ public class GooglePlacesService {
 
         ResponseStatus status = response.getStatus();
         return GoogleResponseUtils.checkResponse(status, response::getResult);
+    }
+
+    private String getChannel() {
+        String channelId = AppContext.getChannelId();
+        if (org.apache.commons.lang3.StringUtils.isBlank(channelId)) return null;
+
+        return googleConfigurationService.getGoogleChannel(channelId);
     }
 
     //
@@ -111,6 +123,9 @@ public class GooglePlacesService {
                     request = request.queryString("locationbias", locationbias);
                 }
             }
+
+            String channel = getChannel();
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
 
             return request;
         }
@@ -168,6 +183,9 @@ public class GooglePlacesService {
                 request = request.queryString("components", "country:" + StringUtils.lowerCase(ctx.getCountry()));
             }
 
+            String channel = getChannel();
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+
             return request;
         }
 
@@ -201,11 +219,16 @@ public class GooglePlacesService {
 
         @Override
         protected GetRequest createRequest(String url, Path path) {
-            return get(url, path)
+            GetRequest request = get(url, path)
                     .queryString("placeid", placeId)
                     .queryString("language", LANGUAGE)
                     .queryString("key", getApiKey())
                     .queryString("fields", FIELDS);
+
+            String channel = getChannel();
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+
+            return request;
         }
 
         private String getApiKey() {
@@ -239,11 +262,16 @@ public class GooglePlacesService {
         protected GetRequest createRequest(String url, Path path) {
             GeoRegion gr = context.getSearchRegion();
 
-            return get(url, path)
+            GetRequest request = get(url, path)
                     .queryString("location", String.format("%.6f,%.6f", gr.getLatitude(), gr.getLongitude()))
                     .queryString("radius", String.format("%.6f", gr.getRadius()))
                     .queryString("language", LANGUAGE)
                     .queryString("key", getApiKey());
+
+            String channel = getChannel();
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+
+            return request;
         }
 
         private String getApiKey() {

@@ -6,11 +6,13 @@
 
 package com.haulmont.shamrock.as.google.gate.services;
 
+import com.haulmont.monaco.AppContext;
 import com.haulmont.monaco.unirest.UnirestCommand;
 import com.haulmont.shamrock.as.contexts.GeocodeContext;
 import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.dto.Location;
 import com.haulmont.shamrock.as.google.gate.ServiceConfiguration;
+import com.haulmont.shamrock.as.google.gate.config.GoogleConfigurationService;
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.ResponseStatus;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.geocoding.GeocodingResponse;
@@ -29,6 +31,9 @@ public class GoogleGeocodingService {
 
     @Inject
     private ServiceConfiguration configuration;
+
+    @Inject
+    private GoogleConfigurationService googleConfigurationService;
 
     //
 
@@ -69,6 +74,13 @@ public class GoogleGeocodingService {
         });
     }
 
+    private String getChannel() {
+        String channelId = AppContext.getChannelId();
+        if (StringUtils.isBlank(channelId)) return null;
+
+        return googleConfigurationService.getGoogleChannel(channelId);
+    }
+
     //
 
     private class GoogleGeocodeCommand extends UnirestCommand<GeocodingResponse> {
@@ -98,6 +110,8 @@ public class GoogleGeocodingService {
                     .queryString("key", getApiKey())
                     .queryString("address", searchString);
 
+            String channel = getChannel();
+            if (StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
 
             if (StringUtils.isNotBlank(country) || StringUtils.isNotBlank(city)) {
                 boolean f = true;
@@ -193,6 +207,9 @@ public class GoogleGeocodingService {
                         .queryString("location_type", "ROOFTOP")
                         .queryString("result_type", GEOCODE_RESULT_TYPES);
 
+            String channel = getChannel();
+            if (StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+
             return request;
         }
 
@@ -225,10 +242,15 @@ public class GoogleGeocodingService {
 
         @Override
         protected GetRequest createRequest(String url, Path path) {
-            return get(url, path)
+            GetRequest request = get(url, path)
                     .queryString("place_id", placeId)
                     .queryString("language", LANGUAGE)
                     .queryString("key", getApiKey());
+
+            String channel = getChannel();
+            if (StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+
+            return request;
         }
 
         private String getApiKey() {

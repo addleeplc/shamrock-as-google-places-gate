@@ -18,7 +18,7 @@ buildscript {
             url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
         }
         dependencies {
-            classpath 'com.haulmont.shamrock.gradle:shamrock-plugin:3.0-SNAPSHOT'
+            classpath 'com.haulmont.shamrock.gradle:shamrock-plugin:3.1-SNAPSHOT'
         }
     }
 }
@@ -29,7 +29,7 @@ apply(plugin: 'shamrock-services')
 shamrock {
     service {
         group = 'com.haulmont.shamrock'
-        version = '1.3'
+        version = '1.6'
         name = "shamrock-as-google-${project.googleProviderName}-gate"
         ports {
             app = Integer.parseInt("${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}")
@@ -73,7 +73,7 @@ shamrock {
     }
 }
 
-def monaco_version = '3.2-SNAPSHOT'
+def monaco_version = '3.3-SNAPSHOT'
 def as_commons_version = '2.0-SNAPSHOT'
 
 def coreModule = project(':shamrock-as-google-gate-core')
@@ -92,6 +92,7 @@ configure([coreModule, rsModule]) {
     }
 
     dependencies {
+        testCompile(group: 'com.haulmont.monaco', name: 'monaco-test', version: "${monaco_version}")
         testCompile(group: 'org.testng', name: 'testng', version: '6.14.3')
     }
 
