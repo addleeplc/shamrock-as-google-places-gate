@@ -285,7 +285,8 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
 
     @Override
     public Address geocode(GeocodeContext context) {
-        throw new UnsupportedOperationException("Unsupported for " + getId() + " gate");
+        logger.debug("Unsupported for " + getId() + " gate");
+        return null;
     }
 
     @Override

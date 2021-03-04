@@ -61,7 +61,10 @@ public class GooglePlacesService {
     }
 
     private List<Prediction> filter(List<Prediction> predictions) {
-        return predictions.stream().filter(p -> p.getTypes().contains("establishment") || p.getTypes().contains("street_address") || p.getTypes().contains("premise")).collect(Collectors.toList());
+        return predictions.stream().filter(p -> {
+            List<String> types = p.getTypes();
+            return types != null && (types.contains("establishment") || types.contains("street_address") || types.contains("premise"));
+        }).collect(Collectors.toList());
     }
 
     public List<Place> getPlaces(ReverseGeocodingContext context) {

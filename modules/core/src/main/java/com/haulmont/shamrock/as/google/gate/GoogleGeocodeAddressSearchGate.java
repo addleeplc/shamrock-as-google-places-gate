@@ -22,6 +22,7 @@ import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -63,7 +64,8 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
     @Override
     public List<Address> autocomplete(AutocompleteContext ctx) {
-        throw new UnsupportedOperationException("Unsupported operation for " + getId() + " gate");
+        logger.debug("Unsupported operation for " + getId() + " gate");
+        return Collections.emptyList();
     }
 
     private List<Address> convertSearchResponse(List<PlaceDetails> places) {
@@ -150,7 +152,8 @@ public class GoogleGeocodeAddressSearchGate implements AddressSearchGate {
 
     @Override
     public List<Address> reverseGeocode(ReverseGeocodingContext context) {
-        throw new UnsupportedOperationException("Unsupported operation for " + getId() + " gate");
+        logger.debug("Unsupported operation for " + getId() + " gate");
+        return Collections.emptyList();
     }
 
     private Address convertGeocodeResponse(List<PlaceDetails> places) {
