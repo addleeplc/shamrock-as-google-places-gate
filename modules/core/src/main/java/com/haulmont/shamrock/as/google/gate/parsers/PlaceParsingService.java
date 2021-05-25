@@ -11,6 +11,7 @@ import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.dto.AddressData;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
+import org.apache.commons.lang.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ public class PlaceParsingService {
 
         try {
             AddressComponents components = parser.parse(place);
-            if (components != null) {
+            if (components != null && StringUtils.isNotBlank(components.getAddress())) {
                 Address res = new Address();
                 AddressData data = new AddressData();
                 res.setAddressData(data);
