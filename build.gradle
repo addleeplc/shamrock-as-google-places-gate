@@ -29,7 +29,7 @@ apply(plugin: 'shamrock-services')
 shamrock {
     service {
         group = 'com.haulmont.shamrock'
-        version = '1.6'
+        version = '1.7'
         name = "shamrock-as-google-${project.googleProviderName}-gate"
         ports {
             app = Integer.parseInt("${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}")
