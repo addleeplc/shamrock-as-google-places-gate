@@ -17,6 +17,6 @@ import java.util.Map;
 public class PlaceDetailsConverter_IT extends DefaultPlaceDetailsConverter {
     @Override
     protected String parseCity(Map<String, AddressComponent> components) {
-        return getFirstLong(components, GElement.administrative_area_level_2, GElement.political);
+        return getFirstLong(components, GElement.administrative_area_level_3, GElement.political);
     }
 }
