@@ -350,7 +350,7 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
                 refineContext.setRefineType(RefineType.DEFAULT);
 
                 Address a = placeDetailsService.getDetails(refineContext, getId());
-                if (isAddressCoordinatesBlank(a)) {
+                if (isCoordinatesNotBlank(a)) {
                     Location l = a.getAddressData().getLocation();
                     double distance = GeoHelper.getGeoDistance(l.getLon(), l.getLat(), context.getSearchRegion().getLongitude(), context.getSearchRegion().getLatitude());
                     if (distance <= context.getSearchRegion().getRadius()) {
@@ -374,12 +374,11 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
         return res;
     }
 
-    private boolean isAddressCoordinatesBlank(Address address) {
+    private boolean isCoordinatesNotBlank(Address address) {
         if (address == null)
             throw new IllegalArgumentException("Address should be not null");
 
-        return address.getAddressData() != null && address.getAddressData().getLocation() != null
-                && address.getAddressData().getLocation().getLat() != null &&
-                address.getAddressData().getLocation().getLon() != null;
+        AddressData data = address.getAddressData();
+        return data != null && data.getLocation() != null && data.getLocation().getLat() != null && data.getLocation().getLon() != null;
     }
 }

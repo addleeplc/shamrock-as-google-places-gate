@@ -85,7 +85,7 @@ public class GoogleConfigurationService implements PropertyEventListener {
 
     private boolean checkIfMatches(String key, String channelId) {
         Matcher m = WILDCARD_PATTERN.matcher(key);
-        StringBuilder modifiedKey = new StringBuilder();
+        StringBuffer modifiedKey = new StringBuffer();
         while (m.find()) {
             if (m.group(1) != null) m.appendReplacement(modifiedKey, ".*");
             else m.appendReplacement(modifiedKey, "\\\\Q" + m.group(0) + "\\\\E");
