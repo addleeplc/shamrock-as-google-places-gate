@@ -3,9 +3,6 @@
  * Haulmont Technology proprietary and confidential.
  * Use is subject to license terms.
  */
-allprojects {
-    ext.googleProviderName = "${project.hasProperty('googleProviderName') ? googleProviderName : 'GOOGLE_PROVIDER_NAME'}"
-}
 
 buildscript {
     repositories {
@@ -18,9 +15,13 @@ buildscript {
             url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
         }
         dependencies {
-            classpath 'com.haulmont.shamrock.gradle:shamrock-plugin:3.1-SNAPSHOT'
+            classpath group: 'com.haulmont.shamrock.gradle', name: 'shamrock-plugin', version: '3.3-SNAPSHOT'
         }
     }
+}
+
+plugins {
+    id 'java-library'
 }
 
 apply(plugin: 'idea')
@@ -30,11 +31,13 @@ shamrock {
     service {
         group = 'com.haulmont.shamrock'
         version = '1.7'
-        name = "shamrock-as-google-${project.googleProviderName}-gate"
+        name = "shamrock-as-google-${System.getenv('googleProviderName')}-gate"
+        snapshot = true
+
         ports {
-            app = Integer.parseInt("${project.hasProperty('googleProviderPort') ? googleProviderPort : 9999}")
-            debug = Integer.parseInt("${project.hasProperty('googleProviderDebugPort') ? googleProviderDebugPort : 19999}")
-            jmx = Integer.parseInt("${project.hasProperty('googleProviderJmxPort') ? googleProviderJmxPort : 59999}")
+            app = Integer.parseInt(System.getenv('googleProviderPort') ?: '9999')
+            debug = Integer.parseInt(System.getenv('googleProviderDebugPort') ?: '19999')
+            jmx = Integer.parseInt(System.getenv('googleProviderJmxPort') ?: '59999')
         }
     }
     java {
@@ -78,7 +81,6 @@ def as_commons_version = '2.0-SNAPSHOT'
 
 def coreModule = project(':shamrock-as-google-gate-core')
 def rsModule = project(':shamrock-as-google-gate-rs')
-
 
 configure([coreModule, rsModule]) {
     apply(plugin: 'java')
@@ -169,13 +171,20 @@ configure(rsModule) {
 
     deploy {
         doLast {
-            def tokens = [GOOGLE_PROVIDER_NAME: "${project.googleProviderName}"]
+            def tokens = ["GOOGLE_PROVIDER_NAME": "${System.getenv('googleProviderName')}"]
+            println("Tokens:")
+            tokens.each { key, value ->
+                println("  ${key} -> ${value}")
+            }
 
-            new File("${getJettyBaseDir()}/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate.xml")
-                    .renameTo("${getJettyBaseDir()}/${shamrock.service.name}.xml")
+            def appName = "shamrock-as-google-${System.getenv('googleProviderName')}-gate"
+            println("Application name:" + appName)
 
-            replaceTokens(new File("${getJettyBaseDir()}/webapps/${shamrock.service.name}/WEB-INF/web.xml"), tokens)
-            new File("${getJettyBaseDir()}/conf/${shamrock.service.name}").eachFile { file ->
+            def serverDir = new File("$rootDir.absolutePath/deploy/jetty/jetty_base").canonicalPath
+            println("Server directory:" + serverDir)
+
+            replaceTokens(new File("$serverDir/webapps/$appName/WEB-INF/web.xml"), tokens)
+            new File("$serverDir/conf/$appName").eachFile { file ->
                 replaceTokens(file, tokens)
             }
         }
@@ -186,14 +195,13 @@ configure(rsModule) {
 }
 
 static void replaceTokens(File f, Map<String, String> tokens) {
-    if (f.isDirectory())
-        return
-
-    def text = f.text
-    for (Map.Entry<String, String> e : tokens.entrySet()) {
-        text = text.replace(e.key, e.value)
-    }
-    f.withWriter { w ->
-        w << text
+    if (f.isFile()) {
+        def text = f.text
+        for (Map.Entry<String, String> e : tokens.entrySet()) {
+            text = text.replace(e.key, e.value)
+        }
+        f.withWriter { w ->
+            w << text
+        }
     }
 }
