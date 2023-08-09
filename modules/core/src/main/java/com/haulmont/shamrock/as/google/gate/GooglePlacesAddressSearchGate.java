@@ -150,7 +150,6 @@ public class GooglePlacesAddressSearchGate implements AddressSearchGate {
     private Address convert(Prediction prediction) {
         Place place = new Place();
 
-        place.setId(prediction.getId());
         place.setFormattedAddress(prediction.getDescription());
         place.setTypes(prediction.getTypes());
         place.setPlaceId(prediction.getPlaceId());

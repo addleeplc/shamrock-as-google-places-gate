@@ -94,9 +94,9 @@ public class GooglePlacesService {
 
         static final String LANGUAGE = "en";
         static final String INPUT_TYPE = "textquery";
-        static final String FIELDS = "id,place_id,name,formatted_address,geometry/location,types";
+        static final String FIELDS = "place_id,name,formatted_address,geometry/location,types";
 
-        private SearchContext ctx;
+        private final SearchContext ctx;
 
         GooglePlacesTextSearchCommand(SearchContext ctx) {
             super(SERVICE_NAME, FindPlaceResponse.class);
@@ -153,7 +153,7 @@ public class GooglePlacesService {
 
         static final String LANGUAGE = "en";
 
-        private AutocompleteContext ctx;
+        private final AutocompleteContext ctx;
 
         GooglePlacesAutocompleteCommand(AutocompleteContext ctx) {
             super(SERVICE_NAME, PredictionsResponse.class);
@@ -211,9 +211,9 @@ public class GooglePlacesService {
     class GooglePlaceDetailsCommand extends UnirestCommand<PlaceDetailsResponse> {
 
         static final String LANGUAGE = "en";
-        static final String FIELDS = "id,place_id,name,formatted_address,geometry/location,types,address_components";
+        static final String FIELDS = "place_id,name,formatted_address,geometry/location,types,address_components";
 
-        private String placeId;
+        private final String placeId;
 
         GooglePlaceDetailsCommand(String placeId) {
             super(SERVICE_NAME, PlaceDetailsResponse.class);
@@ -254,7 +254,7 @@ public class GooglePlacesService {
 
         static final String LANGUAGE = "en";
 
-        private ReverseGeocodingContext context;
+        private final ReverseGeocodingContext context;
 
         GooglePlacesNearbySearchCommand(ReverseGeocodingContext context) {
             super(SERVICE_NAME, PlacesResponse.class);
