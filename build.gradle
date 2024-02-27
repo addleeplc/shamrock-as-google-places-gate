@@ -44,7 +44,7 @@ shamrock {
         xmx = '256m'
     }
     jetty {
-        version = '9.4.14.v20181114'
+        version = '9.4.45.v20220203'
         modules {
             module_deploy {
 
@@ -115,11 +115,13 @@ configure([coreModule, rsModule]) {
 
 configure(coreModule) {
     dependencies {
-        compile "com.haulmont.monaco:monaco-core:${monaco_version}"
-        compile "com.haulmont.monaco:monaco-config:${monaco_version}"
-        compile "com.haulmont.monaco:monaco-graylog-reporter:${monaco_version}"
-        compile "com.haulmont.monaco:monaco-sentry-reporter:${monaco_version}"
-        compile "com.haulmont.monaco:monaco-unirest:${monaco_version}"
+        compile(group: 'com.haulmont.monaco', name: 'monaco-core', version: "$monaco_version")
+        compile(group: 'com.haulmont.monaco', name: 'monaco-jetty', version: "$monaco_version")
+
+        compile(group: 'com.haulmont.monaco', name: 'monaco-graylog-reporter', version: "$monaco_version")
+        compile(group: 'com.haulmont.monaco', name: 'monaco-sentry-reporter', version: "$monaco_version")
+
+        compile(group: 'com.haulmont.monaco', name: 'monaco-unirest', version: "$monaco_version")
 
         compile "com.haulmont.shamrock:shamrock-as-commons-model:${as_commons_version}"
         compile "com.haulmont.shamrock:shamrock-as-commons-parsers:${as_commons_version}"
