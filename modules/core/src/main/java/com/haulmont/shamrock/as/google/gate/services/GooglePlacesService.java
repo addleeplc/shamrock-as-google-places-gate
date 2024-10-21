@@ -27,7 +27,7 @@ import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlaceDeta
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PlacesResponse;
 import com.haulmont.shamrock.as.google.gate.services.dto.google.places.PredictionsResponse;
 import kong.unirest.GetRequest;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 
@@ -83,7 +83,7 @@ public class GooglePlacesService {
 
     private String getChannel() {
         String channelId = AppContext.getChannelId();
-        if (org.apache.commons.lang3.StringUtils.isBlank(channelId)) return null;
+        if (StringUtils.isBlank(channelId)) return null;
 
         return googleConfigurationService.getGoogleChannel(channelId);
     }
@@ -128,7 +128,7 @@ public class GooglePlacesService {
             }
 
             String channel = getChannel();
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+            if (StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
 
             return request;
         }
@@ -187,7 +187,7 @@ public class GooglePlacesService {
             }
 
             String channel = getChannel();
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+            if (StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
 
             return request;
         }
@@ -229,7 +229,7 @@ public class GooglePlacesService {
                     .queryString("fields", FIELDS);
 
             String channel = getChannel();
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+            if (StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
 
             return request;
         }
@@ -272,7 +272,7 @@ public class GooglePlacesService {
                     .queryString("key", getApiKey());
 
             String channel = getChannel();
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
+            if (StringUtils.isNotBlank(channel)) request = request.queryString("channel", channel);
 
             return request;
         }

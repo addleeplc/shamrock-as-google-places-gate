@@ -8,7 +8,7 @@
 /**/*.iws
 
 /targets
-/jetty_*
+/**/jetty_*
 
 #Build
 /**/build

@@ -18,7 +18,7 @@ import com.haulmont.shamrock.as.google.gate.rs.v1.dto.GeocodeResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.RefineResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.ReverseGeocodingResponse;
 import com.haulmont.shamrock.as.google.gate.rs.v1.dto.SearchResponse;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;

@@ -4,7 +4,9 @@
  * Use is subject to license terms.
  */
 
-include(':shamrock-as-google-gate-core', ':shamrock-as-google-gate-rs')
 rootProject.name = 'shamrock-as-google-gate'
-project(':shamrock-as-google-gate-core').projectDir = new File(settingsDir, 'modules/core')
-project(':shamrock-as-google-gate-rs').projectDir = new File(settingsDir, 'modules/rs')
+
+include(":${rootProject.name}-core", ":${rootProject.name}-rs")
+
+project(":${rootProject.name}-core").projectDir = new File(settingsDir, 'modules/core')
+project(":${rootProject.name}-rs").projectDir = new File(settingsDir, 'modules/rs')

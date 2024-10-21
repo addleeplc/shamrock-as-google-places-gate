@@ -11,7 +11,7 @@ import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.dto.AddressData;
 import com.haulmont.shamrock.as.google.gate.dto.Place;
 import com.haulmont.shamrock.as.google.gate.utils.GoogleAddressUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;

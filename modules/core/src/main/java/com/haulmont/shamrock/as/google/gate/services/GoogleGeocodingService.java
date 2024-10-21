@@ -135,7 +135,7 @@ public class GoogleGeocodingService {
 
         private String getApiKey() {
             String key = configuration.getGoogleGeocodeTextSearchApiKey();
-            return org.apache.commons.lang.StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
+            return StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
         }
 
         private String getSearchString() {
@@ -215,7 +215,7 @@ public class GoogleGeocodingService {
 
         private String getApiKey() {
             String key = configuration.getGoogleGeocodeLocationSearchApiKey();
-            return org.apache.commons.lang.StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
+            return StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
         }
 
         @Override
@@ -255,7 +255,7 @@ public class GoogleGeocodingService {
 
         private String getApiKey() {
             String key = configuration.getGoogleGeocodePlaceDetailsApiKey();
-            return org.apache.commons.lang.StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
+            return StringUtils.isNotBlank(key) ? key : configuration.getGoogleGeocodeApiKey();
         }
 
         @Override

@@ -15,7 +15,7 @@ import com.haulmont.shamrock.as.google.gate.converters.PlaceDetailsConverterServ
 import com.haulmont.shamrock.as.google.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.gate.services.GoogleGeocodingService;
 import com.haulmont.shamrock.geo.PostcodeHelper;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
