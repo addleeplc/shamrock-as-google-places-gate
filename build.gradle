@@ -135,8 +135,6 @@ configure(coreModule) {
 
         compile 'org.isuper:s2-geometry-library-java:0.0.1'
 
-        compile 'commons-io:commons-io:2.17.0'
-        compile 'commons-codec:commons-codec:1.17.1'
     }
 
     task deploy(dependsOn: assemble, type: ShamrockDeployJettyTask) {
