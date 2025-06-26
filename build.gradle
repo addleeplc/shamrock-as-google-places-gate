@@ -1,9 +1,3 @@
-/*
- * Copyright (c) 2008 - 2017 Haulmont Technology Ltd. All Rights Reserved.
- * Haulmont Technology proprietary and confidential.
- * Use is subject to license terms.
- */
-
 buildscript {
     repositories {
         mavenLocal()
@@ -15,7 +9,7 @@ buildscript {
             url "http://repository.haulmont.com:8587/nexus/content/groups/shamrock-work/"
         }
         dependencies {
-            classpath group: 'com.haulmont.shamrock.gradle', name: 'shamrock-plugin', version: '3.4-SNAPSHOT'
+            classpath group: 'com.haulmont.shamrock.gradle', name: 'shamrock-plugin', version: '3.5-SNAPSHOT'
         }
     }
 }
@@ -30,14 +24,14 @@ apply(plugin: 'shamrock-services')
 shamrock {
     service {
         group = 'com.haulmont.shamrock'
-        version = '1.7'
-        name = "shamrock-as-google-${System.getenv('googleProviderName')}-gate"
+        version = '1.0'
+        name = rootProject.name
         snapshot = true
 
         ports {
-            app = Integer.parseInt(System.getenv('googleProviderPort') ?: '9999')
-            debug = Integer.parseInt(System.getenv('googleProviderDebugPort') ?: '19999')
-            jmx = Integer.parseInt(System.getenv('googleProviderJmxPort') ?: '59999')
+            app = 8152
+            debug = 8852
+            jmx = 58852
         }
     }
     java {
@@ -76,13 +70,13 @@ shamrock {
     }
 }
 
+def core_module = project(":${rootProject.name}-core")
+def rs_module = project(":${rootProject.name}-rs")
+
 def monaco_version = '3.4-SNAPSHOT'
 def as_commons_version = '2.1-SNAPSHOT'
 
-def coreModule = project(":${rootProject.name}-core")
-def rsModule = project(":${rootProject.name}-rs")
-
-configure([coreModule, rsModule]) {
+configure([core_module, rs_module]) {
     apply(plugin: 'java')
     apply(plugin: 'idea')
     apply(plugin: 'maven')
@@ -94,7 +88,7 @@ configure([coreModule, rsModule]) {
     }
 
     dependencies {
-        testCompile(group: 'com.haulmont.monaco', name: 'monaco-test', version: "${monaco_version}")
+        testCompile(group: 'com.haulmont.monaco', name: 'monaco-test', version: "$monaco_version")
     }
 
     test {
@@ -102,17 +96,13 @@ configure([coreModule, rsModule]) {
         scanForTestClasses = false
         includes = ['**/*Test.class']
     }
-    
+
     artifacts {
         archives sourceJar
     }
-
-    compileJava {
-        options.encoding = "UTF-8"
-    }
 }
 
-configure(coreModule) {
+configure(core_module) {
     dependencies {
         compile(group: 'com.haulmont.monaco', name: 'monaco-core', version: "$monaco_version")
         sharedLibs(group: 'com.haulmont.monaco', name: 'monaco-jetty', version: "$monaco_version") {
@@ -139,21 +129,19 @@ configure(coreModule) {
 
     task deploy(dependsOn: assemble, type: ShamrockDeployJettyTask) {
         excludeConfigDirs = ['database-scripts', 'jetty-conf']
-        appJars(coreModule.name)
+        appJars(core_module.name)
     }
+
 }
 
-configure(rsModule) {
-    configurations {
-        extraLibs
-    }
-
+configure(rs_module) {
     dependencies {
-        compile(coreModule)
+        compile(core_module)
 
-        compile "com.haulmont.monaco:monaco-metrics-influxdb:${monaco_version}"
-        compile "com.haulmont.monaco:monaco-rs:${monaco_version}"
-        extraLibs("com.haulmont.monaco:monaco-rs:${monaco_version}") {
+        compile(group: 'com.haulmont.monaco', name: 'monaco-metrics-influxdb', version: "$monaco_version")
+
+        compile(group: 'com.haulmont.monaco', name: 'monaco-rs', version: "$monaco_version")
+        extraLibs(group: 'com.haulmont.monaco', name: 'monaco-rs', version: "$monaco_version") {
             transitive = false
         }
     }
@@ -162,45 +150,12 @@ configure(rsModule) {
         manifest {
         }
     }
-    
-    task deploy(dependsOn: [assemble], type: ShamrockDeployJettyTask) {
+
+    task deploy(dependsOn: assemble, type: ShamrockDeployJettyTask) {
         excludeConfigDirs = ['database-scripts', 'jetty-conf']
-        appJars(coreModule.name, rsModule.name)
-    }
-
-    deploy {
-        doLast {
-            def tokens = ["GOOGLE_PROVIDER_NAME": "${System.getenv('googleProviderName')}"]
-            println("Tokens:")
-            tokens.each { key, value ->
-                println("  ${key} -> ${value}")
-            }
-
-            def appName = "shamrock-as-google-${System.getenv('googleProviderName')}-gate"
-            println("Application name:" + appName)
-
-            def serverDir = new File("$rootDir.absolutePath/deploy/jetty/jetty_base").canonicalPath
-            println("Server directory:" + serverDir)
-
-            replaceTokens(new File("$serverDir/webapps/$appName/WEB-INF/web.xml"), tokens)
-            new File("$serverDir/conf/$appName").eachFile { file ->
-                replaceTokens(file, tokens)
-            }
-        }
+        appJars(core_module.name, rs_module.name)
     }
 
     start.dependsOn deploy
     task restart(dependsOn: [':start'])
-}
-
-static void replaceTokens(File f, Map<String, String> tokens) {
-    if (f.isFile()) {
-        def text = f.text
-        for (Map.Entry<String, String> e : tokens.entrySet()) {
-            text = text.replace(e.key, e.value)
-        }
-        f.withWriter { w ->
-            w << text
-        }
-    }
 }

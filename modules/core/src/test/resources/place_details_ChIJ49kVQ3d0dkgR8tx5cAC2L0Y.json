@@ -1,86 +1,69 @@
 {
-  "html_attributions" : [],
-  "result" : {
-    "address_components": [
-      {
-        "long_name": "343",
-        "short_name": "343",
-        "types": [
-          "street_number"
-        ]
-      },
-      {
-        "long_name": "Feltham Hill Road",
-        "short_name": "Feltham Hill Rd",
-        "types": [
-          "route"
-        ]
-      },
-      {
-        "long_name": "Ashford",
-        "short_name": "Ashford",
-        "types": [
-          "postal_town"
-        ]
-      },
-      {
-        "long_name": "Surrey",
-        "short_name": "Surrey",
-        "types": [
-          "administrative_area_level_2",
-          "political"
-        ]
-      },
-      {
-        "long_name": "England",
-        "short_name": "England",
-        "types": [
-          "administrative_area_level_1",
-          "political"
-        ]
-      },
-      {
-        "long_name": "United Kingdom",
-        "short_name": "GB",
-        "types": [
-          "country",
-          "political"
-        ]
-      },
-      {
-        "long_name": "TW15 1LP",
-        "short_name": "TW15 1LP",
-        "types": [
-          "postal_code"
-        ]
-      }
-    ],
-    "formatted_address": "343 Feltham Hill Rd, Ashford TW15 1LP, UK",
-    "geometry": {
-      "location": {
-        "lat": 51.4259819,
-        "lng": -0.4353968
-      },
-      "location_type": "ROOFTOP",
-      "viewport": {
-        "northeast": {
-          "lat": 51.4273308802915,
-          "lng": -0.4340478197084979
-        },
-        "southwest": {
-          "lat": 51.4246329197085,
-          "lng": -0.436745780291502
-        }
-      }
+  "addressComponents": [
+    {
+      "longText": "343",
+      "shortText": "343",
+      "types": [
+        "street_number"
+      ]
     },
-    "place_id": "ChIJ49kVQ3d0dkgR8tx5cAC2L0Y",
-    "plus_code": {
-      "compound_code": "CHG7+9R Ashford, United Kingdom",
-      "global_code": "9C3XCHG7+9R"
+    {
+      "longText": "Feltham Hill Road",
+      "shortText": "Feltham Hill Rd",
+      "types": [
+        "route"
+      ]
     },
-    "types": [
-      "street_address"
-    ]
+    {
+      "longText": "Ashford",
+      "shortText": "Ashford",
+      "types": [
+        "postal_town"
+      ]
+    },
+    {
+      "longText": "Surrey",
+      "shortText": "Surrey",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ]
+    },
+    {
+      "longText": "England",
+      "shortText": "England",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "longText": "United Kingdom",
+      "shortText": "GB",
+      "types": [
+        "country",
+        "political"
+      ]
+    },
+    {
+      "longText": "TW15 1LP",
+      "shortText": "TW15 1LP",
+      "types": [
+        "postal_code"
+      ]
+    }
+  ],
+  "formattedAddress": "343 Feltham Hill Rd, Ashford TW15 1LP, UK",
+    "location": {
+      "latitude": 51.4259819,
+      "longitude": -0.4353968
   },
-  "status" : "OK"
+  "id": "ChIJ49kVQ3d0dkgR8tx5cAC2L0Y",
+  "displayName": {
+    "text": "Coca-Cola trafika",
+    "languageCode": "en"
+  },
+  "types": [
+    "street_address"
+  ]
 }

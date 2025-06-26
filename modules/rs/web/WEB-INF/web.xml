@@ -10,7 +10,7 @@
     <context-param>
         <param-name>appPropertiesConfig</param-name>
         <param-value>
-            ${jetty.base}/conf/shamrock-as-google-GOOGLE_PROVIDER_NAME-gate/app.properties
+            ${jetty.base}/conf/shamrock-as-google-places-gate/app.properties
         </param-value>
     </context-param>
 
@@ -19,11 +19,11 @@
     </listener>
 
     <servlet>
-        <servlet-name>com.haulmont.shamrock.as.google.gate.rs.GoogleGateApplication</servlet-name>
+        <servlet-name>com.haulmont.shamrock.as.google.places.gate.rs.GoogleGateApplication</servlet-name>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>com.haulmont.shamrock.as.google.gate.rs.GoogleGateApplication</servlet-name>
+        <servlet-name>com.haulmont.shamrock.as.google.places.gate.rs.GoogleGateApplication</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 </web-app>

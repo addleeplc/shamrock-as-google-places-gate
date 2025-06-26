@@ -1,6 +1,6 @@
 #
 # Jetty Logging Module
-#   Output Managed by Log4j 1.2.x
+# Output Managed by logback or log4j over Slf4j
 #
 
 [tags]
