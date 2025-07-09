@@ -6,18 +6,17 @@
 
 package com.haulmont.shamrock.as.google.places.gate;
 
-import com.google.common.collect.Lists;
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
-import com.haulmont.shamrock.as.contexts.RefineContext;
-import com.haulmont.shamrock.as.contexts.RefineType;
-import com.haulmont.shamrock.as.contexts.ReverseGeocodingContext;
-import com.haulmont.shamrock.as.contexts.SearchContext;
+import com.haulmont.shamrock.as.contexts.*;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.dto.AddressData;
+import com.haulmont.shamrock.as.google.places.gate.cache.Converters;
+import com.haulmont.shamrock.as.google.places.gate.cache.GeocodeCache;
 import com.haulmont.shamrock.as.google.places.gate.converters.PlaceDetailsConverterService;
+import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
 import com.haulmont.shamrock.as.google.places.gate.dto.Place;
 import com.haulmont.shamrock.as.google.places.gate.dto.PlaceDetails;
 import com.haulmont.shamrock.as.google.places.gate.dto.enums.GElement;
@@ -59,13 +58,20 @@ public class GooglePlacesAddressSearchGate {
     @Inject
     private Configuration configuration;
 
+    @Inject
+    private GeocodeCache cache;
+
     //
 
     public GooglePlacesAddressSearchGate() {
 
     }
 
-    public List<Address> search(SearchContext context) {
+    public List<Address> search(final SearchContext context) {
+        return cache.getOrLookup(context, Converters::forSearch, this::prepareAndSearch);
+    }
+
+    private List<Address> prepareAndSearch(SearchContext context) {
         String searchString = context.getSearchString();
         if (StringUtils.isEmpty(searchString)) return null;
 
@@ -81,13 +87,9 @@ public class GooglePlacesAddressSearchGate {
             addresses.addAll(doSearch(context));
         } else {
             if (StringUtils.isNotBlank(context.getCity())) {
-                SearchContext temp = GoogleAddressSearchUtils.clone(context);
-                temp.setCity(context.getCity());
-                temp.setSearchString(searchString + ", " + context.getCity());
-
-                addresses.addAll(doSearch(temp));
+                context.setSearchString(searchString + ", " + context.getCity());
+                addresses.addAll(doSearch(context));
             } else {
-                //First step
                 addresses.addAll(doSearch(context));
 
                 if (!haveGoodAddresses(context, addresses)) {
@@ -109,14 +111,13 @@ public class GooglePlacesAddressSearchGate {
     }
 
     public List<Address> autocomplete(AutocompleteContext context) {
-        long ts = System.currentTimeMillis();
-
-        List<PlacePrediction> predictions = googlePlacesService.autocomplete(context);
-        List<Address> res = convert(predictions);
-
-        logger.debug("Autocomplete address (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
-
-        return res;
+        return cache.getOrLookup(context, Converters::forAutocomplete, (AutocompleteContext ctx) -> {
+            long ts = System.currentTimeMillis();
+            List<PlacePrediction> predictions = googlePlacesService.autocomplete(ctx);
+            List<Address> res = convert(predictions);
+            logger.debug("Autocomplete address (text: '{}', resSize: {}) ({} ms)'", ctx.getSearchString(), res.size(), System.currentTimeMillis() - ts);
+            return res;
+        });
     }
 
     private List<Address> convert(List<PlacePrediction> predictions) {
@@ -148,10 +149,6 @@ public class GooglePlacesAddressSearchGate {
         }
 
         return res;
-    }
-
-    public PlaceDetails getPlaceDetails(String placeId){
-        return googlePlacesService.getPlaceDetails(placeId);
     }
 
     private Address convert(PlacePrediction prediction) {
@@ -290,19 +287,22 @@ public class GooglePlacesAddressSearchGate {
         return placeDetailsService.getDetails(context);
     }
 
+    public List<Address> reverseGeocode(GeoRegion region) {
+        return cache.getOrLookup(region, Converters::forReverseGeocode, this::doReverseGeocode);
+    }
 
-    public List<Address> reverseGeocode(ReverseGeocodingContext context) {
+    private List<Address> doReverseGeocode(GeoRegion region) {
         List<Address> res;
 
         long ts = System.currentTimeMillis();
 
         try {
-            List<PlaceDetails> places = googlePlacesService.getPlaces(context);
+            List<PlaceDetails> places = googlePlacesService.getPlaces(region);
 
             if (CollectionUtils.isEmpty(places))
                 res = Collections.emptyList();
             else
-                res = convertReverseGeocodeResults(context, places);
+                res = convertReverseGeocodeResults(region, places);
 
             String firstAddress;
             if (!CollectionUtils.isEmpty(res) && res.get(0) != null && res.get(0).getAddressData() != null)
@@ -311,7 +311,7 @@ public class GooglePlacesAddressSearchGate {
                 firstAddress = "N/A";
 
             logger.debug("Reverse geocode address by location (loc: {},{}, res: '{}', resSize: {}) ({} ms)",
-                    context.getSearchRegion().getLatitude(), context.getSearchRegion().getLongitude(), firstAddress, res.size(), System.currentTimeMillis() - ts);
+                    region.getLatitude(), region.getLongitude(), firstAddress, res.size(), System.currentTimeMillis() - ts);
 
             return res;
         } catch (ServiceException e) {
@@ -321,7 +321,7 @@ public class GooglePlacesAddressSearchGate {
         }
     }
 
-    private List<Address> convertReverseGeocodeResults(ReverseGeocodingContext context, List<PlaceDetails> results) {
+    private List<Address> convertReverseGeocodeResults(GeoRegion region, List<PlaceDetails> results) {
         List<Address> res = new ArrayList<>();
         for (PlaceDetails placeDetails : results) {
             try {
@@ -333,8 +333,8 @@ public class GooglePlacesAddressSearchGate {
                 LatLng location = placeDetails.getLocation();
                 if (location != null &&
                         location.getLatitude() != null && location.getLongitude() != null) {
-                    double distance = GeoHelper.getGeoDistance(location.getLongitude(), location.getLatitude(), context.getSearchRegion().getLongitude(), context.getSearchRegion().getLatitude());
-                    if (distance <= context.getSearchRegion().getRadius()) {
+                    double distance = GeoHelper.getGeoDistance(location.getLongitude(), location.getLatitude(), region.getLongitude(), region.getLatitude());
+                    if (distance <= region.getRadius()) {
                         address.setDistance(distance);
                         res.add(address);
                     }
@@ -347,8 +347,7 @@ public class GooglePlacesAddressSearchGate {
         logger.info(
                 String.format(
                         "Search addresses near (%s, %s), radius %s, found: %s",
-                        context.getSearchRegion().getLatitude(), context.getSearchRegion().getLongitude(),
-                        context.getSearchRegion().getRadius(), res.size()
+                        region.getLatitude(), region.getLongitude(), region.getRadius(), res.size()
                 )
         );
 

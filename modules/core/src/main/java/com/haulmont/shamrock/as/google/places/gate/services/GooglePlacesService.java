@@ -59,14 +59,7 @@ public class GooglePlacesService {
         return GoogleResponseUtils.checkResponse(status, () -> filter(response.getSuggestions()));
     }
 
-    private List<PlacePrediction> filter(List<Suggestion> suggestions) {
-        return suggestions.stream().map(Suggestion::getPlacePrediction).filter(p -> {
-            List<String> types = p.getTypes();
-            return types != null && (types.contains("establishment") || types.contains("street_address") || types.contains("premise"));
-        }).collect(Collectors.toList());
-    }
-
-    public List<PlaceDetails> getPlaces(ReverseGeocodingContext context) {
+    public List<PlaceDetails> getPlaces(GeoRegion context) {
         PlacesResponse response = new GooglePlacesNearbySearchCommand(context).execute();
 
         ResponseStatus status = response.getStatus();
@@ -80,6 +73,13 @@ public class GooglePlacesService {
             return response;
         else
             return null;
+    }
+
+    private List<PlacePrediction> filter(List<Suggestion> suggestions) {
+        return suggestions.stream().map(Suggestion::getPlacePrediction).filter(p -> {
+            List<String> types = p.getTypes();
+            return types != null && (types.contains("establishment") || types.contains("street_address") || types.contains("premise"));
+        }).collect(Collectors.toList());
     }
 
     private String getChannel() {
@@ -108,7 +108,6 @@ public class GooglePlacesService {
             super(SERVICE_NAME, FindPlaceResponse.class);
             this.ctx = ctx;
         }
-
 
         @Override
         protected RequestBodyEntity createRequest(String url, Path path) {
@@ -221,16 +220,15 @@ public class GooglePlacesService {
         static final String FIELDS = "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.addressComponents";
 
 
-        private final ReverseGeocodingContext context;
+        private final GeoRegion gr;
 
-        GooglePlacesNearbySearchCommand(ReverseGeocodingContext context) {
+        GooglePlacesNearbySearchCommand(GeoRegion region) {
             super(SERVICE_NAME, PlacesResponse.class);
-            this.context = context;
+            this.gr = region;
         }
 
         @Override
         protected RequestBodyEntity createRequest(String url, Path path) {
-            GeoRegion gr = context.getSearchRegion();
             SearchNearbyRequest searchNearbyRequest = new SearchNearbyRequest();
             searchNearbyRequest.setLanguageCode(LANGUAGE);
             LocationRestriction locationRestriction = new LocationRestriction(new Circle(new LatLng(gr.getLatitude(), gr.getLongitude()), gr.getRadius()));

@@ -15,10 +15,8 @@ import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.LatLon;
 import com.haulmont.shamrock.as.dto.LocationWithAccuracy;
 import com.haulmont.shamrock.as.google.places.gate.GooglePlacesAddressSearchGate;
-import com.haulmont.shamrock.as.google.places.gate.dto.Geometry;
-import com.haulmont.shamrock.as.google.places.gate.dto.PlaceDetails;
+import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
 import com.haulmont.shamrock.as.google.places.gate.rs.v1.dto.*;
-import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.LatLng;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +28,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by Nikita Bozhko on 01.01.17.
@@ -81,13 +78,7 @@ public class GoogleGateResource {
             if (StringUtils.isNotBlank(postcode))
                 ctx.setPostcode(postcode);
 
-            ctx.setSearchFlats(searchFlats);
-            ctx.setSearchBusinessNames(searchBusinessNames);
-            ctx.setFlatten(flatten);
-            ctx.setStartIndex(startIndex);
-            ctx.setMaxResults(maxResults);
-
-            return new SearchResponse(ErrorCode.OK, gate.search(ctx));
+            return new SearchResponse(gate.search(ctx));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'search_string' must be non-null");
         }
@@ -152,7 +143,7 @@ public class GoogleGateResource {
                 }
             }
 
-            return new SearchResponse(ErrorCode.OK, gate.autocomplete(ctx));
+            return new SearchResponse(gate.autocomplete(ctx));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'search_string' must be non-null");
         }
@@ -217,63 +208,13 @@ public class GoogleGateResource {
             @QueryParam("radius") Double radius
     ) {
         if (latitude != null && longitude != null) {
-            ReverseGeocodingContext ctx = new ReverseGeocodingContext();
             GeoRegion region = new GeoRegion(latitude, longitude);
             if (radius != null)
                 region.setRadius(radius);
-            ctx.setSearchRegion(region);
 
-            return new ReverseGeocodingResponse(ErrorCode.OK, gate.reverseGeocode(ctx));
+            return new ReverseGeocodingResponse(ErrorCode.OK, gate.reverseGeocode(region));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameters 'latitude' & 'longitude' must be not null");
         }
-    }
-
-    @GET
-    @Path("/places/{place_id}")
-    public Response getPlaceDetails(
-            @PathParam("place_id") String placeId
-    ) {
-        if (StringUtils.isNotBlank(placeId)) {
-            return new PlaceDetailsResponse(convert(gate.getPlaceDetails(placeId)));
-        } else {
-            throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter place_id must be set");
-        }
-    }
-
-    private com.haulmont.shamrock.as.google.places.gate.rs.v1.dto.PlaceDetails convert(PlaceDetails place) {
-        if(place==null || place.getAddressComponents() == null || place.getAddressComponents().isEmpty())
-            return null;
-
-        com.haulmont.shamrock.as.google.places.gate.rs.v1.dto.PlaceDetails res = new com.haulmont.shamrock.as.google.places.gate.rs.v1.dto.PlaceDetails();
-        res.setAddressComponents(place.getAddressComponents().stream().map(this::convert).collect(Collectors.toList()));
-        res.setFormattedAddress(place.getFormattedAddress());
-        res.setPlaceId(place.getId());
-        res.setTypes(place.getTypes());
-        res.setName(place.getDisplayName()!=null ? place.getDisplayName().getText() : "");
-        res.setGeometry(convert(place.getLocation()));
-
-        return res;
-    }
-
-    private Geometry convert(LatLng latLng) {
-        if (latLng==null)
-            return null;
-
-        com.haulmont.shamrock.as.google.places.gate.dto.Location location = new com.haulmont.shamrock.as.google.places.gate.dto.Location();
-        location.setLat(latLng.getLatitude());
-        location.setLng(latLng.getLongitude());
-        Geometry geometry = new Geometry();
-        geometry.setLocation(location);
-
-        return geometry;
-    }
-
-    private AddressComponent convert(com.haulmont.shamrock.as.google.places.gate.dto.AddressComponent component) {
-        AddressComponent res = new AddressComponent();
-        res.setLongName(component.getLongText());
-        res.setShortName(component.getShortText());
-        res.setTypes(component.getTypes());
-        return res;
     }
 }

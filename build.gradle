@@ -124,7 +124,7 @@ configure(core_module) {
         compile 'org.slf4j:jcl-over-slf4j:1.7.21'
 
         compile 'org.isuper:s2-geometry-library-java:0.0.1'
-
+        compile(group: 'com.haulmont.monaco', name: 'monaco-redis', version: "$monaco_version")
     }
 
     task deploy(dependsOn: assemble, type: ShamrockDeployJettyTask) {

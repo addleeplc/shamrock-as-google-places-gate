@@ -24,13 +24,8 @@ public class SearchResponse extends Response {
     @JsonProperty("addresses")
     private List<Address> addresses;
 
-    public SearchResponse(Integer code, String message, List<Address> addresses) {
-        super(code, message);
-        this.addresses = addresses;
-    }
-
-    public SearchResponse(ErrorCode code, List<Address> addresses) {
-        super(code.getCode(), code.getMessage());
+    public SearchResponse(List<Address> addresses) {
+        super(ErrorCode.OK);
         this.addresses = addresses;
     }
 
