@@ -4,7 +4,7 @@
  * Use is subject to license terms.
  */
 
-package com.haulmont.shamrock.as.google.places.gate.rs;
+package com.haulmont.shamrock.as.google.places.gate;
 
 import com.haulmont.monaco.rs.jersey.Application;
 
@@ -16,9 +16,9 @@ import javax.ws.rs.ApplicationPath;
  */
 
 @ApplicationPath("/")
-public class GoogleGateApplication extends Application {
-    public GoogleGateApplication() {
+public class GoogleAddressSearchApplication extends Application {
+    public GoogleAddressSearchApplication() {
         super();
-        packages(GoogleGateApplication.class.getPackage().getName());
+        packages(GoogleAddressSearchApplication.class.getPackage().getName());
     }
 }

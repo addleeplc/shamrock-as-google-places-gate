@@ -19,11 +19,11 @@
     </listener>
 
     <servlet>
-        <servlet-name>com.haulmont.shamrock.as.google.places.gate.rs.GoogleGateApplication</servlet-name>
+        <servlet-name>com.haulmont.shamrock.as.google.places.gate.GoogleAddressSearchApplication</servlet-name>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>com.haulmont.shamrock.as.google.places.gate.rs.GoogleGateApplication</servlet-name>
+        <servlet-name>com.haulmont.shamrock.as.google.places.gate.GoogleAddressSearchApplication</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 </web-app>

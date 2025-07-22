@@ -4,19 +4,23 @@
  * Use is subject to license terms.
  */
 
-package com.haulmont.shamrock.as.google.places.gate.rs.v1;
+package com.haulmont.shamrock.as.google.places.gate.resources.v1;
 
 import com.haulmont.monaco.ServiceException;
 import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.monaco.response.Response;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
-import com.haulmont.shamrock.as.contexts.*;
+import com.haulmont.shamrock.as.contexts.GeoRegion;
+import com.haulmont.shamrock.as.contexts.RefineType;
+import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.LatLon;
 import com.haulmont.shamrock.as.dto.LocationWithAccuracy;
 import com.haulmont.shamrock.as.google.places.gate.AddressSearchService;
 import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
-import com.haulmont.shamrock.as.google.places.gate.rs.v1.dto.*;
+import com.haulmont.shamrock.as.google.places.gate.resources.v1.dto.RefineResponse;
+import com.haulmont.shamrock.as.google.places.gate.resources.v1.dto.ReverseGeocodingResponse;
+import com.haulmont.shamrock.as.google.places.gate.resources.v1.dto.SearchResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +41,13 @@ import java.util.regex.Pattern;
 @Path("/v1")
 @Produces({MediaType.APPLICATION_JSON})
 @Consumes({MediaType.APPLICATION_JSON})
-public class GoogleGateResource {
+public class AddressSearchResource {
 
     public static final Pattern LOCATION_PATTERN = Pattern.compile("([-+]?[0-9]*\\.?[0-9]+),([-+]?[0-9]*\\.?[0-9]+)");
-    private static final Logger logger = LoggerFactory.getLogger(GoogleGateResource.class);
+    private static final Logger logger = LoggerFactory.getLogger(AddressSearchResource.class);
+
     @Inject
-    private AddressSearchService gate;
+    private AddressSearchService service;
 
     @GET
     @Path("/search")
@@ -78,7 +83,7 @@ public class GoogleGateResource {
             if (StringUtils.isNotBlank(postcode))
                 ctx.setPostcode(postcode);
 
-            return new SearchResponse(gate.search(ctx));
+            return new SearchResponse(service.search(ctx));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'search_string' must be non-null");
         }
@@ -143,7 +148,7 @@ public class GoogleGateResource {
                 }
             }
 
-            return new SearchResponse(gate.autocomplete(ctx));
+            return new SearchResponse(service.autocomplete(ctx));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameter 'search_string' must be non-null");
         }
@@ -187,7 +192,7 @@ public class GoogleGateResource {
 
         String id = address.getId();
         if (StringUtils.containsIgnoreCase(id, "google-places")) {
-            return new RefineResponse(ErrorCode.OK, gate.refine(ctx));
+            return new RefineResponse(ErrorCode.OK, service.refine(ctx));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Address Id is invalid");
         }
@@ -212,7 +217,7 @@ public class GoogleGateResource {
             if (radius != null)
                 region.setRadius(radius);
 
-            return new ReverseGeocodingResponse(ErrorCode.OK, gate.searchNearby(region));
+            return new ReverseGeocodingResponse(ErrorCode.OK, service.searchNearby(region));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameters 'latitude' & 'longitude' must be not null");
         }

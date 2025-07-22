@@ -4,7 +4,7 @@
  * Use is subject to license terms.
  */
 
-package com.haulmont.shamrock.as.google.places.gate.rs.v1.dto;
+package com.haulmont.shamrock.as.google.places.gate.resources.v1.dto;
 
 import com.haulmont.monaco.response.Response;
 
