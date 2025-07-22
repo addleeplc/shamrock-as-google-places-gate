@@ -11,13 +11,11 @@ import com.haulmont.monaco.response.ErrorCode;
 import com.haulmont.shamrock.as.commons.parsers.AddressComponentsParser_EN;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.AddressData;
-import com.haulmont.shamrock.as.google.places.gate.cache.Converters;
-import com.haulmont.shamrock.as.google.places.gate.cache.GeocodeCache;
 import com.haulmont.shamrock.as.google.places.gate.converters.PlaceDetailsConverterService;
 import com.haulmont.shamrock.as.google.places.gate.dto.AddressComponent;
-import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
 import com.haulmont.shamrock.as.google.places.gate.dto.Place;
 import com.haulmont.shamrock.as.google.places.gate.dto.PlaceDetails;
+import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
 import com.haulmont.shamrock.as.google.places.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.places.gate.services.GoogleGeocodingService;
 import com.haulmont.shamrock.as.google.places.gate.services.GooglePlacesService;
@@ -51,11 +49,7 @@ public class PlaceDetailsService {
     private PlaceDetailsConverterService placeDetailsConverterService;
 
     @Inject
-    private GeocodeCache cache;
-
-    //
-    @Inject
-    private Configuration configuration;
+    private ServiceConfiguration configuration;
 
     //
 
@@ -73,9 +67,8 @@ public class PlaceDetailsService {
                 String formattedAddress = data == null ? null : data.getFormattedAddress();
                 ctx.setPlaceId(id);
                 ctx.setFormattedAddress(formattedAddress);
-                ctx.setPreferGeocoding(Optional.ofNullable(configuration.getUseGeocodeAPIForPlaceDetails()).orElse(Boolean.FALSE));
 
-                return cache.getOrLookupOne(ctx, Converters::forRefine, this::getPlaceDetails);
+                return getPlaceDetails(ctx);
             } catch (ServiceException e) {
                 throw e;
             } catch (Throwable t) {
@@ -84,45 +77,49 @@ public class PlaceDetailsService {
         }
     }
 
+    private Boolean isUseGeocodingAPI() {
+        return Optional.ofNullable(configuration.getUseGeocodeAPIForPlaceDetails()).orElse(Boolean.FALSE);
+    }
+
     private Address getPlaceDetails(RefineContext context){
         PlaceDetails placeDetails = null;
-        if (StringUtils.isNotBlank(context.getFormattedAddress()) && context.isPreferGeocoding())
-            placeDetails = getPlaceDetailsViaGeocoding(context.getFormattedAddress(), context.getPlaceId());
-        if (placeDetails == null)
-            placeDetails = googlePlacesService.getPlaceDetails(context.getPlaceId());
-        return asAddress(placeDetails, context);
-    }
 
-    private PlaceDetails getPlaceDetailsViaGeocoding(String formattedAddress, String id) {
-        PlaceDetails placeDetails = googleGeocodingService.getPlaceDetails(id);
-        if (placeDetails != null) {
-            String[] parts = formattedAddress.split(", ");
-            String name = parts[0];
+        if (StringUtils.isNotBlank(context.getFormattedAddress()) && isUseGeocodingAPI()) {
+            PlaceDetails placeDetails1 = googleGeocodingService.getPlaceDetails(context.getPlaceId());
+            if (placeDetails1 != null) {
+                String[] parts = context.getFormattedAddress().split(", ");
+                String name = parts[0];
 
-            List<String> types = placeDetails.getTypes();
-            if (!GoogleAddressUtils.isBuilding(types)) {
-                if (isBuilding(name)) {
-                    Map<String, AddressComponent> components = GoogleAddressUtils.convert(placeDetails.getAddressComponents());
-                    String buildingName = GoogleAddressUtils.getFirstLong(components, GElement.premise, GElement.subpremise);
+                List<String> types = placeDetails1.getTypes();
+                if (!GoogleAddressUtils.isBuilding(types)) {
+                    if (isBuilding(name)) {
+                        Map<String, AddressComponent> components = GoogleAddressUtils.convert(placeDetails1.getAddressComponents());
+                        String buildingName = GoogleAddressUtils.getFirstLong(components, GElement.premise, GElement.subpremise);
 
-                    if (StringUtils.isBlank(buildingName)) {
-                        AddressComponent component = new AddressComponent();
+                        if (StringUtils.isBlank(buildingName)) {
+                            AddressComponent component = new AddressComponent();
 
-                        component.setTypes(Collections.singletonList(GElement.premise.name()));
-                        component.setLongText(name);
-                        component.setShortText(name);
+                            component.setTypes(Collections.singletonList(GElement.premise.name()));
+                            component.setLongText(name);
+                            component.setShortText(name);
 
-                        placeDetails.getAddressComponents().add(component);
+                            placeDetails1.getAddressComponents().add(component);
+                        }
+                    } else {
+                        placeDetails1.setDisplayName(new Place.DisplayName(name));
                     }
-                } else {
-                    placeDetails.setDisplayName(new Place.DisplayName(name));
                 }
             }
+            placeDetails = placeDetails1;
         }
-        return placeDetails;
+        if (placeDetails == null) {
+            placeDetails = googlePlacesService.getPlaceDetails(context.getPlaceId());
+        }
+
+        return convert(placeDetails, context);
     }
 
-    private Address asAddress(PlaceDetails placeDetails, com.haulmont.shamrock.as.contexts.RefineContext ctx) {
+    private Address convert(PlaceDetails placeDetails, com.haulmont.shamrock.as.contexts.RefineContext ctx) {
         AddressData data = ctx.getAddress().getAddressData();
         String formattedAddress = data == null ? null : data.getFormattedAddress();
 

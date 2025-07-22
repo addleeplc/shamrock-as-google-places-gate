@@ -9,18 +9,23 @@ package com.haulmont.shamrock.as.google.places.gate.cache;
 import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.contexts.GeoRegion;
 import com.haulmont.shamrock.as.contexts.SearchContext;
-import com.haulmont.shamrock.as.google.places.gate.cache.dto.GeneralSearchContext;
 import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
 import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.Circle;
 import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.Geometry;
 import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.LatLng;
 
-public class Converters {
-    public static GeneralSearchContext forSearch(SearchContext source) {
-        if (source == null) {
-            return null;
-        }
-        GeneralSearchContext res = new GeneralSearchContext("search");
+public class SearchResKeyBuilder {
+
+    private static final int COORDINATES_PRECISION = 5;
+    private static final String COORDINATES_FORMAT = "%." + COORDINATES_PRECISION + "f";
+
+    //
+
+    public static SearchResKey buildFrom(SearchContext source) {
+        if (source == null) return null;
+
+        SearchResKey res = new SearchResKey("search");
+
         res.setSearchString(source.getSearchString());
         res.setCity(source.getCity());
         res.setCountry(source.getCountry());
@@ -31,42 +36,43 @@ public class Converters {
         return res;
     }
 
-    public static GeneralSearchContext forAutocomplete(AutocompleteContext source) {
-        if (source == null) {
-            return null;
-        }
-        GeneralSearchContext res = new GeneralSearchContext("autocomplete");
+    public static SearchResKey buildFrom(AutocompleteContext source) {
+        if (source == null) return null;
+
+        SearchResKey res = new SearchResKey("autocomplete");
+
         res.setSearchString(source.getSearchString());
-        if(source.getSearchRegion()!=null) {
+        if (source.getSearchRegion() != null) {
             LatLng latLng = new LatLng(source.getSearchRegion().getLat(), source.getSearchRegion().getLon());
             res.setLocationBias(new Geometry(new Circle(latLng, source.getSearchRegion().getRadius())));
         }
-        if(source.getOrigin()!=null)
+        if (source.getOrigin() != null) {
             res.setLocation(new LatLng(source.getOrigin().getLat(), source.getOrigin().getLon()));
+        }
         res.setCountry(source.getCountry());
         res.setAddress(source.getSearchString());
+
         return res;
     }
 
-    public static GeneralSearchContext forReverseGeocode(GeoRegion source) {
-        if (source == null) {
-            return null;
-        }
+    public static SearchResKey buildFrom(GeoRegion source) {
+        if (source == null) return null;
 
-        GeneralSearchContext res = new GeneralSearchContext("r-geo");
+        SearchResKey res = new SearchResKey("nearby");
         res.setLocationBias(new Geometry(new Circle(new LatLng(source.getLatitude(), source.getLongitude()), source.getRadius())));
         return res;
     }
 
-    public static GeneralSearchContext forRefine(RefineContext context) {
-        GeneralSearchContext res = new GeneralSearchContext("refine");
-        res.setPreferGeocoding(context.isPreferGeocoding());
+    public static SearchResKey buildFrom(RefineContext context) {
+        SearchResKey res = new SearchResKey("refine");
+
         res.setPlaceId(context.getPlaceId());
         res.setAddress(context.getFormattedAddress());
+
         return res;
     }
 
-    public static String asString(Double value) {
-        return value != null ? String.format("%.4f", value) : null;
+    public static String toString(Double value) {
+        return value != null ? String.format(COORDINATES_FORMAT, value) : null;
     }
 }

@@ -9,7 +9,7 @@ package com.haulmont.shamrock.as.google.places.gate.converters;
 import com.haulmont.monaco.AppContext;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.AddressType;
-import com.haulmont.shamrock.as.google.places.gate.Configuration;
+import com.haulmont.shamrock.as.google.places.gate.ServiceConfiguration;
 import com.haulmont.shamrock.as.google.places.gate.constants.GoogleAddressParserConstants;
 import com.haulmont.shamrock.as.google.places.gate.dto.AddressComponent;
 import com.haulmont.shamrock.as.google.places.gate.dto.PlaceDetails;
@@ -174,7 +174,7 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
     }
 
     protected boolean isCountryRequiredPostcode(String country) {
-        Configuration conf = AppContext.getConfig().get(Configuration.class);
+        ServiceConfiguration conf = AppContext.getConfig().get(ServiceConfiguration.class);
 
         String s = conf.getCountriesRequirePostcode();
         if (StringUtils.isBlank(s)) return false;

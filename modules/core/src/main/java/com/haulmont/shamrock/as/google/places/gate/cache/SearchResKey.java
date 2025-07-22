@@ -4,12 +4,12 @@
  * Use is subject to license terms.
  */
 
-package com.haulmont.shamrock.as.google.places.gate.cache.dto;
+package com.haulmont.shamrock.as.google.places.gate.cache;
 
 import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.Geometry;
 import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.LatLng;
 
-public class GeneralSearchContext {
+public class SearchResKey {
     private final String operationName;
 
     private String searchString;
@@ -22,9 +22,8 @@ public class GeneralSearchContext {
     private String postcode;
     private String preferredCity;
     private String preferredCountry;
-    private Boolean preferGeocoding;
 
-    public GeneralSearchContext(String operationName) {
+    public SearchResKey(String operationName) {
         this.operationName = operationName;
     }
 
@@ -110,13 +109,5 @@ public class GeneralSearchContext {
 
     public void setPreferredCountry(String preferredCountry) {
         this.preferredCountry = preferredCountry;
-    }
-
-    public Boolean getPreferGeocoding() {
-        return preferGeocoding;
-    }
-
-    public void setPreferGeocoding(Boolean preferGeocoding) {
-        this.preferGeocoding = preferGeocoding;
     }
 }

@@ -14,7 +14,7 @@ import com.haulmont.shamrock.as.contexts.*;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.LatLon;
 import com.haulmont.shamrock.as.dto.LocationWithAccuracy;
-import com.haulmont.shamrock.as.google.places.gate.GooglePlacesAddressSearchGate;
+import com.haulmont.shamrock.as.google.places.gate.AddressSearchService;
 import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
 import com.haulmont.shamrock.as.google.places.gate.rs.v1.dto.*;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +42,7 @@ public class GoogleGateResource {
     public static final Pattern LOCATION_PATTERN = Pattern.compile("([-+]?[0-9]*\\.?[0-9]+),([-+]?[0-9]*\\.?[0-9]+)");
     private static final Logger logger = LoggerFactory.getLogger(GoogleGateResource.class);
     @Inject
-    private GooglePlacesAddressSearchGate gate;
+    private AddressSearchService gate;
 
     @GET
     @Path("/search")
@@ -212,7 +212,7 @@ public class GoogleGateResource {
             if (radius != null)
                 region.setRadius(radius);
 
-            return new ReverseGeocodingResponse(ErrorCode.OK, gate.reverseGeocode(region));
+            return new ReverseGeocodingResponse(ErrorCode.OK, gate.searchNearby(region));
         } else {
             throw new ServiceException(ErrorCode.BAD_REQUEST, "Parameters 'latitude' & 'longitude' must be not null");
         }

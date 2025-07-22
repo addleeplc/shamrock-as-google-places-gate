@@ -12,7 +12,7 @@ import org.picocontainer.annotations.Component;
 
 @Config
 @Component
-public interface Configuration {
+public interface ServiceConfiguration {
 
     String ENABLE_FORMATTED_ADDRESS_PARSING = "enableFormattedAddressParsing";
     String FILTER_NON_PARSED_ADDRESSES = "filterNonParsedAddressed";

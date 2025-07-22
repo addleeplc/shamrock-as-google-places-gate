@@ -9,7 +9,6 @@ package com.haulmont.shamrock.as.google.places.gate.dto;
 public class RefineContext extends com.haulmont.shamrock.as.contexts.RefineContext {
     private String formattedAddress;
     private String placeId;
-    private boolean preferGeocoding;
 
     public String getFormattedAddress() {
         return formattedAddress;
@@ -27,11 +26,4 @@ public class RefineContext extends com.haulmont.shamrock.as.contexts.RefineConte
         this.placeId = placeId;
     }
 
-    public boolean isPreferGeocoding() {
-        return preferGeocoding;
-    }
-
-    public void setPreferGeocoding(boolean preferGeocoding) {
-        this.preferGeocoding = preferGeocoding;
-    }
 }
