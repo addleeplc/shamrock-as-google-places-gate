@@ -18,6 +18,7 @@ import com.haulmont.shamrock.as.google.places.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.PlacePrediction;
 import com.haulmont.shamrock.as.google.places.gate.utils.GoogleAddressUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import com.haulmont.shamrock.as.google.places.gate.utils.GoogleAddressSearchUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
@@ -25,6 +26,8 @@ import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class AutocompleteService {
@@ -51,10 +54,50 @@ public class AutocompleteService {
 
         List<PlacePrediction> predictions = googlePlacesService.autocomplete(context);
 
+        if ((StringUtils.isNotBlank(context.getPreferredCountry()) && !context.getPreferredCountry().equalsIgnoreCase(context.getCountry())) ||
+                (StringUtils.isNotBlank(context.getCity()) || StringUtils.isNotBlank(context.getPreferredCity()))) {
+            if (!haveGoodAddressPrediction(context, predictions)) {
+                AutocompleteContext temp = GoogleAddressSearchUtils.clone(context);
+
+                if (StringUtils.isNotBlank(temp.getCity()))
+                    temp.setSearchString(String.format("%s, %s", temp.getCity(), temp.getSearchString()));
+                else if (StringUtils.isNotBlank(temp.getPreferredCity()))
+                    temp.setSearchString(String.format("%s, %s", temp.getPreferredCity(), temp.getSearchString()));
+
+                predictions = googlePlacesService.autocomplete(context);
+            }
+        }
+
+
         List<Address> res = convert(predictions.stream().filter(this::isValid).collect(Collectors.toList()));
         logger.debug("Autocomplete address (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
 
         return res;
+    }
+
+    private boolean haveGoodAddressPrediction(AutocompleteContext context, List<PlacePrediction> predictions) {
+        String country = GoogleAddressUtils.resolveRegionCode(context.getCountry() == null ? context.getPreferredCountry() : context.getCountry());
+        String city = context.getCity() == null ? context.getPreferredCity() : context.getCity();
+        for (PlacePrediction p : predictions) {
+            if (p.getText() == null || StringUtils.isBlank(p.getText().getText()))
+                continue;
+            String predictionText = p.getText().getText();
+            if ((StringUtils.isBlank(country) || stringContainsWord(predictionText, country))
+                    && (StringUtils.isBlank(city) || stringContainsWord(predictionText, city))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean stringContainsWord(String text, String word) {
+        if (StringUtils.isBlank(text) || StringUtils.isBlank(word)) {
+            return false;
+        }
+        Pattern pattern = Pattern.compile("\\b" + Pattern.quote(word) + "\\b", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(text);
+        return matcher.find();
     }
 
     //

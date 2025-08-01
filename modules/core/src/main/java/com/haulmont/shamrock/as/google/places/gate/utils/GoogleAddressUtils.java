@@ -116,7 +116,6 @@ public final class GoogleAddressUtils {
         return "";
     }
 
-
     private static String concat(String name, String address) {
         return StringUtils.isBlank(name) ? address : (name + ", " + address);
     }
@@ -150,5 +149,14 @@ public final class GoogleAddressUtils {
                 .findFirst();
 
         return o.isPresent();
+    }
+
+    public static String resolveRegionCode(String countryCode) {
+        if (countryCode == null || countryCode.isEmpty())
+            return null;
+
+        if(countryCode.equalsIgnoreCase("GB"))
+            return "UK";
+        return countryCode.toUpperCase();
     }
 }

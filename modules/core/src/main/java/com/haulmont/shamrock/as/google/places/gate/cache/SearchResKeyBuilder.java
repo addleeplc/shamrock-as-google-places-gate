@@ -50,6 +50,9 @@ public class SearchResKeyBuilder {
             res.setLocation(new LatLng(source.getOrigin().getLat(), source.getOrigin().getLon()));
         }
         res.setCountry(source.getCountry());
+        res.setPreferredCountry(source.getPreferredCountry());
+        res.setCity(source.getCity());
+        res.setPreferredCity(source.getPreferredCity());
         res.setAddress(source.getSearchString());
 
         return res;

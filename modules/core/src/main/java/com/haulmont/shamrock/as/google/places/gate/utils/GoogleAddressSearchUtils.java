@@ -6,6 +6,7 @@
 
 package com.haulmont.shamrock.as.google.places.gate.utils;
 
+import com.haulmont.shamrock.as.context.AutocompleteContext;
 import com.haulmont.shamrock.as.contexts.SearchContext;
 import com.haulmont.shamrock.as.dto.Address;
 import com.haulmont.shamrock.as.dto.AddressComponents;
@@ -81,6 +82,18 @@ public final class GoogleAddressSearchUtils {
         clone.setProviders(context.getProviders());
         clone.setSearchBusinessNames(context.isSearchBusinessNames());
         clone.setSearchFlats(context.isSearchFlats());
+
+        return clone;
+    }
+
+    public static AutocompleteContext clone(AutocompleteContext context) {
+        AutocompleteContext clone = new AutocompleteContext();
+        clone.setSearchString(context.getSearchString());
+        clone.setOrigin(context.getOrigin());
+        clone.setSearchRegion(context.getSearchRegion());
+        clone.setCountry(context.getCountry());
+        clone.setCity(context.getCity());
+        clone.setPreferredCity(context.getPreferredCity());
 
         return clone;
     }

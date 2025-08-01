@@ -69,13 +69,16 @@ public class SearchByTextService {
             } else {
                 addresses.addAll(doSearch(context));
 
-                if (!haveGoodAddresses(context, addresses)) {
-                    SearchContext temp = GoogleAddressSearchUtils.clone(context);
-                    temp.setCity(context.getPreferredCity());
-                    temp.setCountry(context.getPreferredCountry());
-                    temp.setSearchString(searchString + ", " + context.getPreferredCity());
+                if ((StringUtils.isBlank(context.getCountry()) && StringUtils.isNotBlank(context.getPreferredCountry())) ||
+                        (StringUtils.isBlank(context.getCity()) && StringUtils.isNotBlank(context.getPreferredCity()))) {
+                    if (!haveGoodAddress(context, addresses)) {
+                        SearchContext temp = GoogleAddressSearchUtils.clone(context);
+                        temp.setCity(context.getPreferredCity());
+                        temp.setCountry(context.getPreferredCountry());
+                        temp.setSearchString(searchString + ", " + context.getPreferredCity());
 
-                    addresses.addAll(doSearch(temp));
+                        addresses.addAll(doSearch(temp));
+                    }
                 }
             }
         }
@@ -89,23 +92,24 @@ public class SearchByTextService {
 
     //
 
-    private boolean haveGoodAddresses(SearchContext context, Collection<Address> addresses) {
+    private boolean haveGoodAddress(SearchContext context, Collection<Address> addresses) {
         if (CollectionUtils.isEmpty(addresses)) return false;
 
-        boolean res = true;
+        String preferredCountry = GoogleAddressUtils.resolveRegionCode(StringUtils.isBlank(context.getCountry()) ? context.getPreferredCountry() : context.getCountry());
+        String preferredCity = StringUtils.isBlank(context.getCity()) ? context.getPreferredCity() : context.getCity();
 
-        String preferredCountry = context.getPreferredCountry();
-        if (StringUtils.isBlank(context.getCountry()) && StringUtils.isNotBlank(preferredCountry)) {
-            for (Address address : addresses) {
-                AddressData addressData = address.getAddressData();
-                if (addressData != null) {
-                    AddressComponents addressComponents = addressData.getAddressComponents();
-                    if (addressComponents != null) res = res && StringUtils.equals(addressComponents.getCountry(), preferredCountry);
-                }
+        for (Address address : addresses) {
+            AddressData addressData = address.getAddressData();
+            if (addressData != null) {
+                AddressComponents addressComponents = addressData.getAddressComponents();
+                if (addressComponents != null
+                        && (StringUtils.isBlank(preferredCountry) || StringUtils.equals(addressComponents.getCountry(), preferredCountry))
+                        && (StringUtils.isBlank(preferredCity) || StringUtils.equals(addressComponents.getCity(), preferredCity)))
+                    return true;
             }
         }
 
-        return res;
+        return false;
     }
 
     private List<Address> doSearch(final SearchContext context) {
