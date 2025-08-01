@@ -14,10 +14,7 @@ import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.La
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class GoogleAddressUtils {
 
@@ -133,5 +130,25 @@ public final class GoogleAddressUtils {
         if (types == null) return false;
 
         return CollectionUtils.containsAny(types, Arrays.asList(GElement.street_address.name(), GElement.route.name(), GElement.premise.name(), GElement.subpremise.name()));
+    }
+
+    public static boolean isArea(List<String> types) {
+        return CollectionUtils.size(types) == 1 &&
+                CollectionUtils.containsAny(
+                        types,
+                        Arrays.asList(
+                                GElement.postal_code.name(),
+                                GElement.postal_town.name(),
+                                GElement.postal_code_prefix.name(),
+                                GElement.postal_code_suffix.name())
+                );
+    }
+
+    public static boolean isAirport(Collection<String> types) {
+        Optional<String> o = types.stream()
+                .filter(t -> t.equals(GElement.airport.name()))
+                .findFirst();
+
+        return o.isPresent();
     }
 }

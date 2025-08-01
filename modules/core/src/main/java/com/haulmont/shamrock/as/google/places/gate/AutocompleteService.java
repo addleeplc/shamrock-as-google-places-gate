@@ -16,15 +16,15 @@ import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
 import com.haulmont.shamrock.as.google.places.gate.parsers.PlaceParsingService;
 import com.haulmont.shamrock.as.google.places.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.as.google.places.gate.services.dto.google.places.PlacePrediction;
+import com.haulmont.shamrock.as.google.places.gate.utils.GoogleAddressUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class AutocompleteService {
@@ -50,13 +50,31 @@ public class AutocompleteService {
         long ts = System.currentTimeMillis();
 
         List<PlacePrediction> predictions = googlePlacesService.autocomplete(context);
-        List<Address> res = convert(predictions);
+
+        List<Address> res = convert(predictions.stream().filter(this::isValid).collect(Collectors.toList()));
         logger.debug("Autocomplete address (text: '{}', resSize: {}) ({} ms)'", context.getSearchString(), res.size(), System.currentTimeMillis() - ts);
 
         return res;
     }
 
     //
+
+    @SuppressWarnings("RedundantIfStatement")
+    private boolean isValid(PlacePrediction place) {
+        if (place == null) return false;
+
+        List<String> types = place.getTypes();
+        if (CollectionUtils.isEmpty(types)) return false;
+
+        if (GoogleAddressUtils.isArea(types)) return false;
+        if (isFilterAirports() && GoogleAddressUtils.isAirport(types)) return false;
+
+        return true;
+    }
+
+    private Boolean isFilterAirports() {
+        return Optional.ofNullable(configuration.getFilterAirports()).orElse(Boolean.TRUE);
+    }
 
     private List<Address> convert(List<PlacePrediction> predictions) {
         if (predictions == null) return Collections.emptyList();

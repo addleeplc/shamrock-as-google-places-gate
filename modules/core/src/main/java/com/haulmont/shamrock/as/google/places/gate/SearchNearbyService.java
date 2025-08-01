@@ -22,8 +22,9 @@ import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class SearchNearbyService {
@@ -37,6 +38,9 @@ public class SearchNearbyService {
     @Inject
     private PlaceDetailsConverterService placeDetailsConverterService;
 
+    @Inject
+    private ServiceConfiguration configuration;
+
     //
 
     public List<Address> searchNearby(GeoRegion region) {
@@ -47,19 +51,15 @@ public class SearchNearbyService {
         try {
             List<PlaceDetails> places = googlePlacesService.getPlaces(region);
 
-            if (CollectionUtils.isEmpty(places))
-                res = Collections.emptyList();
-            else
-                res = convert(places, region);
+            res = convert(places.stream().filter(this::isValid).collect(Collectors.toList()), region);
 
-            String firstAddress;
-            if (!CollectionUtils.isEmpty(res) && res.get(0) != null && res.get(0).getAddressData() != null)
-                firstAddress = res.get(0).getAddressData().getFormattedAddress();
-            else
-                firstAddress = "N/A";
-
-            logger.debug("Reverse geocode address by location (loc: {},{}, res: '{}', resSize: {}) ({} ms)",
-                    region.getLatitude(), region.getLongitude(), firstAddress, res.size(), System.currentTimeMillis() - ts);
+            logger.debug(
+                    "Reverse geocode address by location (loc: {},{}, res: '{}', resSize: {}) ({} ms)",
+                    region.getLatitude(),
+                    region.getLongitude(),
+                    printFirst(res),
+                    res.size(),
+                    System.currentTimeMillis() - ts);
 
             return res;
         } catch (ServiceException e) {
@@ -67,6 +67,31 @@ public class SearchNearbyService {
         } catch (Throwable t) {
             throw new ServiceException(ErrorCode.SERVER_ERROR, "Unknown error", t);
         }
+    }
+
+    private static String printFirst(List<Address> res) {
+        if (!CollectionUtils.isEmpty(res) && res.get(0) != null && res.get(0).getAddressData() != null) {
+            return res.get(0).getAddressData().getFormattedAddress();
+        } else {
+            return "N/A";
+        }
+    }
+
+    @SuppressWarnings("RedundantIfStatement")
+    private boolean isValid(PlaceDetails place) {
+        if (place == null) return false;
+
+        List<String> types = place.getTypes();
+        if (CollectionUtils.isEmpty(types)) return false;
+
+        if (GoogleAddressUtils.isArea(types)) return false;
+        if (isFilterAirports() && GoogleAddressUtils.isAirport(types)) return false;
+
+        return true;
+    }
+
+    private Boolean isFilterAirports() {
+        return Optional.ofNullable(configuration.getFilterAirports()).orElse(Boolean.TRUE);
     }
 
     private List<Address> convert(List<PlaceDetails> results, GeoRegion region) {

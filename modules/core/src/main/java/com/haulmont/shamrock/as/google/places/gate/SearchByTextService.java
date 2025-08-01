@@ -13,7 +13,6 @@ import com.haulmont.shamrock.as.dto.AddressComponents;
 import com.haulmont.shamrock.as.dto.AddressData;
 import com.haulmont.shamrock.as.google.places.gate.dto.Place;
 import com.haulmont.shamrock.as.google.places.gate.dto.RefineContext;
-import com.haulmont.shamrock.as.google.places.gate.dto.enums.GElement;
 import com.haulmont.shamrock.as.google.places.gate.parsers.PlaceParsingService;
 import com.haulmont.shamrock.as.google.places.gate.services.GooglePlacesService;
 import com.haulmont.shamrock.as.google.places.gate.utils.GoogleAddressSearchUtils;
@@ -27,6 +26,7 @@ import org.picocontainer.annotations.Inject;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class SearchByTextService {
@@ -119,29 +119,28 @@ public class SearchByTextService {
 
         if (CollectionUtils.isEmpty(places)) return Collections.emptyList();
 
-        List<Address> res = new ArrayList<>();
-        for (Place place : places) {
-            if (!isValidPlaceResult(place)) continue;
-
-            Address address = convert(context, place);
-            if (address != null) res.add(address);
-        }
-
-        return res;
+        return places.stream()
+                .filter(this::isValid)
+                .map(place -> convert(context, place))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
-    private boolean isValidPlaceResult(Place pr) {
-        List<String> types = pr.getTypes();
+    @SuppressWarnings("RedundantIfStatement")
+    private boolean isValid(Place place) {
+        if (place == null) return false;
+
+        List<String> types = place.getTypes();
         if (CollectionUtils.isEmpty(types)) return false;
 
-        if (types.size() == 1) {
-            return !org.apache.commons.collections4.CollectionUtils.containsAny(
-                    types,
-                    Arrays.asList(GElement.postal_code.name(), GElement.postal_town.name(), GElement.postal_code_prefix.name(), GElement.postal_code_suffix.name())
-            );
-        }
+        if (GoogleAddressUtils.isArea(types)) return false;
+        if (isFilterAirports() && GoogleAddressUtils.isAirport(types)) return false;
 
         return true;
+    }
+
+    private Boolean isFilterAirports() {
+        return Optional.ofNullable(configuration.getFilterAirports()).orElse(Boolean.TRUE);
     }
 
     //

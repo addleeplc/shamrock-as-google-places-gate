@@ -36,4 +36,7 @@ public interface ServiceConfiguration {
     @Property(USE_GEOCODE_API_FOR_PLACE_DETAILS)
     Boolean getUseGeocodeAPIForPlaceDetails();
 
+    @Property("filters.airports.enabled")
+    Boolean getFilterAirports();
+
 }

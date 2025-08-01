@@ -32,9 +32,6 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
 
         List<String> types = place.getTypes();
 
-        if (isAirport(types))
-            throw new RuntimeException("Address is airport");
-
         String country = getCountry(components);
         if (StringUtils.isBlank(country))
             throw new RuntimeException("Country is null");
@@ -164,14 +161,6 @@ public abstract class AbstractPlaceDetailsConverter implements PlaceDetailsConve
     }
 
     // Util methods
-
-    protected boolean isAirport(Collection<String> types) {
-        Optional<String> o = types.stream()
-                .filter(t -> t.equals(GElement.airport.name()))
-                .findFirst();
-
-        return o.isPresent();
-    }
 
     protected boolean isCountryRequiredPostcode(String country) {
         ServiceConfiguration conf = AppContext.getConfig().get(ServiceConfiguration.class);
