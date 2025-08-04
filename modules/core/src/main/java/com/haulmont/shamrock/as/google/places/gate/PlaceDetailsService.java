@@ -77,14 +77,14 @@ public class PlaceDetailsService {
         }
     }
 
-    private Boolean isUseGeocodingAPI() {
-        return Optional.ofNullable(configuration.getUseGeocodeAPIForPlaceDetails()).orElse(Boolean.FALSE);
+    private Boolean isPlaceDetailsUseGeocoding() {
+        return Optional.ofNullable(configuration.getPlaceDetailsUseGeocoding()).orElse(Boolean.TRUE);
     }
 
     private Address getPlaceDetails(RefineContext context){
         PlaceDetails placeDetails = null;
 
-        if (StringUtils.isNotBlank(context.getFormattedAddress()) && isUseGeocodingAPI()) {
+        if (StringUtils.isNotBlank(context.getFormattedAddress()) && isPlaceDetailsUseGeocoding()) {
             PlaceDetails placeDetails1 = googleGeocodingService.getPlaceDetails(context.getPlaceId());
             if (placeDetails1 != null) {
                 String[] parts = context.getFormattedAddress().split(", ");

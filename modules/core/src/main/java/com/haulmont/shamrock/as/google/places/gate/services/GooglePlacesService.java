@@ -113,7 +113,7 @@ public class GooglePlacesService {
         protected RequestBodyEntity createRequest(String url, Path path) {
             SearchTextRequest searchTextRequest = new SearchTextRequest();
             searchTextRequest.setLanguageCode(LANGUAGE);
-            searchTextRequest.setTextQuery(ctx.getSearchString());
+            searchTextRequest.setTextQuery(getSearchString(ctx.getSearchString(), ctx.getCity(), ctx.getCountry()));
             searchTextRequest.setRegionCode(ctx.getCountry());
 
             if (ctx.getCountry() != null && ctx.getCountry().equals("JE")) {
@@ -128,6 +128,12 @@ public class GooglePlacesService {
                     .header("X-Goog-FieldMask", FIELDS)
                     .header("X-Channel-Id", getChannel())
                     .body(searchTextRequest);
+        }
+
+        private String getSearchString(String searchString, String city, String country) {
+            return searchString
+                    + (StringUtils.isNotBlank(city) ? ", " + city : "")
+                    + (StringUtils.isNotBlank(country) ? ", " + country : "");
         }
 
         @Override
@@ -152,7 +158,7 @@ public class GooglePlacesService {
         protected RequestBodyEntity createRequest(String url, Path path) {
             PlacesAutocompleteRequest placesAutocompleteRequest = new PlacesAutocompleteRequest();
             placesAutocompleteRequest.setLanguageCode(LANGUAGE);
-            placesAutocompleteRequest.setInput(ctx.getSearchString());
+            placesAutocompleteRequest.setInput(getSearchString(ctx.getSearchString(), ctx.getCity()));
 
             LocationWithAccuracy origin = ctx.getOrigin();
             if (origin != null)
@@ -179,6 +185,10 @@ public class GooglePlacesService {
                     .header("X-Goog-FieldMask", FIELDS)
                     .header("X-Channel-Id", getChannel())
                     .body(placesAutocompleteRequest);
+        }
+
+        private String getSearchString(String searchString, String city) {
+            return (StringUtils.isNotBlank(city) ? city + ", " : "") + searchString;
         }
 
         @Override

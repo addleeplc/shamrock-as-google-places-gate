@@ -14,27 +14,20 @@ import org.picocontainer.annotations.Component;
 @Component
 public interface ServiceConfiguration {
 
-    String ENABLE_FORMATTED_ADDRESS_PARSING = "enableFormattedAddressParsing";
-    String FILTER_NON_PARSED_ADDRESSES = "filterNonParsedAddressed";
-    String CALL_DETAILS_FOR_NON_PARSED_ADDRESSES = "callDetailsForNonParsedAddressed";
-    String USE_GEOCODE_API_FOR_PLACE_DETAILS = "useGeocodeAPIForPlaceDetails";
-
-    //
-
     @Property("countries.postcode.require")
     String getCountriesRequirePostcode();
 
-    @Property(ENABLE_FORMATTED_ADDRESS_PARSING)
-    Boolean getEnableFormattedAddressParsing();
+    @Property("parsers.enabled")
+    Boolean getEnableParsing();
 
-    @Property(FILTER_NON_PARSED_ADDRESSES)
-    Boolean geFilterNonParsedAddressed();
+    @Property("filterNonParsed")
+    Boolean geFilterNonParsed();
 
-    @Property(CALL_DETAILS_FOR_NON_PARSED_ADDRESSES)
-    Boolean getCallDetailsForNonParsedAddressed();
+    @Property("refineNonParsed")
+    Boolean getRefineNonParsed();
 
-    @Property(USE_GEOCODE_API_FOR_PLACE_DETAILS)
-    Boolean getUseGeocodeAPIForPlaceDetails();
+    @Property("google.placeDetails.useGeocoding")
+    Boolean getPlaceDetailsUseGeocoding();
 
     @Property("filters.airports.enabled")
     Boolean getFilterAirports();

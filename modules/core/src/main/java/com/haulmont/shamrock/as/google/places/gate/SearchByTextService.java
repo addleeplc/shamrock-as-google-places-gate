@@ -19,7 +19,6 @@ import com.haulmont.shamrock.as.google.places.gate.utils.GoogleAddressSearchUtil
 import com.haulmont.shamrock.as.google.places.gate.utils.GoogleAddressUtils;
 import com.haulmont.shamrock.geo.PostcodeHelper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.annotations.Component;
 import org.picocontainer.annotations.Inject;
@@ -29,7 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class SearchByTextService {
+public class SearchByTextService extends AbstractSearchByTextService {
 
     @Inject
     private Logger logger;
@@ -43,14 +42,11 @@ public class SearchByTextService {
     @Inject
     private PlaceDetailsService placeDetailsService;
 
-    @Inject
-    private ServiceConfiguration configuration;
-
     //
 
     public List<Address> search(SearchContext context) {
         String searchString = context.getSearchString();
-        if (StringUtils.isEmpty(searchString)) return null;
+        if (StringUtils.isEmpty(searchString)) return Collections.emptyList();
 
         long ts = System.currentTimeMillis();
 
@@ -64,21 +60,22 @@ public class SearchByTextService {
             addresses.addAll(doSearch(context));
         } else {
             if (StringUtils.isNotBlank(context.getCity())) {
-                context.setSearchString(searchString + ", " + context.getCity());
                 addresses.addAll(doSearch(context));
             } else {
                 addresses.addAll(doSearch(context));
 
-                if ((StringUtils.isBlank(context.getCountry()) && StringUtils.isNotBlank(context.getPreferredCountry())) ||
-                        (StringUtils.isBlank(context.getCity()) && StringUtils.isNotBlank(context.getPreferredCity()))) {
-                    if (!haveGoodAddress(context, addresses)) {
-                        SearchContext temp = GoogleAddressSearchUtils.clone(context);
-                        temp.setCity(context.getPreferredCity());
-                        temp.setCountry(context.getPreferredCountry());
-                        temp.setSearchString(searchString + ", " + context.getPreferredCity());
+                if (!hasGoodMatches(addresses, context)
+                        && StringUtils.isNotBlank(context.getPreferredCity()))
+                {
+                    String country = StringUtils.isBlank(context.getCountry()) ? context.getPreferredCountry() : context.getCountry();
+                    String city = context.getPreferredCity();
 
-                        addresses.addAll(doSearch(temp));
-                    }
+                    SearchContext temp = GoogleAddressSearchUtils.clone(context);
+
+                    temp.setCity(city);
+                    temp.setCountry(country);
+
+                    addresses.addAll(doSearch(temp));
                 }
             }
         }
@@ -92,20 +89,23 @@ public class SearchByTextService {
 
     //
 
-    private boolean haveGoodAddress(SearchContext context, Collection<Address> addresses) {
+    private boolean hasGoodMatches(Collection<Address> addresses, SearchContext context) {
         if (CollectionUtils.isEmpty(addresses)) return false;
 
-        String preferredCountry = GoogleAddressUtils.resolveRegionCode(StringUtils.isBlank(context.getCountry()) ? context.getPreferredCountry() : context.getCountry());
+        String preferredCountry = StringUtils.isBlank(context.getCountry()) ? context.getPreferredCountry() : context.getCountry();
         String preferredCity = StringUtils.isBlank(context.getCity()) ? context.getPreferredCity() : context.getCity();
 
         for (Address address : addresses) {
-            AddressData addressData = address.getAddressData();
-            if (addressData != null) {
-                AddressComponents addressComponents = addressData.getAddressComponents();
-                if (addressComponents != null
-                        && (StringUtils.isBlank(preferredCountry) || StringUtils.equals(addressComponents.getCountry(), preferredCountry))
-                        && (StringUtils.isBlank(preferredCity) || StringUtils.equals(addressComponents.getCity(), preferredCity)))
-                    return true;
+            AddressData data = address.getAddressData();
+            if (data == null) continue;
+
+            AddressComponents components = data.getAddressComponents();
+            if (components == null) continue;
+
+            if ((StringUtils.isBlank(preferredCountry) || StringUtils.equals(components.getCountry(), preferredCountry))
+                    && (StringUtils.isBlank(preferredCity) || StringUtils.equals(components.getCity(), preferredCity)))
+            {
+                return true;
             }
         }
 
@@ -125,7 +125,7 @@ public class SearchByTextService {
 
         return places.stream()
                 .filter(this::isValid)
-                .map(place -> convert(context, place))
+                .map(this::convert)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -143,40 +143,49 @@ public class SearchByTextService {
         return true;
     }
 
-    private Boolean isFilterAirports() {
-        return Optional.ofNullable(configuration.getFilterAirports()).orElse(Boolean.TRUE);
-    }
-
     //
 
-    private Address convert(SearchContext context, Place place) {
-        try {
-            Address res = convert(place);
+    private Address convert(Place place) {
+        boolean filterNonParsed = isFilterNonParsed();
+        boolean callDetailsForNonParsed = isRefineNonParsed();
 
-            AddressData data = res.getAddressData();
-            AddressComponents components = data.getAddressComponents();
+        Address address = tryParse(place);
 
-            if (context.getCountry() != null) {
-                components.setCountry(context.getCountry());
-            }
-
-            if (BooleanUtils.isTrue(configuration.getEnableFormattedAddressParsing())) {
-                Address address = placeParsingService.parse(place);
-                if (address == null) {
-                    return refine(res);
-                } else {
-                    return address;
-                }
-            } else {
-                return refine(res);
-            }
-        } catch (Throwable e) {
-            logger.warn("Failed to parse address", e);
+        boolean parsed = isParsed(address);
+        if (parsed) {
+            return address;
+        } else if (callDetailsForNonParsed) {
+            return refine(address);
+        } else if (!filterNonParsed) {
+            return address;
+        } else {
             return null;
         }
     }
 
-    private Address convert(Place place) {
+    private Address tryParse(Place place) {
+        Address address;
+
+        boolean parsingEnabled = isEnableParsing();
+        if (parsingEnabled) {
+            try {
+                address = placeParsingService.parse(place);
+            } catch (Exception e) {
+                logger.warn("Failed to parse address", e);
+                address = null;
+            }
+
+            if (address == null) {
+                address = asAddress(place);
+            }
+        } else {
+            address = asAddress(place);
+        }
+
+        return address;
+    }
+
+    private static Address asAddress(Place place) {
         Address res = new Address();
 
         AddressData data = new AddressData();
